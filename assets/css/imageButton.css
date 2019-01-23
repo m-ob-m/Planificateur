@@ -1,0 +1,13 @@
+a.imageButton >img {
+	position: relative;
+	width: 16px;
+	height: 16px;
+	/*top: -1.5px;*/
+	vertical-align: middle;
+	display: inline-block;
+	margin-right: 4px;
+}
+
+a.imageButton{
+	cursor: pointer;
+}

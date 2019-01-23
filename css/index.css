@@ -1,0 +1,13 @@
+ul.legend >li.state {
+	font-weight: bold;
+	color: #ffffff;
+	text-align: center;
+}
+
+.fc-scroller {
+    overflow-y: auto !important;
+}
+
+.fc-row.fc-widget-header{
+	margin-right: 0px !important;
+}
