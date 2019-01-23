@@ -1,0 +1,190 @@
+input[type=radio]
+{
+	width: auto;
+	height: auto;
+}
+
+td.titreBleu, th.titreBleu
+{
+	color: #ffffff;
+	background-color: #0B5788;
+	font-weight: bold;
+}
+
+td.carrouselCell{
+	text-align: center; 
+	vertical-align: middle;
+}
+
+textarea.notResizable
+{
+	resize: none;
+}
+
+div.porte{
+	position: absolute; 
+	display: flex;
+	justify-content: center;
+	text-align: center;
+	flex-direction:column;
+	cursor:pointer;
+}
+
+div.porte:hover{
+	border: 1px solid black;
+	background-color: #EBB631;
+	opacity: 0.5;
+}
+
+div.pannel{
+	position: relative;
+}
+
+.enteteBatch {
+	color:#ffffff;
+	vertical-align:middle;
+	background-color:#127031;
+}
+
+.etatRouge {
+	background-color:#990012;
+	font-weight:bold;
+	color:#ffffff;
+	padding-left:5px;
+}
+
+.etatJaune {
+	background-color:#DAA520;
+	font-weight:bold;
+	color:#ffffff;
+	padding-left:5px;
+}
+
+.etatVert {
+	background-color:#349253;
+	font-weight:bold;
+	color:#ffffff;
+	padding-left:5px;
+}
+
+.etatBleu {
+	background-color:#0b5788;
+	font-weight:bold;
+	color:#ffffff;
+	padding-left:5px;
+}
+
+.typeMsg{
+	color:#CB0000;
+	cursor:pointer;
+}
+
+.typeMsg:hover {
+	color:#2a00e1;
+}
+
+.typeModify {
+	color:#ffffff;
+	cursor:pointer;
+	float:right;
+	font-weight:normal;
+}
+
+.typeModify:hover {
+	color:#000000;
+	text-decoration:underline;	
+}
+
+/* Fenetre Modal */
+/* The Modal (background) */
+.modal {
+    display: none; /* Hidden by default */
+    position: fixed; /* Stay in place */
+    z-index: 1; /* Sit on top */
+    padding-top: 100px; /* Location of the box */
+    left: 0;
+    top: 0;
+    width: 100%; /* Full width */
+    height: 100%; /* Full height */
+    overflow: auto; /* Enable scroll if needed */
+    background-color: rgb(0,0,0); /* Fallback color */
+    background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
+}
+
+/* Modal Content */
+.modal-content {
+    background-color: #fefefe;
+    margin: auto;
+    padding: 40px;
+    border: 1px solid #888;
+    width: 60%;
+}
+
+/* The Menu Buttons */
+.editMenu {
+    color: #000;
+    float: right;
+    font-weight: bold;
+    position:fixed;
+    background-color: #ffffff;
+    border:1px solid;
+    transform: translateX(-32px);
+    width:26px;
+    text-align:center;
+}
+
+.editIcon {
+	border: 1px solid #fff;
+	cursor:pointer;
+	margin:5px 0px 5px 0px;
+}
+
+.editIcon:hover,
+.editIcon:focus {
+    color: #000;
+    border: 1px solid #000;
+}
+
+.editConfirm {
+	width:250px;
+	background-color:#ffffff;
+	border:1px solid #000;
+	position:relative;
+	left:-1px;
+	top:1px;
+}
+
+.imageButtonText {
+	display: inline;
+	color: #000000;
+	text-decoration: underline;
+	font-weight: normal;
+}
+
+.hFormElement + .hFormElement {
+	margin-left: 10px;
+}
+
+.spaceEfficientText
+{
+	font-size: 8pt;
+	line-height: 1.5;
+}
+
+@media print {
+	#header-wrapper, .fc-left, .fc-right {
+		display:none;
+	}
+	
+	.fc-scroller{
+		height:auto !important;
+	}
+	
+	#features-wrapper .container{
+		width:100% !important
+	}
+	
+	.no-print{
+		display:none;
+	}
+}

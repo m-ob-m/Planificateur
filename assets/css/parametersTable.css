@@ -1,0 +1,218 @@
+table.parametersTable td, table.parametersTable th
+{
+	border: 1px black solid;
+}
+
+table.parametersTable >thead >tr {
+	color: #ffffff;
+	background-color: #0b5788;
+}
+
+table.parametersTable >thead >tr >th {
+	vertical-align: middle;
+	text-align: center;
+}
+
+table.parametersTable >thead >tr >th {
+	border-top: 2px black solid;
+	border-bottom: 2px black solid;
+}
+
+table.parametersTable:not(.noExternalBorder) >thead >tr:first-child >th {
+	border-top: 3px black solid;
+}
+
+table.parametersTable.noExternalBorder >thead >tr:first-child >th {
+	border-top: none;
+}
+
+table.parametersTable:not(.noExternalBorder) >thead >tr >th.firstVisibleColumn {
+	border-left: 3px black solid;
+}
+
+table.parametersTable.noExternalBorder >thead >tr >th.firstVisibleColumn {
+	border-left: none;
+}
+
+table.parametersTable:not(.noExternalBorder) >thead >tr >th.lastVisibleColumn {
+	border-right: 3px black solid;
+}
+
+table.parametersTable.noExternalBorder >thead >tr >th.lastVisibleColumn {
+	border-right: none;
+}
+
+table.parametersTable:not(.hoverEffectDisabled) >tbody >tr >td.disabled:not(:hover) { 
+	background-color: #bfbfbf; 
+}
+
+table.parametersTable >tbody >tr >td {
+	padding: 0px;
+}
+
+table.parametersTable:not(.noExternalBorder):has(thead) >tbody:first-child >tr:first-child >td {
+	border-top: 2px black solid;
+}
+
+table.parametersTable.noExternalBorder:has(thead) >tbody:first-child >tr:first-child >td {
+	border-top: none;
+}
+
+table.parametersTable:not(.noExternalBorder) >tbody:first-child >tr:first-child >td {
+	border-top: 3px black solid;
+}
+
+table.parametersTable.noExternalBorder >tbody:first-child >tr:first-child >td {
+	border-top: none;
+}
+
+table.parametersTable:not(.noExternalBorder) >tbody >tr:first-child >td {
+	border-top: 2px black solid;
+}
+
+table.parametersTable.noExternalBorder >tbody >tr:first-child >td {
+	border-top: none;
+}
+
+table.parametersTable:not(.noExternalBorder) >tbody >tr >td.firstVisibleColumn {
+	border-left: 3px black solid;
+}
+
+table.parametersTable.noExternalBorder >tbody >tr >td.firstVisibleColumn {
+	border-left: none;
+}
+
+table.parametersTable:not(.noExternalBorder) >tbody >tr >td.lastVisibleColumn {
+	border-right: 3px black solid;
+}
+
+table.parametersTable.noExternalBorder >tbody >tr >td.lastVisibleColumn {
+	border-right: none;
+}
+
+table.parametersTable:has(tfoot) >tbody:last-child >tr:last-child >td {
+	border-bottom: 2px black solid;
+}
+
+table.parametersTable:not(.noExternalBorder) >tbody:last-child >tr:last-child >td {
+	border-bottom: 3px black solid;
+}
+
+table.parametersTable.noExternalBorder >tbody:last-child >tr:last-child >td {
+	border-bottom: 1px black solid;
+}
+
+table.parametersTable >tfoot >tr >td {
+	border-top: 2px black solid;
+}
+
+table.parametersTable:not(.noExternalBorder) >tfoot >tr >td {
+	border-bottom: 3px black solid;
+}
+
+table.parametersTable.noExternalBorder >tfoot >tr >td {
+	border-bottom: none;
+}
+
+table.parametersTable:not(.noExternalBorder) >tfoot >tr >td.firstVisibleColumn {
+	border-left: 3px black solid;
+}
+
+table.parametersTable.noExternalBorder >tfoot >tr >td.firstVisibleColumn {
+	border-left: none;
+}
+
+table.parametersTable:not(.noExternalBorder) >tfoot >tr >td.lastVisibleColumn {
+	border-right: 3px black solid;
+}
+
+table.parametersTable.noExternalBorder >tfoot >tr >td.lastVisibleColumn {
+	border-right: none;
+}
+
+table.parametersTable >tbody >tr:nth-of-type(odd) { 
+	background-color: #ffffff; 
+}
+
+table.parametersTable:not(.hoverEffectDisabled) >tbody >tr:nth-of-type(odd):hover {
+	background-color: #110091; 
+	color: #ffffff;
+}
+
+table.parametersTable >tbody >tr:nth-of-type(even) { 
+	background-color: #97BFD9;
+}
+
+table.parametersTable:not(.hoverEffectDisabled) >tbody >tr:nth-of-type(even):hover {
+	background-color: #110091;
+	color: #ffffff;
+}
+
+table.test.parametersTable >tbody >tr:nth-of-type(odd) {
+	background-color: #6ecf72; 
+}
+
+table.test.parametersTable:not(.hoverEffectDisabled) >tbody >tr:nth-of-type(odd):hover {
+	background-color: #110091; 
+	color: #ffffff;
+}
+
+table.test.parametersTable >tbody >tr:nth-of-type(even) {
+	background-color: #ffff00;
+}
+
+table.test.parametersTable >tbody >tr:nth-of-type(even):hover {
+	background-color: #b3b300;
+	color: #ffffff;
+}
+
+table.parametersTable >tbody >tr >td {
+	vertical-align: middle;
+	text-align: center;
+}
+
+table.parametersTable >tbody >tr >td >* {
+	color: inherit;
+	background-color: inherit;
+	width: 100%;
+	height: 100%;
+	border: none;
+	text-align: center;
+	vertical-align:middle;
+}
+
+table.parametersTable >tbody >tr.link {
+	cursor: pointer;
+}
+
+table.parametersTable >tbody >tr >td.link {
+	cursor: pointer;
+}
+
+table.parametersTable td >* { 
+	padding:2px; 
+}
+
+table.parametersTable >tbody >tr >td >select >option { 
+	color: #000000; 
+}
+
+table.parametersTable > tbody >tr >td {
+	position: relative;
+}
+
+table.parametersTable > tbody >tr >td >textarea {
+	position: absolute;
+	top: 0px;
+	left: 0px;
+}
+
+table.parametersTable >tbody >tr >td >p {
+	margin: 0px;
+}
+
+textarea.nonResizable {
+	overflow-x: hidden;
+	overflow-y: auto;
+	resize: none;
+}
