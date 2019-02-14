@@ -21,8 +21,6 @@
     include_once __DIR__ . '/sections/batch/model/batch.php';	// Modèle d'une batch
     include_once __DIR__ . '/sections/job/model/job.php';		// Modèle d'une job
     include_once __DIR__ . '/controller/planificateur.php';		// Classe controleur de cette vue
-    
-    $planificateur = new PlanificateurController();
 ?>
 
 <!DOCTYPE HTML>

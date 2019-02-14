@@ -21,10 +21,25 @@ try
     
     // Vérification des paramètres
     $genericId = (isset($input->id) ? $input->id : null);
-    
+        
     if($genericId <> null)
     {
-        (new GenericController())->getGeneric($genericId)->delete(new FabPlanConnection());
+        $db = new FabPlanConnection();
+        try
+        {
+            $db->getConnection()->beginTransaction();
+            Generic::withID($db, $genericId)->delete($db);
+            $db->getConnection()->commit();
+        }
+        catch(\Exception $e)
+        {
+            $db->getConnection()->rollback();
+            throw $e;
+        }
+        finally 
+        {
+            $db = null;
+        }
     }
     else
     {

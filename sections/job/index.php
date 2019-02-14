@@ -19,7 +19,33 @@ include_once __DIR__ . "/controller/jobController.php";		// Classe contrôleur d
 include_once __DIR__ . "/../../parametres/model/controller/modelController.php";		// Classe contrôleur de la classe Modèle
 include_once __DIR__ . "/../../parametres/type/controller/typeController.php";		// Classe contrôleur de la classe Type
 
-$job = (isset($_GET["jobId"]) ? (new JobController())->getJob($_GET["jobId"]) : new Job());
+$db = new \FabPlanConnection();
+$job = null;
+try
+{
+    $db->getConnection()->beginTransaction();
+    if(isset($_GET["jobId"]))
+    {
+        $job = \Job::withID($db, $_GET["jobId"]);
+        $models = (new \ModelController())->getModels();
+        $types = (new TypeController())->getTypes();
+    }
+    else
+    {
+        $job = new \Job();
+    }
+    $db->getConnection()->commit();
+}
+catch(\Exception $e)
+{
+    $db->getConnection()->rollback();
+    throw $e;
+}
+finally
+{
+    $db = null;
+}
+
 $batchId = $_GET["batchId"] ?? null;
 
 ?>
@@ -28,7 +54,7 @@ $batchId = $_GET["batchId"] ?? null;
 <html>
 	<head>
 		<title>Fabridor - Validation</title>
-		<meta charset="iso-8859-1" />
+		<meta charset="utf-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1" />
 		<link rel="stylesheet" href="/Planificateur/assets/css/responsive.css" />
 		<link rel="stylesheet" href="/Planificateur/assets/css/fabridor.css" />
@@ -103,7 +129,7 @@ $batchId = $_GET["batchId"] ?? null;
 							<td class="firstVisibleColumn" style="width:20%;">Modèle</td>
 							<td class="lastVisibleColumn">
 								<select id="modelId">
-									<?php foreach((new ModelController())->getModels() as $model): ?>
+									<?php foreach($models as $model): ?>
 										<option value="<?= $model->getId(); ?>"><?= $model->getDescription(); ?></option>
 									<?php endforeach; ?>
 								</select>
@@ -113,7 +139,7 @@ $batchId = $_GET["batchId"] ?? null;
 							<td style="width: 10%;" class="firstVisibleColumn">Type</td>
 							<td class="lastVisibleColumn">
 								<select id="typeNo">
-									<?php foreach((new TypeController())->getTypes() as $type): ?>
+									<?php foreach($types as $type): ?>
 										<option value="<?= $type->getImportNo(); ?>"><?= $type->getDescription(); ?></option>
 									<?php endforeach; ?>
 								</select>

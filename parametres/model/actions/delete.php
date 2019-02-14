@@ -24,7 +24,22 @@ try
     
     if($id <> null)
     {
-        (new ModelController())->getModel($id)->delete(new FabPlanConnection());
+        $db = new \FabPlanConnection();
+        try
+        {
+            $db->getConnection()->beginTransaction();
+            \Model::withID($id)->delete($db);
+            $db->getConnection()->commit();
+        }
+        catch(\Exception $e)
+        {
+            $db->getConnection()->rollback();
+            throw $e;
+        }
+        finally
+        {
+            $db = null;
+        }
     }
     else
     {

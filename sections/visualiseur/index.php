@@ -12,7 +12,23 @@
     include_once __DIR__ . "/../batch/controller/batchController.php";
     include_once __DIR__ . "/model/collectionPanneaux.php";
     
-    $batch =  (isset($_GET["id"]) ? (new \BatchController())->getBatch($_GET["id"]) : new \Batch());
+    $batch = null;
+    $db = new \FabPlanConnection();
+    try
+    {
+        $db->getConnection()->beginTransaction();
+        $batch =  \Batch::withID($_GET["id"]) ?? new \Batch();
+        $db->getConnection()->commit();
+    }
+    catch(\Exception $e)
+    {
+        $db->getConnection()->rollback();
+        throw $e;
+    }
+    finally
+    {
+        $db = null;
+    }
     
     $pc2Path = CR_FABRIDOR . "\\SYSTEM_DATA\\DATA\\{$batch->getName()}.pc2";
     $cttPath = CR_FABRIDOR . "\\SYSTEM_DATA\\DATA\\{$batch->getName()}.ctt";

@@ -56,14 +56,28 @@ finally
  */
 function saveGeneric(Generic $generic, ?int $referenceId) :?Generic
 {
-    $db = new FabPlanConnection();
-    $generic->save($db, false);
-    if($referenceId <> null)
+    $db = new \FabPlanConnection();
+    try
     {
-        // Only on insert
-        $parameters = (new GenericController())->getGeneric($referenceId)->getGenericParameters();
-        $generic = copyGenericParameters($generic, $parameters);
-        $generic->save($db, true);
+        $db->getConnection()->beginTransaction();
+        $generic->save($db, false);
+        if($referenceId !== null)
+        {
+            // Only on insert
+            $parameters = \Generic::withID($db, $referenceId)->getGenericParameters();
+            $generic = copyGenericParameters($generic, $parameters);
+            $generic->save($db, true);
+        }
+        $db->getConnection()->commit();
+    }
+    catch(\Exception $e)
+    {
+        $db->getConnection()->rollback();
+        throw $e;
+    }
+    finally
+    {
+        $db = null;
     }
     return $generic;
 }

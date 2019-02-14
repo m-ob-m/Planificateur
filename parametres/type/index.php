@@ -17,6 +17,24 @@
     /* INCLUDE */
     include_once __DIR__ . '/controller/typeController.php';		// Classe contrôleur de cette vue
     include_once __DIR__ . "/../generic/controller/genericController.php";
+    
+    $types = array();
+    $db = new \FabPlanConnection();
+    try
+    {
+        $db->getConnection()->beginTransaction();
+        $types = (new \TypeController())->getTypes();
+        $db->getConnection()->commit();
+    }
+    catch(\Exception $e)
+    {
+        $db->getConnection()->rollback();
+        throw $e;
+    }
+    finally
+    {
+        $db = null;
+    }
 ?>
 
 <!DOCTYPE HTML>
@@ -76,9 +94,9 @@
     						</tr>
 						</thead>
 						<tbody>
-    						<?php foreach ((new TypeController())->getTypes() as $type): ?>
+    						<?php foreach ($types as $type): ?>
     							<?php $genericId = $type->getGenericId();?>
-    							<?php $genericFilename = (new GenericController())->getGeneric($genericId)->getFileName(); ?>
+    							<?php $genericFilename = \Generic::withId($db, $genericId)->getFileName() ?? null; ?>
     							<tr class="link" onclick="javascript:openType(<?= $type->getId(); ?>);">
     								<td class="firstVisibleColumn"><?= $type->getId(); ?></td>
     								<td><?= $type->getImportNo(); ?></td>

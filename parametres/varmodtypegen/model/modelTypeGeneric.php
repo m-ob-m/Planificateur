@@ -20,7 +20,7 @@ include_once __DIR__ . '/modelTypeGenericParameter.php'; // Classe de paramètre
 include_once __DIR__ . '/../../varmodtype/model/modelType.php'; // Classe de combinaison modèle-type
 include_once __DIR__ . '/../../type/controller/typeController.php'; // Classe de combinaison modèle-type
 
-class ModelTypeGeneric extends ModelType implements JsonSerializable
+class ModelTypeGeneric extends \ModelType implements \JsonSerializable
 {   
     protected $_generic_id;
     
@@ -51,14 +51,14 @@ class ModelTypeGeneric extends ModelType implements JsonSerializable
 	 * @author Marc-Olivier Bazin-Maurice
 	 * @return ModelTypeGeneric This ModelTypeGeneric (for method chaining)
 	 */
-	public function loadParameters(FabPlanConnection $db)
+	public function loadParameters(\FabPlanConnection $db) : \ModelTypeGeneric
 	{
         $modelId = $this->getModelId();
         $typeNo = $this->getTypeNo();
         
 	    $stmt = $db->getConnection()->prepare("
-        	SELECT `gp`.`parameter_key` AS `key`, `dmd`.`paramValue` AS `specificValue`, `gp`.`parameter_value` AS `genericValue`, 
-                `gp`.`description` AS `description`
+        	SELECT `gp`.`parameter_key` AS `key`, `dmd`.`paramValue` AS `specificValue`,  
+                `gp`.`parameter_value` AS `genericValue`, `gp`.`description` AS `description`
         	FROM `fabplan`.`door_types` AS `dt`
         	INNER JOIN `fabplan`.`generics` AS `g` ON `dt`.`generic_id` = `g`.`id` AND `dt`.`importNo` = :typeNo
         	INNER JOIN `generic_parameters` AS `gp` ON `gp`.`generic_id` = `g`.`id`
@@ -78,7 +78,10 @@ class ModelTypeGeneric extends ModelType implements JsonSerializable
 	        $specific = (($row['specificValue'] === "") ? null : $row['specificValue']);
 	        $description = $row["description"];
 	        $default = (($row['genericValue'] === "") ? null : $row['genericValue']);
-	        array_push($this->_parameters, new ModelTypeGenericParameter($key, $specific, $modelId, $typeNo, $description, $default));
+	        array_push(
+	            $this->_parameters, 
+	            new \ModelTypeGenericParameter($key, $specific, $modelId, $typeNo, $description, $default)
+	        );
 	    }
 	    
 	    return $this;
@@ -93,11 +96,11 @@ class ModelTypeGeneric extends ModelType implements JsonSerializable
 	 * @author Marc-Olivier Bazin-Maurice
 	 * @return ModelTypeGeneric This ModelTypeGeneric (for method chaining)
 	 */
-	public function setGenericId(?int $genericId = null) : ModelTypeGeneric
+	public function setGenericId(?int $genericId = null) : \ModelTypeGeneric
 	{
 	    if($genericId === null && $this->getTypeNo() !== null)
 	    {
-	        $this->_generic_id = (new TypeController())->getTypeByImportNo($this->getTypeNo())->getGenericId();
+	        $this->_generic_id = \Type::withImportNo(new \FabPlanConnection(), $this->getTypeNo())->getGenericId();
 	    }
 	    else
 	    {
@@ -117,6 +120,28 @@ class ModelTypeGeneric extends ModelType implements JsonSerializable
 	public function getGenericId() : ?int
 	{
 	    return $this->_generic_id;
+	}
+	
+	/**
+	 * Gets a list of the specific parameters of this \ModelTypeGeneric in the [key => value] form.
+	 *
+	 * @throws
+	 * @author Marc-Olivier Bazin-Maurice
+	 * @return array The list of specific parameters of this \ModelTypeGeneric.
+	 */
+	public function getSpecificParametersAsKeyValuePairs() : array
+	{
+	    $specificParametersArray = array();
+	    /* @var $parameter \ModelTypeGenericParameter */
+	    foreach($this->getParameters() as $parameter)
+	    {
+	        $specificValue = $parameter->getSpecificValue();
+	        if($specificValue !== null && $specificValue !== "")
+	        {
+	            $specificParametersArray[$parameter->getKey()] = $specificValue;
+	        }
+	    }
+	    return $specificParametersArray;
 	}
 	
 	/**

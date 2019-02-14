@@ -30,9 +30,24 @@ try
     $woodType = (isset($input->woodType) ? $input->woodType : null);
     $grain = (isset($input->grain) ? $input->grain : null);
     $isMDF = (isset($input->isMDF) ? $input->isMDF : null);
+    $material = new Materiel($id, $siaCode, $cutRiteCode, $description, $thickness, $woodType, $grain, $isMDF);
     
-    $material = (new Materiel($id, $siaCode, $cutRiteCode, $description, $thickness, $woodType, $grain, $isMDF))
-        ->save(new FabplanConnection());
+    $db = new \FabPlanConnection();
+    try
+    {
+        $db->getConnection()->beginTransaction();
+        $material->save(new FabplanConnection());
+        $db->getConnection()->commit();
+    }
+    catch(\Exception $e)
+    {
+        $db->getConnection()->rollback();
+        throw $e;
+    }
+    finally
+    {
+        $db = null;
+    }
     
     // Retour au javascript
     $responseArray["status"] = "success";

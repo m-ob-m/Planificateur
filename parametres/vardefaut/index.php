@@ -18,6 +18,23 @@
     include_once __DIR__ . '/../generic/controller/genericController.php';		// Classe contrôleur de cette vue
     
     $selectedGenericId = $_GET["id"] ?? 1;
+    
+    $db = new \FabPlanConnection();
+    try
+    {
+        $db->getConnection()->beginTransaction();
+        $generics = (new \GenericController())->getGenerics();
+        $db->getConnection()->commit();
+    }
+    catch(\Exception $e)
+    {
+        $db->getConnection()->rollback();
+        throw $e;
+    }
+    finally
+    {
+        $db = null;
+    }
 ?>
 
 <!DOCTYPE HTML>
@@ -77,7 +94,7 @@
 							<div class="hFormElement">
                     			<label for="generic">Générique :
                         			<select id="generic" name="generic" onchange="$('#genericSelectionForm').submit();">
-                        				<?php foreach((new GenericController())->getGenerics() as $generic):?>
+                        				<?php foreach($generics as $generic):?>
                         					<?php $selected =  (($selectedGenericId == $generic->getId()) ? "selected" : ""); ?>
                         					<option value="<?php echo $generic->getId(); ?>" <?php echo $selected; ?>><?php 
                         					   echo $generic->getDescription(); 

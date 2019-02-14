@@ -64,9 +64,9 @@ class TestController
         $stmt = $this->getDBConnection()->getConnection()->prepare("
             SELECT `t`.`id` 
             FROM `fabplan`.`test` AS `t` 
-            ORDER BY `t`.`id` " . ($ascending ? "ASC" : "DESC") . 
-            (($quantity === 0) ? "" : " LIMIT :quantity OFFSET :offset") . 
-            ";"
+            ORDER BY `t`.`id` " . ($ascending ? "ASC" : "DESC") . " " . 
+            (($quantity === 0) ? "" : " LIMIT :quantity OFFSET :offset") . " " . 
+            "FOR SHARE;"
         );
         $stmt->bindValue(":quantity", $quantity, PDO::PARAM_INT);
         $stmt->bindValue(":offset", $offset, PDO::PARAM_INT);
@@ -98,8 +98,9 @@ class TestController
             SELECT `t`.`id`
             FROM `fabplan`.`test` AS `t`
             WHERE `t`.`estampille` >= :startDate AND `t`.`estampille` <= :endDate
-            ORDER BY `t`.`estampille` " . ($ascending ? "ASC" : "DESC") . 
-        ";");
+            ORDER BY `t`.`estampille` " . ($ascending ? "ASC" : "DESC") . " " . 
+            "FOR SHARE;"
+        );
         $stmt->bindValue(":startDate", $startDate, PDO::PARAM_STR);
         $stmt->bindValue(":endDate", $endDate, PDO::PARAM_STR);
         $stmt->execute();

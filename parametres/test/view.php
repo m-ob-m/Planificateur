@@ -19,7 +19,28 @@
     include_once __DIR__ . '/../model/controller/modelController.php';		// Classe contrôleur de Model
     include_once __DIR__ . '/../test/controller/testController.php';        // Classe contrôleur de Test
     
-    $test = (isset($_GET["id"]) ? ((new TestController())->getTest($_GET["id"])) : (new Test(null, "", 7000, 0)));
+    $types = array();
+    $models = array();
+    $test = null;
+    $db = new \FabPlanConnection();
+    try
+    {
+        $db->getConnection()->beginTransaction();
+        $types = (new \TypeController())->getTypes();
+        $models = (new \ModelController())->getModels();
+        $test = isset($_GET["id"]) ? \Test::withID($_GET["id"]) : new \Test(null, "", 7000, 0);
+        $db->getConnection()->commit();
+    }
+    catch(\Exception $e)
+    {
+        $db->getConnection()->rollback();
+        throw $e;
+    }
+    finally
+    {
+        $db = null;
+    }
+    
     $disabled = (($test->getId() === null) ? null : "disabled");
 ?>
 
@@ -86,7 +107,7 @@
         					<div class="hFormElement">
             					<label for="type">Type : 
                 					<select id="type" <?= $disabled; ?> onchange="$('#parametersForm').submit();">
-                						<?php foreach((new TypeController())->getTypes() as $type):?>
+                						<?php foreach($types as $type):?>
                         					<?php $selected =  (($test->getTypeNo() == $type->getImportNo()) ? "selected" : ""); ?>
                         					<option value=<?= $type->getImportNo(); ?> <?= $selected; ?>>
                         						<?= $type->getDescription(); ?>
@@ -98,7 +119,7 @@
                 			<div class="hFormElement">
             					<label for="model">Modèle : 
                         			<select id="model" <?= $disabled; ?> onchange="$('#parametersForm').submit();">
-                					<?php foreach((new ModelController())->getModels() as $model):?>
+                					<?php foreach($models as $model):?>
                 						<?php if($model->getId() >= 2): ?>
                         					<?php $selected =  (($test->getModelId() == $model->getId()) ? "selected" : ""); ?>
                         					<option value=<?= $model->getId(); ?> <?= $selected; ?>>

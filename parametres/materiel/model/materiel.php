@@ -21,6 +21,7 @@ class Materiel  implements JsonSerializable
 	private $_grain;
 	private $_est_mdf;
 	private $_estampille;
+	private $__database_connection_locking_read_type = \MYSQLDatabaseLockingReadTypes::NONE;
 	
 	/**
 	 * Materiel constructor
@@ -63,23 +64,27 @@ class Materiel  implements JsonSerializable
 	 * @author Marc-Olivier Bazin-Maurice
 	 * @return Materiel The Materiel associated to the specified ID in the specified database
 	 */ 
-	public static function withID($db, $id) :?Materiel
+	public static function withID(\FabplanConnection $db, ?int $id, int $databaseConnectionLockingReadType = 0) : ?\Materiel
 	{	    
 	    // Récupérer le test
-	    $stmt = $db->getConnection()->prepare("SELECT `m`.* FROM `fabplan`.`materiel` AS `m` WHERE `m`.`id_materiel` = :id;");
+	    $stmt = $db->getConnection()->prepare(
+            "SELECT `m`.* FROM `fabplan`.`materiel` AS `m` WHERE `m`.`id_materiel` = :id " . 
+            (new \MYSQLDatabaseLockingReadTypes($databaseConnectionLockingReadType))->toLockingReadString() . ";"
+        );
 	    $stmt->bindValue(':id', $id, PDO::PARAM_INT);
 	    $stmt->execute();
 	    
 	    if ($row = $stmt->fetch())	// Récupération de l'instance de matériel
 	    {
-	        $instance = new self($row["id_materiel"], $row["codeSIA"], $row["codeCutRite"], $row["description"], $row["epaisseur"],
-	            $row["essence"], $row["grain"], $row["est_mdf"], $row["estampille"]);
+	        $instance = new self($row["id_materiel"], $row["codeSIA"], $row["codeCutRite"], $row["description"], 
+	            $row["epaisseur"], $row["essence"], $row["grain"], $row["est_mdf"], $row["estampille"]);
 	    }
 	    else
 	    {
 	        return null;
 	    }
 	    
+	    $instance->setDatabaseConnectionLockingReadType($databaseConnectionLockingReadType);
 	    return $instance;
 	}
 	
@@ -101,8 +106,28 @@ class Materiel  implements JsonSerializable
 	    }
 	    else
 	    {
-	        $this->update($db);
+	        $dbTimestamp = \DateTime::createFromFormat("Y-m-d H:i:s", $this->getTimestampFromDatabase($db), "America/Montreal");
+	        $localTimestamp = \DateTime::createFromFormat("Y-m-d H:i:s", $this->getTimestamp(), "America/Montreal");
+	        if($this->getDatabaseConnectionReadingLockType() !== \MYSQLDatabaseLockingReadTypes::FOR_UPDATE)
+	        {
+	            throw new \Exception("The provided " . get_class($this) . " is not locked for update.");
+	        }
+	        elseif($databaseTimestamp > $localTimestamp)
+	        {
+	            throw new \Exception(
+	                "The provided " . get_class($this) . " is outdated. The last modification date of the database entry is
+                    \"{$dbTimestamp->format("Y-m-d H:i:s")}\" whereas the last modification date of the local copy is
+                    \"{$localTimestamp->format("Y-m-d H:i:s")}\"."
+	            );
+	        }
+	        else
+	        {
+	            $this->update($db);
+	        }
 	    }
+	    
+	    // Récupération de l'estampille à jour
+	    $this->setTimestamp($this->getTimestampFromDatabase($db));
 	    
 	    return $this;
 	}
@@ -184,6 +209,33 @@ class Materiel  implements JsonSerializable
 	    $stmt->execute();
 	    
 	    return $this;
+	}
+	
+	/**
+	 * Gets the last modification date timestamp of the database instance of this object
+	 *
+	 * @param \FabPlanConnection $db The database from which the timestamp should be fetched.
+	 *
+	 * @throws
+	 * @author Marc-Olivier Bazin-Maurice
+	 * @return string The last modification date timestamp of the database instance of this object.
+	 */
+	public function getTimestampFromDatabase(\FabPlanConnection $db) : ?string
+	{
+	    $stmt= $db->getConnection()->prepare("
+            SELECT `m`.`timestamp` FROM `fabplan`.`materiel` AS `m` WHERE `m`.`id_materiel` = :id;
+        ");
+	    $stmt->bindValue(':id', $this->getId(), PDO::PARAM_INT);
+	    $stmt->execute();
+	    
+	    if($row = $stmt->fetch())
+	    {
+	        return $row["timestamp"];
+	    }
+	    else
+	    {
+	        return null;
+	    }
 	}
 	
 	/**
@@ -439,5 +491,31 @@ class Materiel  implements JsonSerializable
 	public function jsonSerialize()
 	{
 	    return get_object_vars($this);
+	}
+	
+	/**
+	 * Gets the database connection locking read type applied to this object.
+	 *
+	 * @throws
+	 * @author Marc-Olivier Bazin-Maurice
+	 * @return int The database connection locking read type applied to this object.
+	 */
+	private function getDatabaseConnectionLockingReadType() : int
+	{
+	    return $this->__database_connection_locking_read_type;
+	}
+	
+	/**
+	 * Sets the database connection locking read type applied to this object.
+	 * @param int $databaseConnectionLockingReadType The new database connection locking read type applied to this object.
+	 *
+	 * @throws
+	 * @author Marc-Olivier Bazin-Maurice
+	 * @return \JobType This JobType.
+	 */
+	private function setDatabaseConnectionLockingReadType(int $databaseConnectionLockingReadType) : \Materiel
+	{
+	    $this->__database_connection_locking_read_type = $databaseConnectionLockingReadType;
+	    return $this;
 	}
 }

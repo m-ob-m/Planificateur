@@ -20,6 +20,7 @@ class Test extends ModelTypeGeneric implements JsonSerializable
 	private $_name;
 	private $_fichier_mpr;
 	private $_estampille;
+	private $__database_connection_locking_read_type = \MYSQLDatabaseLockingReadTypes::NONE;
 	
 	
 	/**
@@ -58,10 +59,13 @@ class Test extends ModelTypeGeneric implements JsonSerializable
 	 * @author Marc-Olivier Bazin-Maurice
 	 * @return Test The Test associated to the specified ID in the specified database
 	 */ 
-	static function withID(FabPlanConnection $db, ?int $id) :?Test
+	static function withID(\FabPlanConnection $db, ?int $id, int $databaseConnectionLockingReadType = 0) : ?\Test
 	{ 	    
 	    // Récupérer le test
-	    $stmt = $db->getConnection()->prepare("SELECT `t`.* FROM `fabplan`.`test` AS `t` WHERE `t`.`id` = :id;");
+	    $stmt = $db->getConnection()->prepare(
+            "SELECT `t`.* FROM `fabplan`.`test` AS `t` WHERE `t`.`id` = :id " . 
+	        (new \MYSQLDatabaseLockingReadTypes($databaseConnectionLockingReadType))->toLockingReadString() . ";"
+        );
 	    $stmt->bindValue(':id', $id, PDO::PARAM_INT);
 	    $stmt->execute();
 	    
@@ -76,30 +80,32 @@ class Test extends ModelTypeGeneric implements JsonSerializable
 	    }
 	    
 	    //Récupérer les paramètres
-	    $stmt = $db->getConnection()->prepare("
-            SELECT `tp`.* 
+	    $stmt = $db->getConnection()->prepare(
+            "SELECT `tp`.* 
             FROM `fabplan`.`test_parameters` AS `tp` 
             INNER JOIN `fabplan`.`test` AS `t` ON `tp`.`test_id` = `t`.`id`
             INNER JOIN `fabplan`.`generics` AS `g` ON `g`.`id` = `t`.`generic_id`
         	INNER JOIN `fabplan`.`generic_parameters` AS `gp` 
                 ON `gp`.`generic_id` = `g`.`id` AND `gp`.`parameter_key` = `tp`.`parameter_key`
             WHERE `t`.`id` = :id
-            ORDER BY `gp`.`id` ASC;
-        ");
+            ORDER BY `gp`.`id` ASC " . 
+	        (new \MYSQLDatabaseLockingReadTypes($databaseConnectionLockingReadType))->toLockingReadString() . ";"
+        );
 	    $stmt->bindValue(':id', $id, PDO::PARAM_INT);
 	    $stmt->execute();
 	    
 	    while($row = $stmt->fetch())	// Récupération de l'instance TestParameter
 	    {
 	        $instance = $instance->addParameter(
-	            new TestParameter($id, $row["parameter_key"], $row["parameter_value"], $row["parameter_description"])
+	            new \TestParameter($id, $row["parameter_key"], $row["parameter_value"], $row["parameter_description"])
 	        );
 	    }
 	    
+	    $this->setDatabaseConnectionLockingReadType($databaseConnectionLockingReadType);
 	    return $instance;
 	}
 
-	static function fromModelTypeGeneric(ModelTypeGeneric $modelTypeGeneric) : Test
+	static function fromModelTypeGeneric(\ModelTypeGeneric $modelTypeGeneric) : Test
 	{
 	    $modelId = $modelTypeGeneric->getModelId();
 	    $typeNo = $modelTypeGeneric->getTypeNo();
@@ -126,29 +132,34 @@ class Test extends ModelTypeGeneric implements JsonSerializable
 	 */ 
 	public function save(FabPlanConnection $db) : Test
 	{
-	    
 	    if($this->getId() === null)
 	    {
 	        $this->insert($db);
 	    }
 	    else
 	    {
-	        $this->update($db);
+	        $dbTimestamp = \DateTime::createFromFormat("Y-m-d H:i:s", $this->getTimestampFromDatabase($db), "America/Montreal");
+	        $localTimestamp = \DateTime::createFromFormat("Y-m-d H:i:s", $this->getTimestamp(), "America/Montreal");
+	        if($this->getDatabaseConnectionReadingLockType() !== \MYSQLDatabaseLockingReadTypes::FOR_UPDATE)
+	        {
+	            throw new \Exception("The provided " . get_class($this) . " is not locked for update.");
+	        }
+	        elseif($databaseTimestamp > $localTimestamp)
+	        {
+	            throw new \Exception(
+	                "The provided " . get_class($this) . " is outdated. The last modification date of the database entry is
+                    \"{$dbTimestamp->format("Y-m-d H:i:s")}\" whereas the last modification date of the local copy is
+                    \"{$localTimestamp->format("Y-m-d H:i:s")}\"."
+	            );
+	        }
+	        else
+	        {
+	            $this->update($db);
+	        }
 	    }
 	    
-	    // Récupération de l'estampille
-	    $stmt = $db->getConnection()->prepare("SELECT `t`.`estampille` FROM `test` AS `t` WHERE `t`.`id` = :id;");
-	    $stmt->bindValue(":id", $this->getId(), PDO::PARAM_INT);
-	    $stmt->execute();
-	    
-	    if ($row = $stmt->fetch())	
-	    {
-	        $this->_estampille = $row["estampille"];
-	    }
-	    else
-	    {
-	        $this->_estampille = null;
-	    }
+	    // Récupération de l'estampille à jour
+	    $this->setTimestamp($this->getTimestampFromDatabase($db));
 	    
 	    return $this;
 	}
@@ -252,6 +263,33 @@ class Test extends ModelTypeGeneric implements JsonSerializable
 	}
 	
 	/**
+	 * Gets the last modification date timestamp of the database instance of this object
+	 *
+	 * @param \FabPlanConnection $db The database from which the timestamp should be fetched.
+	 *
+	 * @throws
+	 * @author Marc-Olivier Bazin-Maurice
+	 * @return string The last modification date timestamp of the database instance of this object.
+	 */
+	public function getTimestampFromDatabase(\FabPlanConnection $db) : ?string
+	{
+	    $stmt= $db->getConnection()->prepare("
+            SELECT `t`.`estampille` FROM `fabplan`.`test` AS `t` WHERE `t`.`id` = :id;
+        ");
+	    $stmt->bindValue(':id', $this->getId(), PDO::PARAM_INT);
+	    $stmt->execute();
+	    
+	    if($row = $stmt->fetch())
+	    {
+	        return $row["estampille"];
+	    }
+	    else
+	    {
+	        return null;
+	    }
+	}
+	
+	/**
 	 * Load TestParameters from the database for the specified ModelTypeGeneric combination considering generic as independent from 
 	 * type (due to its nature, Test is a case of ModelTypeGeneric where the generic's id might be different from the default value 
 	 * which is the one specified in the type's properties).
@@ -264,17 +302,18 @@ class Test extends ModelTypeGeneric implements JsonSerializable
 	 */
 	public function loadParameters(FabPlanConnection $db)
 	{
-	    $stmt = $db->getConnection()->prepare("
-        	SELECT `gp`.`parameter_key` AS `key`, `dmd`.`paramValue` AS `specificValue`, `gp`.`parameter_value` AS `genericValue`, 
-                `gp`.`description` AS `description`
+	    $stmt = $db->getConnection()->prepare(
+        	"SELECT `gp`.`parameter_key` AS `key`, `dmd`.`paramValue` AS `specificValue`, 
+                `gp`.`parameter_value` AS `genericValue`, `gp`.`description` AS `description`
         	FROM `fabplan`.`door_types` AS `dt`
         	INNER JOIN `fabplan`.`generics` AS `g` ON `dt`.`generic_id` = `g`.`id` AND `dt`.`importNo` = :typeNo
         	INNER JOIN `generic_parameters` AS `gp` ON `gp`.`generic_id` = `g`.`id`
         	INNER JOIN `fabplan`.`door_model` AS `dm` ON `dm`.`id_door_model` = :modelId
         	LEFT JOIN `fabplan`.`door_model_data` AS `dmd` ON `dmd`.`paramKey` = `gp`.`parameter_key`
         		AND `dmd`.`fkDoorModel` = `dm`.`id_door_model` AND `dmd`.`fkDoorType` = `dt`.`importNo`
-            ORDER BY `gp`.`id` ASC;
-        ");
+            ORDER BY `gp`.`id` ASC " . 
+	        (new \MYSQLDatabaseLockingReadTypes($this->getDatabaseConnectionLockingReadType()))->toLockingReadString() . ";"
+        );
 	    $stmt->bindValue(':modelId', $this->getModelId(), PDO::PARAM_INT);
 	    $stmt->bindValue(':typeNo', $this->getTypeNo(), PDO::PARAM_INT);
 	    $stmt->execute();
@@ -286,7 +325,7 @@ class Test extends ModelTypeGeneric implements JsonSerializable
 	        $this->addParameter(new TestParameter($this->getId(), $row['key'], $value));
 	    }
 	    
-	    return $this;
+	    return $this->setDatabaseConnectionLockingReadType($databaseConnectionLockingReadType);
 	}
 	
 	/**
@@ -413,7 +452,7 @@ class Test extends ModelTypeGeneric implements JsonSerializable
 	 *
 	 * @throws
 	 * @author Marc-Olivier Bazin-Maurice
-	 * @return int The timestamp of the last modification date of this Test
+	 * @return string The timestamp of the last modification date of this Test
 	 */
 	public function getTimestamp() : ?string
 	{
@@ -442,6 +481,32 @@ class Test extends ModelTypeGeneric implements JsonSerializable
 	public function jsonSerialize() : ?array
 	{
 	    return get_object_vars($this);
+	}
+	
+	/**
+	 * Gets the database connection locking read type applied to this object.
+	 *
+	 * @throws
+	 * @author Marc-Olivier Bazin-Maurice
+	 * @return int The database connection locking read type applied to this object.
+	 */
+	private function getDatabaseConnectionLockingReadType() : int
+	{
+	    return $this->__database_connection_locking_read_type;
+	}
+	
+	/**
+	 * Sets the database connection locking read type applied to this object.
+	 * @param int $databaseConnectionLockingReadType The new database connection locking read type applied to this object.
+	 *
+	 * @throws
+	 * @author Marc-Olivier Bazin-Maurice
+	 * @return \JobType This JobType.
+	 */
+	private function setDatabaseConnectionLockingReadType(int $databaseConnectionLockingReadType) : \JobType
+	{
+	    $this->__database_connection_locking_read_type = $databaseConnectionLockingReadType;
+	    return $this;
 	}
 }
 

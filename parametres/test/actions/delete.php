@@ -20,11 +20,24 @@ $responseArray = array("status" => null, "success" => array("data" => null), "fa
 try
 {
     $input =  json_decode(file_get_contents("php://input"));
-    $db = new FabPlanConnection();
-    
     $id = (isset($input->id) ? $input->id : null);
     
-    (new TestController())->getTest($id)->delete($db);
+    $db = new \FabPlanConnection();
+    try
+    {
+        $db->getConnection()->beginTransaction();
+        \Test::withID($db, $id)->getTest($id)->delete($db);
+        $db->getConnection()->commit();
+    }
+    catch(\Exception $e)
+    {
+        $db->getConnection()->rollback();
+        throw $e;
+    }
+    finally
+    {
+        $db = null;
+    }
     
     // Retour au javascript
     $responseArray["status"] = "success";

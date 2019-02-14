@@ -20,8 +20,6 @@ $responseArray = array("status" => null, "success" => array("data" => null), "fa
 
 try
 {
-    $db = new FabPlanConnection();
-    
     $input =  json_decode(file_get_contents("php://input"));
     
     // Vérification des paramètres
@@ -35,14 +33,29 @@ try
     $status = $input->status ?? null;
     $comments = $input->comments ?? null;
     $jobIds = $input->jobIds ?? null;
+    $batch = new Batch($id, $material, $boardSize, $name, $startDate, $endDate, $fullDay, $comments, $status, "N");
     
     // Get the information
-    $batch = (new Batch($id, $material, $boardSize, $name, $startDate, $endDate, $fullDay, $comments, $status, "N"));
-    foreach($jobIds as $jobId)
+    $db = new \FabPlanConnection();
+    try
     {
-        $batch->addJob((new JobController())->getJob($jobId));
+        $db->getConnection()->beginTransaction();
+        foreach($jobIds as $jobId)
+        {
+            $batch->addJob(\Job::withID($db, $jobId));
+        }
+        $batch->setCarrousel()->save($db);
+        $db->getConnection()->commit();
     }
-    $batch->setCarrousel()->save($db);
+    catch(\Exception $e)
+    {
+        $db->getConnection()->rollback();
+        throw $e;
+    }
+    finally
+    {
+        $db = null;
+    }
     
     // Retour au javascript
     $responseArray["status"] = "success";

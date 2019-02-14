@@ -28,9 +28,9 @@ class Batch implements JsonSerializable
 	private $_mprStatus;
 	private $_carrousel;
 	private $_timestamp;
-
 	private $_jobs;	// Array de Job
-
+	private $__database_connection_locking_read_type = \MYSQLDatabaseLockingReadTypes::NONE;
+	
 	/**
 	 * Batch constructor
 	 *
@@ -84,42 +84,48 @@ class Batch implements JsonSerializable
 	 * @author Marc-Olivier Bazin-Maurice
 	 * @return Batch The Batch associated to the specified ID in the specified database
 	 */
-	public static function withID(FabPlanConnection $db, ?int $id) :?Batch
+	public static function withID(FabPlanConnection $db, ?int $id, int $databaseConnectionLockingReadType = 0) : ?\Batch
 	{
 	    // Récupérer le test
-	    $stmt = $db->getConnection()->prepare("
-            SELECT `b`.`id_batch` AS `id`, `b`.`materiel_id` AS `materialId`, `b`.`panneaux` AS `boardSize`, `b`.`nom_batch` AS `name`,  
-                `b`.`date_debut` AS `startDate`, `b`.`date_fin` AS `endDate`, `b`.`jour_complet` AS `fullDay`, 
-                `b`.`commentaire` AS `comments`, `b`.`etat` AS `status`, `b`.`etat_mpr` AS `mprStatus`, `b`.`carrousel` AS `carrousel`, 
-                `b`.`estampille` AS `timestamp`
+	    $stmt = $db->getConnection()->prepare(
+            "SELECT `b`.`id_batch` AS `id`, `b`.`materiel_id` AS `materialId`, `b`.`panneaux` AS `boardSize`, 
+                `b`.`nom_batch` AS `name`, `b`.`date_debut` AS `startDate`, `b`.`date_fin` AS `endDate`, 
+                `b`.`jour_complet` AS `fullDay`, `b`.`commentaire` AS `comments`, `b`.`etat` AS `status`, 
+                `b`.`etat_mpr` AS `mprStatus`, `b`.`carrousel` AS `carrousel`, `b`.`estampille` AS `timestamp`
             FROM `fabplan`.`batch` AS `b` 
-            WHERE `b`.`id_batch` = :id;
-        ");
+            WHERE `b`.`id_batch` = :id " . 
+	        (new \MYSQLDatabaseLockingReadTypes($databaseConnectionLockingReadType))->toLockingReadString() . ";"
+        );
 	    $stmt->bindValue(':id', $id, PDO::PARAM_INT);
 	    $stmt->execute();
 	    
 	    if ($row = $stmt->fetch())	// Récupération de l'instance de Batch
 	    {
-	        $instance = new self($row["id"], $row["materialId"], $row["boardSize"], $row["name"], $row["startDate"], $row["endDate"], 
-	            $row["fullDay"], $row["comments"], $row["status"], $row["mprStatus"], $row["carrousel"], $row["timestamp"]);
+	        $instance = new self(
+	            $row["id"], $row["materialId"], $row["boardSize"], $row["name"], $row["startDate"], $row["endDate"], 
+	            $row["fullDay"], $row["comments"], $row["status"], $row["mprStatus"], $row["carrousel"], $row["timestamp"]
+	        );
 	    }
 	    else
 	    {
-	        return new \Batch();
+	        return null;
 	    }
 	    
-	    //Récupérer les paramètres
-	    $stmt = $db->getConnection()->prepare("
-            SELECT `bj`.`job_id` AS `jobId` FROM `fabplan`.`batch_job` AS `bj` 
-            WHERE `bj`.`batch_id` = :batchId;");
+	    //Récupérer les Jobs
+	    $stmt = $db->getConnection()->prepare(
+            "SELECT `bj`.`job_id` AS `jobId` FROM `fabplan`.`batch_job` AS `bj` 
+            WHERE `bj`.`batch_id` = :batchId " . 
+            (new \MYSQLDatabaseLockingReadTypes($databaseConnectionLockingReadType))->toLockingReadString() . ";"
+        );
 	    $stmt->bindValue(':batchId', $id, PDO::PARAM_INT);
 	    $stmt->execute();
 	    
-	    while($row = $stmt->fetch())	// Récupération de l'instance TestParameter
+	    while($row = $stmt->fetch())	// Récupération de l'instance Job
 	    {
 	        $instance->addJob(Job::withID($db, $row["jobId"]));
 	    }
 	    
+	    $this->setDatabaseConnectionLockingReadType($databaseConnectionLockingReadType);
 	    return $instance;
 	}
 	
@@ -518,32 +524,34 @@ class Batch implements JsonSerializable
 	 */
 	public function save(FabPlanConnection $db) : Batch
 	{
-	    $db->getConnection()->beginTransaction();
-	    
 	    if($this->getId() === null)
 	    {
 	        $this->insert($db);
 	    }
 	    else
 	    {
-	        $this->update($db);
+	        $dbTimestamp = \DateTime::createFromFormat("Y-m-d H:i:s", $this->getTimestampFromDatabase($db), "America/Montreal");
+	        $localTimestamp = \DateTime::createFromFormat("Y-m-d H:i:s", $this->getTimestamp(), "America/Montreal");
+	        if($this->getDatabaseConnectionReadingLockType() !== \MYSQLDatabaseLockingReadTypes::FOR_UPDATE)
+	        {
+	            throw new \Exception("The provided " . get_class($this) . " is not locked for update.");
+	        }
+	        elseif($databaseTimestamp > $localTimestamp)
+	        {
+	            throw new \Exception(
+	                "The provided " . get_class($this) . " is outdated. The last modification date of the database entry is
+                    \"{$dbTimestamp->format("Y-m-d H:i:s")}\" whereas the last modification date of the local copy is
+                    \"{$localTimestamp->format("Y-m-d H:i:s")}\"."
+	            );
+	        }
+	        else
+	        {
+	            $this->update($db);
+	        }
 	    }
-	    $db->getConnection()->commit();
 	    
-	    // Récupération de l'estampille
-	    $stmt = $db->getConnection()->prepare("SELECT `b`.`estampille` FROM `fabplan`.`batch` AS `b` WHERE `b`.`id_batch` = :id;");
-	    $stmt->bindValue(":id", $this->getId(), PDO::PARAM_INT);
-	    $stmt->execute();
-	    
-	    if ($row = $stmt->fetch())
-	    {
-	        $this->_estampille = $row["estampille"];
-	    }
-	    else
-	    {
-	        $this->_estampille = null;
-	    }
-	    
+	    // Récupération de l'estampille à jour
+	    $this->setTimestamp($this->getTimestampFromDatabase($db));
 	    return $this;
 	}
 	
@@ -558,39 +566,31 @@ class Batch implements JsonSerializable
 	 */
 	private function insert(FabPlanConnection $db) : Batch
 	{
-	    try
+	    // Création d'un type de test
+	    $stmt = $db->getConnection()->prepare("
+            INSERT INTO `fabplan`.`batch` (`materiel_id`, `panneaux`, `nom_batch`, `date_debut`, `date_fin`, `jour_complet`, 
+                `commentaire`, `etat`, `etat_mpr`, `carrousel`) 
+            VALUES (:materialId, :boardSize, :name, :start, :end, :fullDay, :comments, :status, :mprStatus, :carrousel);
+        ");
+	    $stmt->bindValue(':materialId', $this->getMaterialId(), PDO::PARAM_INT);
+	    $stmt->bindValue(":boardSize", $this->getBoardSize(), PDO::PARAM_STR);
+	    $stmt->bindValue(':name', $this->getName(), PDO::PARAM_STR);
+	    $stmt->bindValue(':start', $this->getStart(), PDO::PARAM_STR);
+	    $stmt->bindValue(':end', $this->getEnd(), PDO::PARAM_STR);
+	    $stmt->bindValue(':fullDay', $this->getFullDay(), PDO::PARAM_STR);
+	    $stmt->bindValue(':comments', $this->getComments(), PDO::PARAM_STR);
+	    $stmt->bindValue(':status', $this->getStatus(), PDO::PARAM_STR);
+	    $stmt->bindValue(':mprStatus', $this->getMprStatus(), PDO::PARAM_STR);
+	    $stmt->bindValue(':carrousel', $this->getCarrousel()->toCsv(), PDO::PARAM_STR);
+	    $stmt->execute();
+	    $this->setId($db->getConnection()->lastInsertId());
+	    
+	    //Mettre à jour les liens entre les jobs et la batch
+	    $this->unlinkAllJobs($db);
+	    foreach($this->getJobs() as $job)
 	    {
-    	    // Création d'un type de test
-    	    $stmt = $db->getConnection()->prepare("
-                INSERT INTO `fabplan`.`batch` (`materiel_id`, `panneaux`, `nom_batch`, `date_debut`, `date_fin`, `jour_complet`, 
-                    `commentaire`, `etat`, `etat_mpr`, `carrousel`) 
-                VALUES (:materialId, :boardSize, :name, :start, :end, :fullDay, :comments, :status, :mprStatus, :carrousel);
-            ");
-    	    $stmt->bindValue(':materialId', $this->getMaterialId(), PDO::PARAM_INT);
-    	    $stmt->bindValue(":boardSize", $this->getBoardSize(), PDO::PARAM_STR);
-    	    $stmt->bindValue(':name', $this->getName(), PDO::PARAM_STR);
-    	    $stmt->bindValue(':start', $this->getStart(), PDO::PARAM_STR);
-    	    $stmt->bindValue(':end', $this->getEnd(), PDO::PARAM_STR);
-    	    $stmt->bindValue(':fullDay', $this->getFullDay(), PDO::PARAM_STR);
-    	    $stmt->bindValue(':comments', $this->getComments(), PDO::PARAM_STR);
-    	    $stmt->bindValue(':status', $this->getStatus(), PDO::PARAM_STR);
-    	    $stmt->bindValue(':mprStatus', $this->getMprStatus(), PDO::PARAM_STR);
-    	    $stmt->bindValue(':carrousel', $this->getCarrousel()->toCsv(), PDO::PARAM_STR);
-    	    $stmt->execute();
-    	    $this->setId($db->getConnection()->lastInsertId());
-    	    
-    	    //Mettre à jour les liens entre les jobs et la batch
-    	    $this->unlinkAllJobs($db);
-    	    foreach($this->getJobs() as $job)
-    	    {
-    	        $this->linkJob($job, $db);
-    	    }
-    	}
-    	catch(Exception $e)
-    	{
-    	    $db->getConnection()->rollBack();
-    	    throw $e;
-    	}
+	        $this->linkJob($job, $db);
+	    }
 	    
 	    return $this;
 	}
@@ -606,40 +606,32 @@ class Batch implements JsonSerializable
 	 */
 	private function update(FabPlanConnection $db) : Batch
 	{
-	    try
+	    // Mise à jour d'un Batch
+	    $stmt = $db->getConnection()->prepare("
+            UPDATE `fabplan`.`batch` AS `b`
+            SET `materiel_id` = :materialId, `panneaux` = :boardSize, `nom_batch` = :name, `date_debut` = :start, 
+                `date_fin` = :end, `jour_complet` = :fullDay, `commentaire` = :comments, `etat` = :status, 
+                `etat_mpr` = :mprStatus, `carrousel` = :carrousel
+            WHERE `id_batch` = :id;
+        ");
+	    $stmt->bindValue(':id', $this->getId(), PDO::PARAM_INT);
+	    $stmt->bindValue(':materialId', $this->getMaterialId(), PDO::PARAM_INT);
+	    $stmt->bindValue(":boardSize", $this->getBoardSize(), PDO::PARAM_STR);
+	    $stmt->bindValue(':name', $this->getName(), PDO::PARAM_STR);
+	    $stmt->bindValue(':start', $this->getStart(), PDO::PARAM_STR);
+	    $stmt->bindValue(':end', $this->getEnd(), PDO::PARAM_STR);
+	    $stmt->bindValue(':fullDay', $this->getFullDay(), PDO::PARAM_STR);
+	    $stmt->bindValue(':comments', $this->getComments(), PDO::PARAM_STR);
+	    $stmt->bindValue(':status', $this->getStatus(), PDO::PARAM_STR);
+	    $stmt->bindValue(':mprStatus', $this->getMprStatus(), PDO::PARAM_STR);
+	    $stmt->bindValue(':carrousel', $this->getCarrousel()->toCsv(), PDO::PARAM_STR);
+	    $stmt->execute();
+	    
+	    //Mettre à jour les liens entre les jobs et la batch
+	    $this->unlinkAllJobs($db);
+	    foreach($this->getJobs() as $job)
 	    {
-    	    // Mise à jour d'un Batch
-    	    $stmt = $db->getConnection()->prepare("
-                UPDATE `fabplan`.`batch` AS `b`
-                SET `materiel_id` = :materialId, `panneaux` = :boardSize, `nom_batch` = :name, `date_debut` = :start, `date_fin` = :end,
-                    `jour_complet` = :fullDay, `commentaire` = :comments, `etat` = :status, `etat_mpr` = :mprStatus, 
-                    `carrousel` = :carrousel
-                WHERE `id_batch` = :id;
-            ");
-    	    $stmt->bindValue(':id', $this->getId(), PDO::PARAM_INT);
-    	    $stmt->bindValue(':materialId', $this->getMaterialId(), PDO::PARAM_INT);
-    	    $stmt->bindValue(":boardSize", $this->getBoardSize(), PDO::PARAM_STR);
-    	    $stmt->bindValue(':name', $this->getName(), PDO::PARAM_STR);
-    	    $stmt->bindValue(':start', $this->getStart(), PDO::PARAM_STR);
-    	    $stmt->bindValue(':end', $this->getEnd(), PDO::PARAM_STR);
-    	    $stmt->bindValue(':fullDay', $this->getFullDay(), PDO::PARAM_STR);
-    	    $stmt->bindValue(':comments', $this->getComments(), PDO::PARAM_STR);
-    	    $stmt->bindValue(':status', $this->getStatus(), PDO::PARAM_STR);
-    	    $stmt->bindValue(':mprStatus', $this->getMprStatus(), PDO::PARAM_STR);
-    	    $stmt->bindValue(':carrousel', $this->getCarrousel()->toCsv(), PDO::PARAM_STR);
-    	    $stmt->execute();
-    	    
-    	    //Mettre à jour les liens entre les jobs et la batch
-    	    $this->unlinkAllJobs($db);
-    	    foreach($this->getJobs() as $job)
-    	    {
-    	        $this->linkJob($job, $db);
-    	    }
-	    }
-	    catch(Exception $e)
-	    {
-	        $db->getConnection()->rollBack();
-	        throw $e;
+	        $this->linkJob($job, $db);
 	    }
 	    
 	    return $this;
@@ -666,6 +658,33 @@ class Batch implements JsonSerializable
 	    $stmt->execute();
 	    
 	    return $this;
+	}
+	
+	/**
+	 * Gets the last modification date timestamp of the database instance of this object
+	 *
+	 * @param \FabPlanConnection $db The database from which the timestamp should be fetched.
+	 *
+	 * @throws
+	 * @author Marc-Olivier Bazin-Maurice
+	 * @return string The last modification date timestamp of the database instance of this object.
+	 */
+	public function getTimestampFromDatabase(\FabPlanConnection $db) : ?string
+	{
+	    $stmt= $db->getConnection()->prepare("
+            SELECT `b`.`estampille` FROM `fabplan`.`batch` AS `b` WHERE `b`.`id_batch` = :id;
+        ");
+	    $stmt->bindValue(':id', $this->getId(), PDO::PARAM_INT);
+	    $stmt->execute();
+	    
+	    if($row = $stmt->fetch())
+	    {
+	        return $row["estampille"];
+	    }
+	    else
+	    {
+	        return null;
+	    }
 	}
 	
 	/**
@@ -716,7 +735,7 @@ class Batch implements JsonSerializable
 	 * @author Marc-Olivier Bazin-Maurice
 	 * @return Batch This Batch (for method chaining)
 	 */
-	private function linkJob(Job $job, FabPlanConnection $db) : Batch
+	private function linkJob(\Job $job, \FabPlanConnection $db) : \Batch
 	{
 	    $stmt = $db->getConnection()->prepare("INSERT INTO `fabplan`.`batch_job`(`batch_id`, `job_id`) VALUES(:batchId, :jobId);");
 	    $stmt->bindValue(':batchId', $this->getId(), PDO::PARAM_INT);
@@ -840,6 +859,32 @@ class Batch implements JsonSerializable
     	    }
 	    }
 	    
+	    return $this;
+	}
+	
+	/**
+	 * Gets the database connection locking read type applied to this object.
+	 *
+	 * @throws
+	 * @author Marc-Olivier Bazin-Maurice
+	 * @return int The database connection locking read type applied to this object.
+	 */
+	private function getDatabaseConnectionLockingReadType() : int
+	{
+	    return $this->__database_connection_locking_read_type;
+	}
+	
+	/**
+	 * Sets the database connection locking read type applied to this object.
+	 * @param int $databaseConnectionLockingReadType The new database connection locking read type applied to this object.
+	 *
+	 * @throws
+	 * @author Marc-Olivier Bazin-Maurice
+	 * @return \JobType This JobType.
+	 */
+	private function setDatabaseConnectionLockingReadType(int $databaseConnectionLockingReadType) : \JobType
+	{
+	    $this->__database_connection_locking_read_type = $databaseConnectionLockingReadType;
 	    return $this;
 	}
 }

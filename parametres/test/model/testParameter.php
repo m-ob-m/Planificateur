@@ -77,16 +77,7 @@ class TestParameter  extends Parameter implements JsonSerializable
 	 */
 	public function save(FabPlanConnection $db) : TestParameter
 	{ 
-	    // Récupérer le testTypeParam
-	    $stmt = $db->getConnection()->prepare("
-            SELECT `tp`.`parameter_value` FROM `test_parameters` AS `tp`
-            WHERE `tp`.`test_id` = :test_id AND `tp`.`parameter_key` = :key LIMIT 1;
-        ");
-	    $stmt->bindValue(':test_id', $this->getTestId(), PDO::PARAM_INT);
-	    $stmt->bindValue(':key', $this->getKey(), PDO::PARAM_STR);
-	    $stmt->execute();
-	    
-	    if($stmt->fetch(PDO::FETCH_ASSOC) == null)
+	    if($this->withID($db, $this->getId(), $this->getKey()) == null)
 	    {
 	        $this->insert($db);
 	    }

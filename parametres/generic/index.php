@@ -1,12 +1,12 @@
 <?php
     /**
-     * \name		Planificateur de porte - visualosation des génériques
+     * \name		Planificateur de porte - visualisation des génériques
     * \author    	Marc-Olivier bazin-Maurice
     * \version		1.0
     * \date       	2018-03-21
     *
-    * \brief 		Menu de création / modification / suppression de générique
-    * \details 		Menu de création / modification / suppression de générique
+    * \brief 		Liste des génériques
+    * \details 		Liste des génériques
     *
     * Licence pour la vue :
     * 	Verti by HTML5 UP
@@ -15,13 +15,31 @@
     */
     
     /* INCLUDE */
-    include 'controller/genericController.php';		// Classe controleur de cette vue
+    include_once __DIR__ . '/controller/genericController.php';		// Classe contrôleur de cette vue
+    
+    $generics = array();
+    $db = new \FabPlanConnection();
+    try
+    {
+        $db->getConnection()->beginTransaction();
+        $generics = (new \GenericController())->getGenerics();
+        $db->getConnection()->commit();
+    }
+    catch(\Exception $e)
+    {
+        $db->getConnection()->rollback();
+        throw $e;
+    }
+    finally
+    {
+        $db = null;
+    }
 ?>
 <!DOCTYPE HTML>
 <html>
 	<head>
 		<title>Fabridor - Liste des programmes génériques</title>
-		<meta charset="iso-8859-1" />
+		<meta charset="utf-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1" />
 		<link rel="stylesheet" href="/Planificateur/assets/css/responsive.css" />
 		<link rel="stylesheet" href="/Planificateur/assets/css/fabridor.css" />
@@ -72,7 +90,6 @@
 							</tr>
 						</thead>
 						<tbody>
-                            <?php $generics = (new GenericController())->getGenerics(); ?>
                             <?php if(!empty($generics)): ?>
 								<?php foreach ($generics as $generic): ?>
 									<tr class="link" onclick="javascript:openGeneric(<?= $generic->getId(); ?>)">

@@ -15,7 +15,25 @@
     */
     
     /* INCLUDE */
-    include 'controller/materielCtrl.php';		// Classe controleur de cette vue
+    include_once __DIR__ . '/controller/materielCtrl.php';		// Classe contrôleur de cette vue
+    
+    $materials= array();
+    $db = new \FabPlanConnection();
+    try
+    {
+        $db->getConnection()->beginTransaction();
+        $materials = (new \MaterielController())->getMateriels();
+        $db->getConnection()->commit();
+    }
+    catch(\Exception $e)
+    {
+        $db->getConnection()->rollback();
+        throw $e;
+    }
+    finally
+    {
+        $db = null;
+    }
 ?>
 
 <!DOCTYPE HTML>
@@ -79,7 +97,7 @@
     						</tr>
     					</thead>
     					<tbody>		
-    						<?php foreach ((new MaterielController())->getMateriels() as $material): ?>											
+    						<?php foreach ($materials as $material): ?>											
     							<tr class="link" onclick="javascript:openMaterial(<?= $material->getId(); ?>)">
     								<!-- id -->
     								<td class="firstVisibleColumn"><?= $material->getId(); ?></td>

@@ -11,13 +11,15 @@
 include_once __DIR__ . '/genericparameter.php';
 include_once __DIR__ . '/../../type/controller/typeController.php';
 
-class Generic implements JsonSerializable{
-    
+class Generic implements \JsonSerializable
+{
     private $_id;
     private $_filename;
     private $_description;
     private $_heightParameter;
     private $_genericParameters; // tableau de GenericParameters
+    private $_timestamp;
+    private $__database_connection_locking_read_type = \MYSQLDatabaseLockingReadTypes::NONE;
     
     /**
      * Generic constructor
@@ -26,6 +28,7 @@ class Generic implements JsonSerializable{
      * @param string $nom The name of the test
      * @param string $description The description of this generic
      * @param string $heightParameter The height parameter of this generic
+     * @param string $timestamp The last modification timestamp of this object.
      * @param GenericParameter array $genericParameters an array of GenericParameters objects that belong to this Generic
      *
      * @throws
@@ -33,12 +36,13 @@ class Generic implements JsonSerializable{
      * @return Test
      */
     function __construct(?int $id = null, ?string $filename = null, ?string $description = null, ?string $heightParameter = null, 
-        ?array $genericParameters = array())
+        ?string $timestamp = null, ?array $genericParameters = array())
     {
         $this->_id = $id;
         $this->_filename = $filename;
         $this->_description = $description;
         $this->_heightParameter = $heightParameter;
+        $this->_timestamp = $timestamp;
         $this->_genericParameters = $genericParameters;
     }
     
@@ -52,27 +56,31 @@ class Generic implements JsonSerializable{
      * @author Marc-Olivier Bazin-Maurice
      * @return Generic The Generic associated to the specified ID in the specified database
      */
-    public static function withID($db, $id) :?Generic
+    public static function withID($db, $id, int $databaseConnectionLockingReadType = 0) :? \Generic
     {
         // Récupérer le Generic
-        $stmt = $db->getConnection()->prepare("SELECT `g`.* FROM `fabplan`.`generics` AS `g` WHERE `g`.`id` = :id;");
+        $stmt = $db->getConnection()->prepare(
+            "SELECT `g`.* FROM `fabplan`.`generics` AS `g` WHERE `g`.`id` = :id " . 
+            (new \MYSQLDatabaseLockingReadTypes($databaseConnectionLockingReadType))->toLockingReadString() . ";"
+        );
         $stmt->bindValue(':id', $id, PDO::PARAM_INT);
         $stmt->execute();
         
         if ($row = $stmt->fetch())	// Récupération de l'instance de matériel
         {
-            $instance = new self($row["id"], $row["filename"], $row["description"], $row["heightParameter"]);
+            $instance = new self($row["id"], $row["filename"], $row["description"], $row["heightParameter"], $row["timestamp"]);
         }
         else
         {
             return null;
         }
         
-        $stmt= $db->getConnection()->prepare("
-            SELECT `gp`.* FROM `fabplan`.`generic_parameters` AS `gp` 
+        $stmt= $db->getConnection()->prepare(
+            "SELECT `gp`.* FROM `fabplan`.`generic_parameters` AS `gp` 
             WHERE `gp`.`generic_id` = :genericId 
-            ORDER BY `gp`.`id` ASC;
-        ");
+            ORDER BY `gp`.`id` ASC " . 
+            (new \MYSQLDatabaseLockingReadTypes($databaseConnectionLockingReadType))->toLockingReadString() . ";"
+        );
         $stmt->bindValue(':genericId', $id, PDO::PARAM_INT);
         $stmt->execute();
         
@@ -90,6 +98,7 @@ class Generic implements JsonSerializable{
             $instance->addGenericParameter($parameter);
         }
         
+        $instance->setDatabaseConnectionLockingReadType($databaseConnectionLockingReadType);
         return $instance;
     }
     
@@ -105,14 +114,34 @@ class Generic implements JsonSerializable{
      */
     function save(FabPlanConnection $db, bool $overwriteParameters) : Generic
     {
-        if($this->_id === null)
+        if($this->getId() === null)
         {
             $this->insert($db, $overwriteParameters);
         }
         else
         {
-            $this->update($db, $overwriteParameters);
+            $dbTimestamp = \DateTime::createFromFormat("Y-m-d H:i:s", $this->getTimestampFromDatabase($db), "America/Montreal");
+            $localTimestamp = \DateTime::createFromFormat("Y-m-d H:i:s", $this->getTimestamp(), "America/Montreal");
+            if($this->getDatabaseConnectionReadingLockType() !== \MYSQLDatabaseLockingReadTypes::FOR_UPDATE)
+            {
+                throw new \Exception("The provided " . get_class($this) . " is not locked for update.");
+            }
+            elseif($databaseTimestamp > $localTimestamp)
+            {
+                throw new \Exception(
+                    "The provided " . get_class($this) . " is outdated. The last modification date of the database entry is
+                    \"{$dbTimestamp->format("Y-m-d H:i:s")}\" whereas the last modification date of the local copy is
+                    \"{$localTimestamp->format("Y-m-d H:i:s")}\"."
+                );
+            }
+            else
+            {
+                $this->update($db, $overwriteParameters);
+            }
         }
+        
+        // Récupération de l'estampille à jour
+        $this->setTimestamp($this->getTimestampFromDatabase($db));
         
         return $this;
     }
@@ -128,42 +157,29 @@ class Generic implements JsonSerializable{
      * @return Generic This Generic (for method chaining)
      */
     private function insert(FabPlanConnection $db, bool $overwriteParameters) : Generic
-    {
-        try
+    {    
+        // Création d'un test
+        $stmt = $db->getConnection()->prepare("
+            INSERT INTO `generics` (`filename`, `description`, `heightParameter`) 
+            VALUES (:filename, :description, :heightParameter);
+        ");
+        $stmt->bindValue(':filename', $this->_filename, PDO::PARAM_STR);
+        $stmt->bindValue(':description', $this->_description, PDO::PARAM_STR);
+        $stmt->bindValue(":heightParameter", $this->_heightParameter, PDO::PARAM_STR);
+        $stmt->execute();
+        $this->_id = $db->getConnection()->lastInsertId();
+        
+        if($overwriteParameters)
         {
-            $db->getConnection()->beginTransaction();	/*Démarrage de la transaction pour que tout soit créer dans un seul 
-            bloc ou pas du tout (ACID) s'il y a eu une erreur durant les transactions (pour l'intégrité des données)*/
+            $this->deleteGenericParametersFromDatabase($db);
             
-            // Création d'un test
-            $stmt = $db->getConnection()->prepare("
-                INSERT INTO `generics` (`filename`, `description`, `heightParameter`) 
-                VALUES (:filename, :description, :heightParameter);
-            ");
-            $stmt->bindValue(':filename', $this->_filename, PDO::PARAM_STR);
-            $stmt->bindValue(':description', $this->_description, PDO::PARAM_STR);
-            $stmt->bindValue(":heightParameter", $this->_heightParameter, PDO::PARAM_STR);
-            $stmt->execute();
-            $this->_id = $db->getConnection()->lastInsertId();
-            
-            if($overwriteParameters)
+            foreach($this->_genericParameters as $genericParameter)
             {
-                $this->deleteGenericParametersFromDatabase($db);
-                
-                foreach($this->_genericParameters as $genericParameter)
-                {
-                    $genericParameter->save($db);
-                }
+                $genericParameter->save($db);
             }
-            
-            $db->getConnection()->commit();	// Envoi des transactions à la BD
-            
-            return $this;
         }
-        catch (Exception $e)
-        {
-            $db->getConnection()->rollback();
-            throw $e;
-        }
+        
+        return $this;
     }
     
     /**
@@ -178,43 +194,31 @@ class Generic implements JsonSerializable{
      */
     private function update(FabPlanConnection $db, bool $overwriteParameters) : Generic
     {
-        try
+        // Mise à jour d'un test
+        $stmt = $db->getConnection()->prepare("
+            UPDATE `fabplan`.`generics` 
+            SET `fabplan`.`generics`.`filename` = :filename, 
+                `fabplan`.`generics`.`description` = :description, 
+                `fabplan`.`generics`.`heightParameter` = :heightParameter
+            WHERE `fabplan`.`generics`.`id` = :id;
+        ");
+        $stmt->bindValue(':filename', $this->_filename, PDO::PARAM_STR);
+        $stmt->bindValue(':description', $this->_description, PDO::PARAM_STR);
+        $stmt->bindValue(":heightParameter", $this->_heightParameter, PDO::PARAM_STR);
+        $stmt->bindValue(':id', $this->_id, PDO::PARAM_INT);
+        $stmt->execute();
+        
+        if($overwriteParameters)
         {
-            $db->getConnection()->beginTransaction();	/* Démarrage de la transaction pour que tout soit créé dans un seul 
-            bloc ou pas du tout (ACID) s'il y a eu une erreur durant les transactions (pour l'intégrité des données)*/
+            $this->deleteGenericParametersFromDatabase($db);
             
-            // Mise à jour d'un test
-            $stmt = $db->getConnection()->prepare("
-                UPDATE `fabplan`.`generics` 
-                SET `fabplan`.`generics`.`filename` = :filename, 
-                    `fabplan`.`generics`.`description` = :description, 
-                    `fabplan`.`generics`.`heightParameter` = :heightParameter
-                WHERE `fabplan`.`generics`.`id` = :id;
-            ");
-            $stmt->bindValue(':filename', $this->_filename, PDO::PARAM_STR);
-            $stmt->bindValue(':description', $this->_description, PDO::PARAM_STR);
-            $stmt->bindValue(":heightParameter", $this->_heightParameter, PDO::PARAM_STR);
-            $stmt->bindValue(':id', $this->_id, PDO::PARAM_INT);
-            $stmt->execute();
-            
-            if($overwriteParameters)
+            foreach($this->_genericParameters as $genericParameter)
             {
-                $this->deleteGenericParametersFromDatabase($db);
-                
-                foreach($this->_genericParameters as $genericParameter)
-                {
-                    $genericParameter->save($db);
-                }
+                $genericParameter->save($db);
             }
-            
-            $db->getConnection()->commit();	// Envoi des transactions à la BD
-            return $this;
         }
-        catch (Exception $e)
-        {
-            $db->getConnection()->rollback();
-            throw $e;
-        }
+        
+        return $this;
     }
     
     /**
@@ -228,35 +232,49 @@ class Generic implements JsonSerializable{
      */
     public function delete(FabPlanConnection $db) : Generic
     {
-        try
+        if(!empty($this->getAssociatedTypes()))
         {
-            $db->getConnection()->beginTransaction();	/* Démarrage de la transaction pour que tout soit créé dans un seul bloc 
-            ou pas du tout (ACID) s'il y a eu une erreur durant les transactions (pour l'intégrité des données)*/
-            
-            if(!empty($this->getAssociatedTypes()))
-            {
-                throw new \Exception("This Generic still has associated Types.");
-            }
-            
-            foreach($this->_genericParameters as $genericParameter)
-            {
-                $genericParameter->delete($db);
-            }
-            
-            $stmt = $db->getConnection()->prepare("
-                DELETE FROM `fabplan`.`generics` WHERE `fabplan`.`generics`.`id` = :id;
-            ");
-            $stmt->bindValue(':id', $this->_id, PDO::PARAM_INT);
-            $stmt->execute();
-            
-            $db->getConnection()->commit();	// Envoi des transactions à la BD
-            
-            return $this;
+            throw new \Exception("This Generic still has associated Types.");
         }
-        catch (Exception $e)
+        
+        foreach($this->_genericParameters as $genericParameter)
         {
-            $db->getConnection()->rollback();
-            throw $e;
+            $genericParameter->delete($db);
+        }
+        
+        $stmt = $db->getConnection()->prepare("
+            DELETE FROM `fabplan`.`generics` WHERE `fabplan`.`generics`.`id` = :id;
+        ");
+        $stmt->bindValue(':id', $this->_id, PDO::PARAM_INT);
+        $stmt->execute();
+        
+        return $this;
+    }
+    
+    /**
+     * Gets the last modification date timestamp of the database instance of this object
+     *
+     * @param \FabPlanConnection $db The database from which the timestamp should be fetched.
+     *
+     * @throws
+     * @author Marc-Olivier Bazin-Maurice
+     * @return string The last modification date timestamp of the database instance of this object.
+     */
+    public function getTimestampFromDatabase(\FabPlanConnection $db) : ?string
+    {
+        $stmt= $db->getConnection()->prepare("
+            SELECT `g`.`timestamp` FROM `fabplan`.`generics` AS `g` WHERE `g`.`id` = :id;
+        ");
+        $stmt->bindValue(':id', $this->getId(), PDO::PARAM_INT);
+        $stmt->execute();
+        
+        if($row = $stmt->fetch())
+        {
+            return $row["timestamp"];
+        }
+        else
+        {
+            return null;
         }
     }
     
@@ -333,13 +351,21 @@ class Generic implements JsonSerializable{
      *
      * @throws
      * @author Marc-Olivier Bazin-Maurice
-     * @return GenericParameter array The parameters of this Generic
+     * @return \GenericParameter[] The parameters of this Generic
      */
     public function getGenericParameters() : array
     {
         return $this->_genericParameters;
     }
     
+    /**
+     * Gets a parameter of this Generic by key
+     * @param string $key The key of the desired parameter
+     *
+     * @throws
+     * @author Marc-Olivier Bazin-Maurice
+     * @return \GenericParameter|null A GenericParameter object
+     */
     public function getGenericParameterByKey(string $key) : ?\GenericParameter
     {
         foreach($this->_genericParameters as $genericParameter)
@@ -350,6 +376,18 @@ class Generic implements JsonSerializable{
             }
         }
         return null;
+    }
+    
+    /**
+     * Gets the timestamp of the last modification date of this object.
+     *
+     * @throws
+     * @author Marc-Olivier Bazin-Maurice
+     * @return string|null The last modification timestamp of this object.
+     */
+    public function getTimestamp() : ?string
+    {
+        return $this->_timestamp;
     }
     
     /**
@@ -409,6 +447,21 @@ class Generic implements JsonSerializable{
     public function setGenericParameters(array $genericParameters) : Generic
     {
         $this->_genericParameters = $genericParameters;
+        return $this;
+    }
+    
+    /**
+     * Set the last modification timestamp of this Generic
+     *
+     * @param string $timestamp The new last modification timestamp of the Generic object
+     *
+     * @throws
+     * @author Marc-Olivier Bazin-Maurice
+     * @return Generic This Generic (for method chaining)
+     */
+    public function setTimestamp(?string $timestamp) : Generic
+    {
+        $this->_timestamp = $timestamp;
         return $this;
     }
     
@@ -492,6 +545,49 @@ class Generic implements JsonSerializable{
             $parametersArray[$parameter->getKey()] = $parameter->getValue();
         }
         return $parametersArray;
+    }
+    
+    /**
+     * Get the parameters in the [key => description] format
+     *
+     * @throws
+     * @author Marc-Olivier Bazin-Maurice
+     * @return string array The parameters of this Generic
+     */
+    public function getParametersAsKeyDescriptionPairs() : array
+    {
+        $parametersArray = array();
+        foreach($this->getGenericParameters() as $parameter)
+        {
+            $parametersArray[$parameter->getKey()] = $parameter->getDescription();
+        }
+        return $parametersArray;
+    }
+    
+    /**
+     * Gets the database connection locking read type applied to this object.
+     *
+     * @throws
+     * @author Marc-Olivier Bazin-Maurice
+     * @return int The database connection locking read type applied to this object.
+     */
+    private function getDatabaseConnectionLockingReadType() : int
+    {
+        return $this->__database_connection_locking_read_type;
+    }
+    
+    /**
+     * Sets the database connection locking read type applied to this object.
+     * @param int $databaseConnectionLockingReadType The new database connection locking read type applied to this object.
+     *
+     * @throws
+     * @author Marc-Olivier Bazin-Maurice
+     * @return \JobType This JobType.
+     */
+    private function setDatabaseConnectionLockingReadType(int $databaseConnectionLockingReadType) : \JobType
+    {
+        $this->__database_connection_locking_read_type = $databaseConnectionLockingReadType;
+        return $this;
     }
 }
 ?>

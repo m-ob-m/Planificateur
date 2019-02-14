@@ -1,0 +1,14 @@
+{
+  "ProjectFilePath": "c:\\Program Files (x86)\\EasyPHP-Devserver-17\\eds-www\\Planificateur\\lib\\PhpSpreadsheet\\phpoffice\\phpspreadsheet\\docs\\assets\\ClassDiagrams\\ClassDiagrams.csproj",
+  "TargetFramework": "v4.0",
+  "TagHelpers": [],
+  "Configuration": {
+    "ConfigurationName": "UnsupportedRazor",
+    "LanguageVersion": "1.0",
+    "Extensions": [
+      {
+        "ExtensionName": "UnsupportedRazorExtension"
+      }
+    ]
+  }
+}

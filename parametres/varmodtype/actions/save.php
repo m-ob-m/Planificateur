@@ -49,14 +49,29 @@ try
     $parameters = array();
     foreach($newParameters as $newParameter)
     {
-        $modelTypeParameter = new ModelTypeParameter($newParameter->key, $newParameter->value, $modelId, $typeNo);
-        if($newParameter->value === null || $newParameter->value === "")
+        $modelTypeParameter = new \ModelTypeParameter($newParameter->key, $newParameter->value, $modelId, $typeNo);
+        $db = new \FabPlanConnection();
+        try
         {
-            $modelTypeParameter->delete($db);
+            $db->getConnection()->beginTransaction();
+            if($newParameter->value === null || $newParameter->value === "")
+            {
+                $modelTypeParameter->delete($db);
+            }
+            else
+            {
+                $modelTypeParameter->save($db);
+            }
+            $db->getConnection()->commit();
         }
-        else
+        catch(\Exception $e)
         {
-            $modelTypeParameter->save($db);
+            $db->getConnection()->rollback();
+            throw $e;
+        }
+        finally
+        {
+            $db = null;
         }
     }
     

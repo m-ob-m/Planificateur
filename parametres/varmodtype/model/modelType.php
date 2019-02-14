@@ -47,16 +47,17 @@ class ModelType implements JsonSerializable
 	 * @author Marc-Olivier Bazin-Maurice
 	 * @return ModelType This ModelType (for method chaining)
 	 */
-	public function loadParameters(FabPlanConnection $db)
+	public function loadParameters(\FabPlanConnection $db)
 	{
-	    $stmt = $db->getConnection()->prepare("
-            SELECT `dmd`.`paramKey` AS `key`, `dmd`.`paramValue` AS `value`
+	    $stmt = $db->getConnection()->prepare(
+            "SELECT `dmd`.`paramKey` AS `key`, `dmd`.`paramValue` AS `value`
             FROM `fabplan`.`door_model` AS `dm` 
             INNER JOIN `fabplan`.`door_model_data` AS `dmd` 
-                ON `dmd`.`fkDoorType` = :typeNo AND `dmd`.`fkDoorModel` = `dm`.`id_door_model` AND `dm`.`id_door_model` = :modelId;
-        ");
-	    $stmt->bindValue(':modelId', $this->getModelId(), PDO::PARAM_INT);
-	    $stmt->bindValue(':typeNo', $this->getTypeNo(), PDO::PARAM_INT);
+            ON `dmd`.`fkDoorType` = :typeNo AND `dmd`.`fkDoorModel` = `dm`.`id_door_model` 
+                AND `dm`.`id_door_model` = :modelId;"
+        );
+	    $stmt->bindValue(':modelId', $this->getModelId(), \PDO::PARAM_INT);
+	    $stmt->bindValue(':typeNo', $this->getTypeNo(), \PDO::PARAM_INT);
 	    $stmt->execute();
 	    
 	    $this->setParameters(array());

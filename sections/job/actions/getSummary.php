@@ -24,40 +24,57 @@ try
     // Vérification des paramètres
     $jobName = $_GET["name"] ?? null;
     $jobId = $_GET["id"] ?? null;
-    
-    $job = null;
-    if(!empty($jobId))
-    {
-        // Get job by id
-        $job = (new JobController())->getJob($jobId);
-        
-        if($job === null)
-        {
-            throw new \Exception("There is no job with the id \"{$jobId}\".");
-        }
-    }
-    elseif(!empty($jobName))
-    {
-        // Get job by name
-        $job = (new JobController())->getJobByName($jobName);
-        
-        if($job === null)
-        {
-            throw new \Exception("There is no job with the name \"{$jobName}\".");
-        }
-    }
-    else
+    if(empty($jobId) && empty($jobName))
     {
         throw new \Exception("No job identifier provided.");
     }
     
+    $job = null;
+    $batch = null;
     $partsAmount = 0;
-    foreach($job->getJobTypes() as $jobType)
+    $db = new \FabPlanConnection();
+    try
     {
-        $partsAmount += count($jobType->getParts());
+        $db->getConnection()->beginTransaction();
+        if(!empty($jobId))
+        {
+            // Get job by id
+            $job = \Job::withID($db, $jobId);
+            
+            if($job === null)
+            {
+                throw new \Exception("There is no job with the id \"{$jobId}\".");
+            }
+        }
+        elseif(!empty($jobName))
+        {
+            // Get job by name
+            $job = \Job::withName($db, $jobName);
+            
+            if($job === null)
+            {
+                throw new \Exception("There is no job with the name \"{$jobName}\".");
+            }
+        }
+        
+        $partsAmount = 0;
+        foreach($job->getJobTypes() as $jobType)
+        {
+            $partsAmount += count($jobType->getParts());
+        }
+        
+        $batch = $job->getParentBatch($db);
+        $db->getConnection()->commit();
     }
-    
-    $batch = $job->getParentBatch($db);
+    catch(\Exception $e)
+    {
+        $db->getConnection()->rollback();
+        throw $e;
+    }
+    finally
+    {
+        $db = null;
+    }
     
     $jobSummary = (object)array(
         "id" => $job->getId(), 

@@ -21,9 +21,7 @@
     $responseArray = array("status" => null, "success" => array("data" => null), "failure" => array("message" => null));
     
     try
-    {
-        $db = new \FabPlanConnection();
-        
+    {        
         // Vérification des paramètres
         $jobId = $_GET["jobId"] ?? null;
         
@@ -32,14 +30,57 @@
             throw new \Exception("L'identifiant unique de Job fourni n'est pas un entier numérique positif.");
         }
         
-        $output = array();
-        $i = 0;
-        foreach ((new \JobController())->getJob($jobId)->getJobTypes() as $jobType)
+        $db = new \FabPlanConnection();
+        try
         {
-            $model = (new \ModelController())->getModel($jobType->getModelId());
-            $type = (new \TypeController())->getTypeByImportNo($jobType->getTypeNo());
-            $generic = (new \GenericController())->getGeneric($type->getGenericId());
-            $output[$i] = (object) array(
+            $db->getConnection()->beginTransaction();
+            $jobTypes = getJobTypes($db, $jobId);
+            $db->getConnection()->commit();
+        }
+        catch(\Exception $e)
+        {
+            $db->getConnection()->rollback();
+            throw $e;
+        }
+        finally
+        {
+            $db = null;
+        }
+        
+        // Retour au javascript
+        $responseArray["status"] = "success";
+        $responseArray["success"]["data"] = $jobTypes;
+    }
+    catch(Exception $e)
+    {
+        $responseArray["status"] = "failure";
+        $responseArray["failure"]["message"] = $e->getMessage();
+    }
+    finally
+    {
+        echo json_encode($responseArray);
+    }
+    
+    /**
+     * Gets the list of job types for this job.
+     *
+     * @param \FabplanConnection $db The database to query.
+     * @param int $jobId The numerical unique identifier of the selected job.
+     *
+     * @throws
+     * @author Marc-Olivier Bazin-Maurice
+     * @return \JobType[] An array of job types.
+     */
+    function getJobTypes(\FabplanConnection $db, int $jobId) : array
+    {
+        $jobTypes = array();
+        $i = 0;
+        foreach(\Job::withID($db, $id)->getJobTypes() as $jobType)
+        {
+            $model = \Model::withID($db, $jobType->getModelId());
+            $type = \Type::withImportNo($db, $jobType->getTypeNo());
+            $generic = \Generic::withID($db, $type->getGenericId());
+            $jobTypes[$i] = (object) array(
                 "id" => $jobType->getId(),
                 "jobId" => $jobType->getJobId(),
                 "mprFile" => $jobType->getMprFile(),
@@ -54,19 +95,19 @@
             foreach($generic->getGenericParameters() as $genericParameter)
             {
                 $key = $genericParameter->getKey();
-                array_push($output[$i]->genericParameters, (object) array(
-                    "key" => $key, 
+                array_push($jobTypes[$i]->genericParameters, (object) array(
+                    "key" => $key,
                     "value" => $genericParameter->getValue(),
                     "description" => $genericParameter->getDescription(),
                     "quickEdit" => $genericParameter->getQuickEdit()
                 ));
                 
-                $output[$i]->jobTypeParameters[$key] = $currentParameters[$key] ?? $genericParameter->getValue();
+                $jobTypes[$i]->jobTypeParameters[$key] = $currentParameters[$key] ?? $genericParameter->getValue();
             }
             
             foreach($jobType->getParts() as $part)
             {
-                array_push($output[$i]->parts, (object) array(
+                array_push($jobTypes[$i]->parts, (object) array(
                     "id" => $part->getId(),
                     "quantity" => $part->getQuantityToProduce(),
                     "length" => $part->getLength(),
@@ -78,17 +119,6 @@
             $i++;
         }
         
-        // Retour au javascript
-        $responseArray["status"] = "success";
-        $responseArray["success"]["data"] = $output;
-    }
-    catch(Exception $e)
-    {
-        $responseArray["status"] = "failure";
-        $responseArray["failure"]["message"] = $e->getMessage();
-    }
-    finally
-    {
-        echo json_encode($responseArray);
+        return $jobTypes;
     }
 ?>

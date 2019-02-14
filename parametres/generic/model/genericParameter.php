@@ -17,6 +17,7 @@ class GenericParameter extends Parameter implements JsonSerializable
     private $_description;
     private $_generic_id;
     private $_quick_edit;
+    private $__database_connection_locking_read_type = \MYSQLDatabaseLockingReadTypes::NONE;
     
     /**
      * GenericParameter constructor
@@ -53,18 +54,19 @@ class GenericParameter extends Parameter implements JsonSerializable
      * @author Marc-Olivier Bazin-Maurice
      * @return GenericParameter The GenericParameter object retrieved from the database
      */
-    static function withGenericID(FabplanConnection $db, int $genericId, string $parameterKey) : GenericParameter
+    static function withGenericID(FabplanConnection $db, int $genericId, string $parameterKey, int $dbCLRT = 0) : GenericParameter
     {
         // Récupérer le générique
-        $stmt = $db->getConnection()->prepare("
-            SELECT `gp`.* FROM `fabplan`.`generic_parameters` AS `gp` 
-            WHERE `gp`.`generic_id` = :generic_id AND `gp`.`parameter_key` = :parameter_key;
-        ");
+        $stmt = $db->getConnection()->prepare(
+            "SELECT `gp`.* FROM `fabplan`.`generic_parameters` AS `gp` 
+            WHERE `gp`.`generic_id` = :generic_id AND `gp`.`parameter_key` = :parameter_key " . 
+            (new \MYSQLDatabaseLockingReadTypes($dbCLRT))->toLockingReadString() . ";"
+        );
         $stmt->bindValue(":generic_id", $genericId, PDO::PARAM_INT);
         $stmt->bindValue(":parameter_key", $parameterKey, PDO::PARAM_STR);
         $stmt->execute();
         
-        if ($row = $stmt->fetch())	// Récupération de l'instance de test
+        if ($row = $stmt->fetch())	// Récupération de l'instance de paramètre de générique
         {
             $instance = new self($row["id"], $row["generic_id"], $row["parameter_key"], $row["parameter_value"], 
                 $row["description"], $row["quick_edit"]);
@@ -74,6 +76,7 @@ class GenericParameter extends Parameter implements JsonSerializable
             return null;
         }
         
+        $this->setDatabaseConnectionLockingReadType($dbCLRT);
         return $instance;
     }
     
@@ -86,7 +89,7 @@ class GenericParameter extends Parameter implements JsonSerializable
      * @author Marc-Olivier Bazin-Maurice
      * @return GenericParameter This GenericParameter (for method chaining)
      */
-    public function save(FabPlanConnection $db) : GenericParameter
+    public function save(\FabPlanConnection $db) : \GenericParameter
     {
         $stmt = $db->getConnection()->prepare("
             SELECT `gp`.* FROM `fabplan`.`generic_parameters` AS `gp` 
@@ -102,7 +105,14 @@ class GenericParameter extends Parameter implements JsonSerializable
         }
         else
         {
-            $this->update($db);
+            if($this->getDatabaseConnectionReadingLockType() !== \MYSQLDatabaseLockingReadTypes::FOR_UPDATE)
+            {
+                throw new \Exception("The provided " . get_class($this) . " is not locked for update.");
+            }
+            else
+            {
+                $this->update($db);
+            }
         }
         
         return $this;
@@ -117,7 +127,7 @@ class GenericParameter extends Parameter implements JsonSerializable
      * @author Marc-Olivier Bazin-Maurice
      * @return GenericParameter This GenericParameter (for method chaining)
      */
-    private function insert(FabPlanConnection $db) : GenericParameter
+    private function insert(\FabPlanConnection $db) : \GenericParameter
     {     
         $stmt = $db->getConnection()->prepare("
             INSERT INTO `generic_parameters` (`generic_id`, `parameter_key`, `parameter_value`, `description`, `quick_edit`) 
@@ -328,6 +338,32 @@ class GenericParameter extends Parameter implements JsonSerializable
     public function jsonSerialize()
     {
         return get_object_vars($this);
+    }
+    
+    /**
+     * Gets the database connection locking read type applied to this object.
+     *
+     * @throws
+     * @author Marc-Olivier Bazin-Maurice
+     * @return int The database connection locking read type applied to this object.
+     */
+    private function getDatabaseConnectionLockingReadType() : int
+    {
+        return $this->__database_connection_locking_read_type;
+    }
+    
+    /**
+     * Sets the database connection locking read type applied to this object.
+     * @param int $databaseConnectionLockingReadType The new database connection locking read type applied to this object.
+     *
+     * @throws
+     * @author Marc-Olivier Bazin-Maurice
+     * @return \JobType This JobType.
+     */
+    private function setDatabaseConnectionLockingReadType(int $databaseConnectionLockingReadType) : \JobType
+    {
+        $this->__database_connection_locking_read_type = $databaseConnectionLockingReadType;
+        return $this;
     }
 }
 

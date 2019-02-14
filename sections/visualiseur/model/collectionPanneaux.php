@@ -28,7 +28,7 @@ class CollectionPanneaux
 	 * @author Marc-Olivier Bazin-Maurice
 	 * @return CollectionPanneaux
 	 */ 
-	function __construct(Batch $batch, ?string $pc2FileContents, ?string $cttFileContents)
+	function __construct(\Batch $batch, ?string $pc2FileContents, ?string $cttFileContents)
 	{		
 		$this->_panneaux = array();
 		$this->createPanneauxFromPc2($batch,$pc2FileContents,$cttFileContents);
@@ -45,7 +45,7 @@ class CollectionPanneaux
 	 * @author Marc-Olivier Bazin-Maurice
 	 * @return CollectionPanneaux
 	 */ 
-	private function createPanneauxFromPc2(Batch $batch, ?string $pc2FileContent, ?string $cttFileContent) : CollectionPanneaux
+	private function createPanneauxFromPc2(\Batch $batch, ?string $pc2FileContent, ?string $cttFileContent) : \CollectionPanneaux
 	{
 		$lines = explode("\r\n", $pc2FileContent);
 				
@@ -82,7 +82,7 @@ class CollectionPanneaux
 	 * @author Marc-Olivier Bazin-Maurice
 	 * @return CollectionPanneaux
 	 */ 
-	private function setIndex(int $index) : CollectionPanneaux
+	private function setIndex(int $index) : \CollectionPanneaux
 	{
 		if($index > (count($this->_panneaux) -1))
 		{
@@ -124,7 +124,7 @@ class CollectionPanneaux
 	 * @author Marc-Olivier Bazin-Maurice
 	 * @return CollectionPanneaux
 	 */
-	private function addPanneau(Panneau $panneau) : CollectionPanneaux
+	private function addPanneau(\Panneau $panneau) : \CollectionPanneaux
 	{
 	    array_push($this->_panneaux, $panneau);
 	    return $this;
@@ -137,7 +137,7 @@ class CollectionPanneaux
 	 * @author Marc-Olivier Bazin-Maurice
 	 * @return CollectionPanneaux
 	 */
-	private function removePanneau() : CollectionPanneaux
+	private function removePanneau() : \CollectionPanneaux
 	{
 	    array_splice($this->_panneaux, $this->getIndex(), 1);
 	    return $this;
@@ -152,7 +152,7 @@ class CollectionPanneaux
 	 * @author Marc-Olivier Bazin-Maurice
 	 * @return CollectionPanneaux
 	 */
-	public function getPanneau(?int $index = null) : Panneau
+	public function getPanneau(?int $index = null) : \Panneau
 	{
 	    return  $this->_panneaux($this->getIndex());
 	}

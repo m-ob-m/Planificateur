@@ -31,30 +31,43 @@ try
     $action = $input->action ?? 1;
     
     // Modèles
-    $batch = (new \BatchController())->getBatch($id);
-    
-    $material = (new \MaterielController())->getMateriel($batch->getMaterialId());
-    if(!$material->getEstMDF())
+    $db = new \FabPlanConnection();
+    try
     {
-        throw new \Exception("Seul le nesting de pièces de MDF est supporté.");
+        $db->getConnection()->beginTransaction();
+        $batch = \Batch::withID($db, $id);
+        if(!\Materiel::withID($db, $batch->getMaterialId())->getEstMDF())
+        {
+            throw new \Exception("Seul le nesting de pièces de MDF est supporté.");
+        }
+        
+        $zipPath = createZipArchiveForBatch($batch, $action);
+        
+        // Téléchargement du fichier ZIP ou message de transfert
+        switch($action)
+        {
+            case "1":
+                // MaJ état de la batch pour En attente
+                $batch->setMprStatus("A")->save($db);
+                
+                $responseArray["success"]["data"] = null;
+                break;
+                
+            case "2":
+                $responseArray["success"]["data"]["name"] = basename($zipPath);
+                $responseArray["success"]["data"]["url"] = \FileFunctions\DownloadLinkGenerator::fromFilePath($zipPath);
+                break;
+        }
+        $db->getConnection()->commit();
     }
-    
-    $zipPath = createZipArchiveForBatch($batch, $action);
-    
-    // Téléchargement du fichier ZIP ou message de transfert
-    switch($action)
+    catch(\Exception $e)
     {
-        case "1":
-            // MaJ état de la batch pour En attente
-            $batch->setMprStatus("A")->save(new \FabPlanConnection());
-            
-            $responseArray["success"]["data"] = null;
-            break;
-            
-        case "2":
-            $responseArray["success"]["data"]["name"] = basename($zipPath);
-            $responseArray["success"]["data"]["url"] = \FileFunctions\DownloadLinkGenerator::fromFilePath($zipPath);
-            break;
+        $db->getConnection()->rollback();
+        throw $e;
+    }
+    finally
+    {
+        $db = null;
     }
     
     $responseArray["status"] = "success";
@@ -101,6 +114,11 @@ function deleteFiles(array $filesToDelete = array())
  */
 function createZipArchiveForBatch(\Batch $batch, int $action) : string
 {
+    /* Nettoyage des fichiers temporaires. */
+    $KEEP_FILES_FOR_X_DAYS = 31;
+    $temporaryFolder = __DIR__ . "/../temp";
+    (new \FileFunctions\TemporaryFolder($path))->clean($KEEP_FILES_FOR_X_DAYS * 24 * 60 * 60);
+    
     $filesToDelete  = array();
     
     // Création du fichier ZIP
@@ -113,7 +131,7 @@ function createZipArchiveForBatch(\Batch $batch, int $action) : string
             "fullyPortable" => true
         )
     );
-    $zipPath = __DIR__ . "/../temp/{$zipName}";
+    $zipPath = "{$temporaryFolder}/{$zipName}";
     
     // Ouvrir une archive
     $zip = new ZipArchive();
@@ -175,7 +193,7 @@ function createCsvForBatch(\Batch $batch) : string
         )
     );
     $csvPath = __DIR__ . "/../temp/{$csvName}";
-    $csv = new CsvCutrite(new \FabPlanConnection());
+    $csv = new \CsvCutrite();
     $csv->makeCsvFromBatch($batch);
     $csv->makeCsvFile($csvPath);
     return $csvPath;
@@ -203,7 +221,7 @@ function createMprForJobType(\JobType $jobType) : string
     );
     $mprPath = __DIR__ . "/../temp/{$mprName}";
     
-    $mpr = new mprCutrite(realpath(__DIR__ . "/../../../lib/generique.mpr"));
+    $mpr = new \mprCutrite(realpath(__DIR__ . "/../../../lib/generique.mpr"));
     $mpr->makeMprFromJobType($jobType);
     $mpr->makeMprFile($mprPath);
     return $mprPath;
