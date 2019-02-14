@@ -1,25 +1,43 @@
 <?php
-/**
- * \name		Planificateur de porte
- * \author    	Marc-Olivier Bazin-Maurice
- * \version		1.0
- * \date       	2018-03-27
- *
- * \brief 		Menu de modification des valeurs des variables des modèles/types
- * \details 	Menu de modification des valeurs des variables des modèles/types
- *
- * Licence pour la vue :
- * 	Verti by HTML5 UP
- html5up.net | @ajlkn
- Free for personal and commercial use under the CCA 3.0 license (html5up.net/license)
- */
-
-/* INCLUDE */
-include_once __DIR__ . '/../type/controller/typeController.php';		// Classe contrôleur de Type
-include_once __DIR__ . '/../model/controller/modelController.php';		// Classe contrôleur de Model
-
-$selectedModelId = isset($_GET["modelId"]) ? $_GET["modelId"] : 7000;
-$selectedTypeNo = isset($_GET["typeNo"]) ? $_GET["typeNo"] : 0;
+    /**
+     * \name		Planificateur de porte
+     * \author    	Marc-Olivier Bazin-Maurice
+     * \version		1.0
+     * \date       	2018-03-27
+     *
+     * \brief 		Menu de modification des valeurs des variables des modèles/types
+     * \details 	Menu de modification des valeurs des variables des modèles/types
+     *
+     * Licence pour la vue :
+     * 	Verti by HTML5 UP
+     html5up.net | @ajlkn
+     Free for personal and commercial use under the CCA 3.0 license (html5up.net/license)
+     */
+    
+    /* INCLUDE */
+    include_once __DIR__ . '/../type/controller/typeController.php';		// Classe contrôleur de Type
+    include_once __DIR__ . '/../model/controller/modelController.php';		// Classe contrôleur de Model
+    
+    $selectedModelId = isset($_GET["modelId"]) ? $_GET["modelId"] : 7000;
+    $selectedTypeNo = isset($_GET["typeNo"]) ? $_GET["typeNo"] : 0;
+    
+    $db = new \FabPlanConnection();
+    try
+    {
+        $db->getConnection()->beginTransaction();
+        $types = (new \TypeController())->getTypes();
+        $models = (new \ModelController())->getModels();
+        $db->getConnection()->commit();
+    }
+    catch(\Exception $e)
+    {
+        $db->getConnection()->rollback();
+        throw $e;
+    }
+    finally
+    {
+        $db = null;
+    }
 ?>
 
 <!DOCTYPE HTML>
@@ -80,7 +98,7 @@ $selectedTypeNo = isset($_GET["typeNo"]) ? $_GET["typeNo"] : 0;
 							<div class="hFormElement">
             					<label for="type">Type :
                 					<select id="type" name="type" onchange="$('#modelTypeSelectionForm').submit();">
-                        				<?php foreach((new TypeController())->getTypes() as $type):?>
+                        				<?php foreach($types as $type):?>
                         					<?php $selected =  (($selectedTypeNo == $type->getImportNo()) ? "selected" : ""); ?>
                         					<option value=<?= $type->getImportNo(); ?> <?= $selected; ?>>
                         						<?= $type->getDescription(); ?>
@@ -92,7 +110,7 @@ $selectedTypeNo = isset($_GET["typeNo"]) ? $_GET["typeNo"] : 0;
                     		<div class="hFormElement">
             					<label for="model">Modèle :
                         			<select id="model" name="model" onchange="$('#modelTypeSelectionForm').submit();">
-                        				<?php foreach((new ModelController())->getModels() as $model):?>
+                        				<?php foreach($models as $model):?>
                         					<?php if($model->getId() >= 10): ?>
                             					<?php $selected =  (($selectedModelId == $model->getId()) ? "selected" : ""); ?>
                             					<option value=<?= $model->getId(); ?> <?= $selected; ?>>

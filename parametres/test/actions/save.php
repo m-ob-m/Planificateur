@@ -13,7 +13,7 @@
 include_once __DIR__ . '/../../../lib/config.php';	// Fichier de configuration
 include_once __DIR__ . '/../../../lib/connect.php';	// Classe de connection à la base de données
 include_once __DIR__ . '/../controller/testController.php';
-include_once __DIR__ . "/../../../lib/fileFunctions/fileFunctions.php";	// Classe de fonctions liées aux fichiers non natives à PHP
+include_once __DIR__ . "/../../../lib/fileFunctions/fileFunctions.php";	// Classe de fonctions liées aux fichiers
 
 //Structure de retour vers javascript
 $responseArray = array("status" => null, "success" => array("data" => null), "failure" => array("message" => null));
@@ -21,7 +21,6 @@ $responseArray = array("status" => null, "success" => array("data" => null), "fa
 try
 {
     $input =  json_decode(file_get_contents("php://input"));
-    $db = new FabPlanConnection();
     
     // Vérification des paramètres
     $testId = (isset($input->testId) ? $input->testId : null);
@@ -45,17 +44,35 @@ try
     );
     
     $test = null;
-    if(!empty($testId))
+    $db = new \FabPlanConnection();
+    try
     {
-        $test = (new TestController())->getTest($testId);
-        $test->setName($testName)->setModelId($modelId)->setTypeNo($typeNo)->setFichierMpr($mpr)->save($db);
+        $db->getConnection()->beginTransaction();
+        if(!empty($testId))
+        {
+            $test = \Test::withID($db, $testId)
+                ->setName($testName)
+                ->setModelId($modelId)
+                ->setTypeNo($typeNo)
+                ->setFichierMpr($mpr)
+                ->save($db);
+        }
+        else
+        {
+            $test = (new \Test(null, $testName, $modelId, $typeNo, $mpr))->save($db);
+        }
+        saveModifiedParameters($newParameters, $test, $db);
+        $db->getConnection()->commit();
     }
-    else 
+    catch(\Exception $e)
     {
-        $test = (new Test(null, $testName, $modelId, $typeNo, $mpr))->save($db);
+        $db->getConnection()->rollback();
+        throw $e;
     }
-    
-    saveParameters($newParameters, $test, $db);
+    finally
+    {
+        $db = null;
+    }
     
     // Retour au javascript
     $responseArray["status"] = "success";
@@ -72,17 +89,17 @@ finally
 }
 
 /**
- * Save parameters to the database
+ * Saves the modified parameters to the database.
  *
  * @param array $newParameters The parameters to save.
- * @param Test $test A test from the database (must have an id)
- * @param FabPlanConnection $db A connection to the database
+ * @param \Test $test A test from the database (must have an id)
+ * @param \FabPlanConnection $db A connection to the database
  *
  * @throws
  * @author Marc-Olivier Bazin-Maurice
  * @return
  */ 
-function saveParameters(array $newParameters, Test $test, FabPlanConnection $db)
+function saveModifiedParameters(array $newParameters, Test $test, \FabPlanConnection $db)
 {
     foreach($newParameters as $newParameter)
     {

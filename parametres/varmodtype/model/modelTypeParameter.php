@@ -11,7 +11,7 @@ include_once __DIR__ . "/../../parameter/parameter.php";
  * \details 	Modèle de paramètre de modèle-type
  */
 
-class ModelTypeParameter extends Parameter
+class ModelTypeParameter extends \Parameter
 {   
     private $_fkDoorModel;
     private $_fkDoorType;
@@ -48,13 +48,13 @@ class ModelTypeParameter extends Parameter
      * @author Marc-Olivier Bazin-Maurice
      * @return ModelTypeParameter The ModelTypeParameter object retrieved from the database
      */
-    static function withID(FabplanConnection $db, int $modelId, int $typeNo, string $key)
+    static function withID(\FabplanConnection $db, int $modelId, int $typeNo, string $key) : ?\ModelTypeParameter
     {
         // Récupérer le générique
-        $stmt = $db->getConnection()->prepare("
-            SELECT `dmd`.* FROM `fabplan`.`door_model_data` AS `dmd`
-            WHERE `dmd`.`fkDoorModel` = :modelId AND `dmd`.`fkDoorType` = :typeNo AND `dmd`.`paramKey` = :key;
-        ");
+        $stmt = $db->getConnection()->prepare(
+            "SELECT `dmd`.* FROM `fabplan`.`door_model_data` AS `dmd`
+            WHERE `dmd`.`fkDoorModel` = :modelId AND `dmd`.`fkDoorType` = :typeNo AND `dmd`.`paramKey` = :key;"
+        );
         $stmt->bindValue(":modelId", $modelId, PDO::PARAM_INT);
         $stmt->bindValue(":typeNo", $typeNo, PDO::PARAM_INT);
         $stmt->bindValue(":key", $key, PDO::PARAM_STR);
@@ -81,18 +81,9 @@ class ModelTypeParameter extends Parameter
      * @author Marc-Olivier Bazin-Maurice
      * @return ModelTypeParameter This ModelTypeParameter (for method chaining)
      */
-    function save(FabPlanConnection $db) : ModelTypeParameter
+    function save(\FabPlanConnection $db) : \ModelTypeParameter
     {
-        $stmt = $db->getConnection()->prepare("
-            SELECT `dmd`.* FROM `fabplan`.`door_model_data` AS `dmd`
-            WHERE `dmd`.`fkDoorModel` = :modelId AND `dmd`.`fkDoorType` = :typeNo AND `dmd`.`paramKey` = :key;
-        ");
-        $stmt->bindValue(":modelId", $this->getModelId(), PDO::PARAM_INT);
-        $stmt->bindValue(":typeNo", $this->getTypeNo(), PDO::PARAM_INT);
-        $stmt->bindValue(":key", $this->getKey(), PDO::PARAM_STR);
-        $stmt->execute();
-        
-        if(!$stmt->fetch())
+        if(self::withID($db, $this->getModelId(), $this->getTypeNo(), $this->getKey()) === null)
         {
             $this->insert($db);
         }
@@ -113,7 +104,7 @@ class ModelTypeParameter extends Parameter
      * @author Marc-Olivier Bazin-Maurice
      * @return ModelTypeParameter This ModelTypeParameter (for method chaining)
      */
-    private function insert(FabPlanConnection $db) : ModelTypeParameter
+    private function insert(\FabPlanConnection $db) : \ModelTypeParameter
     {
         try
         {
@@ -143,7 +134,7 @@ class ModelTypeParameter extends Parameter
      * @author Marc-Olivier Bazin-Maurice
      * @return ModelTypeParameter This ModelTypeParameter (for method chaining)
      */
-    private function update(FabPlanConnection $db) : ModelTypeParameter
+    private function update(\FabPlanConnection $db) : \ModelTypeParameter
     {
         try
         {
@@ -175,7 +166,7 @@ class ModelTypeParameter extends Parameter
      * @author Marc-Olivier Bazin-Maurice
      * @return ModelTypeParameter This ModelTypeParameter (for method chaining)
      */
-    public function delete(FabPlanConnection $db) : ModelTypeParameter
+    public function delete(\FabPlanConnection $db) : \ModelTypeParameter
     {
         try
         {
@@ -243,7 +234,7 @@ class ModelTypeParameter extends Parameter
      * @author Marc-Olivier Bazin-Maurice
      * @return ModelTypeParameter This ModelTypeParameter (for method chaining)
      */
-    public function setModelId($modelId) : ModelTypeParameter
+    public function setModelId($modelId) : \ModelTypeParameter
     {
         $this->_fkDoorModel = $modelId;
         return $this;
@@ -258,7 +249,7 @@ class ModelTypeParameter extends Parameter
      * @author Marc-Olivier Bazin-Maurice
      * @return ModelTypeParameter This ModelTypeParameter (for method chaining)
      */
-    public function setTypeNo($typeNo) : ModelTypeParameter
+    public function setTypeNo($typeNo) : \ModelTypeParameter
     {
         $this->_fkDoorType= $typeNo;
         return $this;
@@ -273,7 +264,7 @@ class ModelTypeParameter extends Parameter
      * @author Marc-Olivier Bazin-Maurice
      * @return ModelTypeParameter This ModelTypeParameter (for method chaining)
      */
-    public function setValue(?string $value) : ModelTypeParameter
+    public function setValue(?string $value) : \ModelTypeParameter
     {
         $this->_value = $value;
         return $this;

@@ -21,17 +21,30 @@ $responseArray = array("status" => null, "success" => array("data" => null), "fa
 
 try
 {
-    $db = new FabPlanConnection();
-    
     // Vérification des paramètres
     $jobTypePorteId = $_GET["jobTypePorteId"] ?? null;
     
-    $jobTypePorte = JobTypePorte::withID($db, $jobTypePorteId);
-    $jobType = JobType::withID($db, $jobTypePorte->getJobTypeId());
-    $job = (new JobController())->getJob($jobType->getJobId());
-    $model = (new ModelController())->getModel($jobType->getModelId());
-    $type = (new TypeController())->getTypeByImportNo($jobType->getTypeNo());
-    $generic = (new GenericController())->getGeneric($type->getGenericId());
+    $db = new \FabPlanConnection();
+    try
+    {
+        $db->getConnection()->beginTransaction();
+        $jobTypePorte = \JobTypePorte::withID($db, $jobTypePorteId);
+        $jobType = \JobType::withID($db, $jobTypePorte->getJobTypeId());
+        $job = \Job::withID($db, $jobType->getJobId());
+        $model = \Model::withID($db, $jobType->getModelId());
+        $type = \Type::withImportNo($db, $jobType->getTypeNo());
+        $generic = \Generic::withID($type->getGenericId());
+        $db->getConnection()->commit();
+    }
+    catch(\Exception $e)
+    {
+        $db->getConnection()->rollback();
+        throw $e;
+    }
+    finally
+    {
+        $db = null;
+    }
     
     $grain = null;
     if($jobTypePorte->getGrain() === "X")

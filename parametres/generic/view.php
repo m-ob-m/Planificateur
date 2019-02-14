@@ -5,8 +5,8 @@
     * \version		1.0
     * \date       	2017-01-27
     *
-    * \brief 		Visualisation d'un type de porte
-    * \details 		Visualisation d'un type de porte
+    * \brief 		Menu de création / modification / suppression de générique
+    * \details 		Menu de création / modification / suppression de générique
     *
     * Licence pour la vue :
     * 	Verti by HTML5 UP
@@ -15,15 +15,31 @@
     */
     
     /* INCLUDE */
-    include 'controller/genericcontroller.php';		// Classe controleur de cette vue
+    include_once __DIR__ . '/controller/genericcontroller.php';		// Classe contrôleur de cette vue
     
-    if(isset($_GET["id"]))
+    $db = new \FabPlanConnection();
+    try
     {
-        $thisGeneric = (new GenericController())->getGeneric(intval($_GET["id"]));
+        $db->getConnection()->beginTransaction();
+        $generics = (new \GenericController())->getGenerics();
+        if(isset($_GET["id"]))
+        {
+            $thisGeneric = \Generic::withID($db, intval($_GET["id"]));
+        }
+        else
+        {
+            $thisGeneric = new \Generic();
+        }
+        $db->getConnection()->commit();
     }
-    else 
+    catch(\Exception $e)
     {
-        $thisGeneric = new Generic();
+        $db->getConnection()->rollback();
+        throw $e;
+    }
+    finally
+    {
+        $db = null;
     }
 ?>
 
@@ -31,7 +47,7 @@
 <html>
 	<head>
 		<title>Fabridor - Liste des types de porte</title>
-		<meta charset="iso-8859-1" />
+		<meta charset="utf-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1" />
 		<link rel="stylesheet" href="/Planificateur/assets/css/responsive.css" />
 		<link rel="stylesheet" href="/Planificateur/assets/css/fabridor.css" />
@@ -127,7 +143,6 @@
         						<td class="lastVisibleColumn">
         							<select id="copyParametersFrom" style="text-align-last:center;">
         								<option value="" selected>Aucun</option>
-        								<?php $generics = (new GenericController())->getGenerics(); ?>
                                     	<?php if(!empty($generics)):?>
         									<?php foreach ($generics as $generic): ?>
         										<option value=<?= $generic->getId() ?>><?= $generic->getFilename(); ?></option>

@@ -13,13 +13,14 @@
 include_once __DIR__ . "/../../../parametres/varmodtypegen/model/modelTypeGeneric.php";
 include_once __DIR__ . "/jobTypeParameter.php";
 
-class JobType extends ModelTypeGeneric implements JsonSerializable
+class JobType extends \ModelTypeGeneric implements \JsonSerializable
 {
     private $_id;
     private $_jobId;
     private $_mprFile;
     private $_timestamp;
     private $_parts;
+    private $__database_connection_locking_read_type = \MYSQLDatabaseLockingReadTypes::NONE;
     
     /**
      * JobType constructor
@@ -31,12 +32,12 @@ class JobType extends ModelTypeGeneric implements JsonSerializable
      * @param string $mprFile The contents of the .mpr file associated to this JobType if not using a generic file
      * @param int $genericId The id of the Generic associated to this JobType
      * @param string $timestamp A timestamp of the last modification applied to this JobType (leave null)
-     * @param string $parameters An array containing the JobTypeParameters objects associated with this JobType.
-     * @param JobTypePorte[] $parts The array of JobTypePorte of this jobType.
+     * @param \JobTypeParameter[] $parameters An array containing the JobTypeParameters objects associated with this JobType.
+     * @param \JobTypePorte[] $parts The array of JobTypePorte of this jobType.
      *
      * @throws
      * @author Marc-Olivier Bazin-Maurice
-     * @return JobType
+     * @return \JobType
      */
     public function __construct(?int $id = null, ?int $jobId = null, ?int $modelId = null, ?int $typeNo = null,
         ?string $mprFile = null, ?int $genericId = null, ?string $timestamp = null, array $parameters = array(), 
@@ -55,26 +56,29 @@ class JobType extends ModelTypeGeneric implements JsonSerializable
      *
      * @param FabPlanConnection $db The database in which the record exists
      * @param int $id The id of the record in the database
+     * @param int $databaseConnectionLockingReadType
      *
      * @throws
      * @author Marc-Olivier Bazin-Maurice
      * @return JobType The JobType associated to the specified ID in the specified database
      */
-    static function withID(FabPlanConnection $db, int $id) :?JobType
+    static function withID(\FabPlanConnection $db, int $id, int $databaseConnectionLockingReadType = 0) : ?\JobType
     {
         // Récupérer le test
-        $stmt = $db->getConnection()->prepare("
-            SELECT `jt`.`job_id` AS `jobId`, `jt`.`door_model_id` AS `modelId`, `jt`.`type_no` AS `typeNo`, 
+        $stmt = $db->getConnection()->prepare(
+            "SELECT `jt`.`job_id` AS `jobId`, `jt`.`door_model_id` AS `modelId`, `jt`.`type_no` AS `typeNo`, 
                 `jt`.`fichier_mpr` AS `mprFile`, `jt`.`generic_id` AS `genericId`, `jt`.`estampille` AS `timestamp`
-            FROM `fabplan`.`job_type` AS `jt` WHERE `jt`.`id_job_type` = :id;
-        ");
+            FROM `fabplan`.`job_type` AS `jt` WHERE `jt`.`id_job_type` = :id " . 
+            (new \MYSQLDatabaseLockingReadTypes($databaseConnectionLockingReadType))->toLockingReadString() . ";"
+        );
         $stmt->bindValue(':id', $id, PDO::PARAM_INT);
         $stmt->execute();
         
         if ($row = $stmt->fetch())
         {
-            $instance = new self($id, $row["jobId"], $row["modelId"], $row["typeNo"], $row["mprFile"], $row["genericId"], 
-                $row["timestamp"]);
+            $instance = new self(
+                $id, $row["jobId"], $row["modelId"], $row["typeNo"], $row["mprFile"], $row["genericId"], $row["timestamp"]
+            );
         }
         else
         {
@@ -82,8 +86,8 @@ class JobType extends ModelTypeGeneric implements JsonSerializable
         }
         
         //Récupérer les paramètres
-        $stmt = $db->getConnection()->prepare("
-            SELECT `jtp`.* 
+        $stmt = $db->getConnection()->prepare(
+            "SELECT `jtp`.* 
             FROM `fabplan`.`job_type_params` AS `jtp` 
             INNER JOIN `fabplan`.`job_type` AS `jt` ON `jt`.`id_job_type` = `jtp`.`job_type_id`
             INNER JOIN `fabplan`.`door_types` AS `dt` ON `dt`.`importNo` = `jt`.`type_no`
@@ -95,8 +99,9 @@ class JobType extends ModelTypeGeneric implements JsonSerializable
         	INNER JOIN `fabplan`.`generic_parameters` AS `gp` 
                 ON `gp`.`generic_id` = `g`.`id` AND `gp`.`parameter_key` = `jtp`.`param_key`
             WHERE `jt`.`id_job_type` = :id
-            ORDER BY `gp`.`id` ASC;
-        ");
+            ORDER BY `gp`.`id` ASC " . 
+            (new \MYSQLDatabaseLockingReadTypes($databaseConnectionLockingReadType))->toLockingReadString() . ";"
+        );
         $stmt->bindValue(':id', $id, PDO::PARAM_INT);
         $stmt->execute();
         
@@ -107,9 +112,10 @@ class JobType extends ModelTypeGeneric implements JsonSerializable
         }
         
         //Récupérer les pièces
-        $stmt = $db->getConnection()->prepare("
-            SELECT `jtp`.* FROM `fabplan`.`job_type_porte` AS `jtp` WHERE `jtp`.`job_type_id` = :id;
-        ");
+        $stmt = $db->getConnection()->prepare(
+            "SELECT `jtp`.* FROM `fabplan`.`job_type_porte` AS `jtp` WHERE `jtp`.`job_type_id` = :id " . 
+            (new \MYSQLDatabaseLockingReadTypes($databaseConnectionLockingReadType))->toLockingReadString() . ";"
+        );
         $stmt->bindValue(':id', $id, PDO::PARAM_INT);
         $stmt->execute();
         
@@ -121,6 +127,7 @@ class JobType extends ModelTypeGeneric implements JsonSerializable
             array_push($instance->_parts, $part);
         }
         
+        $this->setDatabaseConnectionLockingReadType($databaseConnectionLockingReadType);
         return $instance;
     }
     
@@ -135,21 +142,34 @@ class JobType extends ModelTypeGeneric implements JsonSerializable
      */
     public function save(FabPlanConnection $db) : JobType
     {
-        $stmt = $db->getConnection()->prepare("
-                SELECT `jt`.* FROM `fabplan`.`job_type` AS `jt`
-                WHERE `jt`.`id_job_type` = :id LIMIT 1;
-            ");
-        $stmt->bindValue(':id', $this->getId(), PDO::PARAM_INT);
-        $stmt->execute();
-        
-        if($stmt->fetch(PDO::FETCH_ASSOC) == null)
+        if($this->getId() == null)
         {
             $this->insert($db);
         }
         else
         {
-            $this->update($db);
+            $dbTimestamp = \DateTime::createFromFormat("Y-m-d H:i:s", $this->getTimestampFromDatabase($db), "America/Montreal");
+            $localTimestamp = \DateTime::createFromFormat("Y-m-d H:i:s", $this->getTimestamp(), "America/Montreal");
+            if($this->getDatabaseConnectionReadingLockType() !== \MYSQLDatabaseLockingReadTypes::FOR_UPDATE)
+            {
+                throw new \Exception("The provided " . get_class($this) . " is not locked for update.");
+            }
+            elseif($databaseTimestamp > $localTimestamp)
+            {
+                throw new \Exception(
+                    "The provided " . get_class($this) . " is outdated. The last modification date of the database entry is 
+                    \"{$dbTimestamp->format("Y-m-d H:i:s")}\" whereas the last modification date of the local copy is 
+                    \"{$localTimestamp->format("Y-m-d H:i:s")}\"."
+                );
+            }
+            else
+            {
+                $this->update($db);
+            }
         }
+        
+        // Récupération de l'estampille à jour
+        $this->setTimestamp($this->getTimestampFromDatabase($db));
         
         return $this;
     }
@@ -280,7 +300,34 @@ class JobType extends ModelTypeGeneric implements JsonSerializable
         return $this;
     }
     
-    public function loadParameters(FabplanConnection $db) : JobType
+    /**
+     * Gets the last modification date timestamp of the database instance of this object
+     *
+     * @param \FabPlanConnection $db The database from which the timestamp should be fetched.
+     *
+     * @throws
+     * @author Marc-Olivier Bazin-Maurice
+     * @return string The last modification date timestamp of the database instance of this object.
+     */
+    public function getTimestampFromDatabase(\FabPlanConnection $db) : ?string
+    {
+        $stmt= $db->getConnection()->prepare("
+            SELECT `jt`.`estampille` FROM `fabplan`.`job_type` AS `jt` WHERE `jt`.`id_job_type` = :id;
+        ");
+        $stmt->bindValue(':id', $this->getId(), PDO::PARAM_INT);
+        $stmt->execute();
+        
+        if($row = $stmt->fetch())
+        {
+            return $row["estampille"];
+        }
+        else
+        {
+            return null;
+        }
+    }
+    
+    public function loadParameters(\FabplanConnection $db) : \ModelTypeGeneric
     {
         if($this->getModelId() <> 2)
         {
@@ -469,5 +516,31 @@ class JobType extends ModelTypeGeneric implements JsonSerializable
     public function jsonSerialize() : ?array
     {
         return get_object_vars($this);
+    }
+    
+    /**
+     * Gets the database connection locking read type applied to this object.
+     *
+     * @throws
+     * @author Marc-Olivier Bazin-Maurice
+     * @return int The database connection locking read type applied to this object.
+     */
+    private function getDatabaseConnectionLockingReadType() : int
+    {
+        return $this->__database_connection_locking_read_type;
+    }
+    
+    /**
+     * Sets the database connection locking read type applied to this object.
+     * @param int $databaseConnectionLockingReadType The new database connection locking read type applied to this object.
+     *
+     * @throws
+     * @author Marc-Olivier Bazin-Maurice
+     * @return \JobType This JobType.
+     */
+    private function setDatabaseConnectionLockingReadType(int $databaseConnectionLockingReadType) : \JobType
+    {
+        $this->__database_connection_locking_read_type = $databaseConnectionLockingReadType;
+        return $this;
     }
 }

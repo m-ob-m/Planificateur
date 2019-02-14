@@ -18,14 +18,24 @@
     include_once __DIR__ . '/../type/controller/typeController.php';		// Classe contrôleur de cette vue
     include_once __DIR__ . '/../generic/controller/genericController.php'; //Contrôleur de générique
     
-    $type = null;
-    if(isset($_GET["id"]))
+    $generics = array();
+    $thisType = null;
+    $db = new \FabPlanConnection();
+    try
     {
-        $thisType = (new TypeController())->getType($_GET["id"]);
+        $db->getConnection()->beginTransaction();
+        $generics = (new \GenericController())->getGenerics();
+        $thisType = isset($_GET["id"]) ? \Type::withID($_GET["id"]) : new \Type();
+        $db->getConnection()->commit();
     }
-    else 
+    catch(\Exception $e)
     {
-        $thisType = new Type(); 
+        $db->getConnection()->rollback();
+        throw $e;
+    }
+    finally
+    {
+        $db = null;
     }
 ?>
 
@@ -33,7 +43,7 @@
 <html>
 	<head>
 		<title>Fabridor - Liste des types de porte</title>
-		<meta charset="iso-8859-1" />
+		<meta charset="utf-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1" />
 		<link rel="stylesheet" href="/Planificateur/assets/css/responsive.css" />
 		<link rel="stylesheet" href="/Planificateur/assets/css/fabridor.css" />
@@ -123,7 +133,6 @@
 							<td class="lastVisibleColumn">
 								<select id="generic" onchange="updateCopyParametersFrom.apply($(this));"
 									style="text-align-last:center;">
-									<?php $generics = (new GenericController())->getGenerics(); ?>
                                 	<?php if(!empty($generics)):?>
 										<?php foreach($generics as $generic): ?>
 											<?php $selectedGenericId = $thisType->getGenericId(); ?>

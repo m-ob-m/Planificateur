@@ -12,8 +12,8 @@
     include_once __DIR__ . '/../../../lib/config.php';	// Fichier de configuration
     include_once __DIR__ . '/../../../lib/connect.php';	// Classe de connection à la base de données
     include_once __DIR__ . '/../../../lib/mpr/mprCutRite.php';  		// Createur de MPR pour CutRite
-    include_once __DIR__ . '/../controller/testController.php'; //Controlleur de TestType
-    include_once __DIR__ . '/../../generic/controller/genericController.php';	//
+    include_once __DIR__ . '/../controller/testController.php'; // Controlleur de TestType
+    include_once __DIR__ . '/../../generic/controller/genericController.php';	// Contrôleur de générique
    
     //Structure de retour vers javascript
     $responseArray = array("status" => null, "success" => array("data" => null), "failure" => array("message" => null));
@@ -28,7 +28,22 @@
             throw new Exception("Aucun identifiant de test fourni. La génération du programme unitaire a été annulée.");
         }
         
-        GenerateTestProgram((new TestController())->getTest($testId));
+        $db = new \FabPlanConnection();
+        try
+        {
+            $db->getConnection()->beginTransaction();
+            GenerateTestProgram(Test::withID($db, $testId));
+            $db->getConnection()->commit();
+        }
+        catch(\Exception $e)
+        {
+            $db->getConnection()->rollback();
+            throw $e;
+        }
+        finally
+        {
+            $db = null;
+        }
         
         // Retour au javascript
         $responseArray["status"] = "success";
@@ -72,7 +87,7 @@
         }
         else 
         {
-            $generic = (new GenericController())->getGeneric($test->getGenericId());
+            $generic = \Generic::withID($test->getGenericId());
             $parametersDescription = getParametersDescriptionsTable($generic);
             $mpr = new mprCutrite(__DIR__ . "/../../../lib/" . $generic->getFilename());
             $mpr->extractMprBlocks();

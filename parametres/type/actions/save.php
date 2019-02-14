@@ -73,29 +73,29 @@ finally
 function saveType(\Type $type, ?int $referenceId = null) : \Type
 {
     $db = new \FabPlanConnection();
-    
     try
     {
         $db->getConnection()->beginTransaction();
-        
         $type->save($db);
-        if($referenceId <> null)
+        if($referenceId !== null)
         {
             // Only on insert
-            $parameters = (new TypeController())->getType($referenceId)->getModelTypeParametersForAllModels($db);
+            $parameters = \Type::withId($db, $referenceId)->getModelTypeParametersForAllModels($db);
             foreach($parameters as $parameter)
             {
-                $parameter->setTypeNo($type->getImportNo());
-                $parameter->save($db);
+                $parameter->setTypeNo($type->getImportNo())->save($db);
             }
         }
-        
         $db->getConnection()->commit();
     }
     catch(\Exception $e)
     {
-        $db->getConnection()->rollBack();
-        throw \Exception($e->getMessage());
+        $db->getConnection()->rollback();
+        throw $e;
+    }
+    finally
+    {
+        $db = null;
     }
     
     return $type;

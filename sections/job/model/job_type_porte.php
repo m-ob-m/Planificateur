@@ -20,6 +20,7 @@ class JobTypePorte implements JsonSerializable
     private $_grain;
     private $_done;
     private $_timestamp;
+    private $__database_connection_locking_read_type = \MYSQLDatabaseLockingReadTypes::NONE;
     
     /**
      * Main constructor
@@ -63,29 +64,31 @@ class JobTypePorte implements JsonSerializable
      * @author Marc-Olivier Bazin-Maurice
      * @return JobTypePorte This JobTypePorte
      */
-    static function withID(FabplanConnection $db, int $id) :?JobTypePorte
+    static function withID(\FabplanConnection $db, int $id, int $databaseConnectionLockingReadType = 0) : ?\JobTypePorte
     {
-        $stmt = $db->getConnection()->prepare("
-            SELECT `jtp`.`job_type_id` AS `jobTypeId`, `jtp`.`longueur` AS `length`, `jtp`.`largeur` AS `width`, 
+        $stmt = $db->getConnection()->prepare(
+            "SELECT `jtp`.`job_type_id` AS `jobTypeId`, `jtp`.`longueur` AS `length`, `jtp`.`largeur` AS `width`, 
                 `jtp`.`quantite` AS `quantityToProduce`, `jtp`.`qte_produite` AS `producedQuantity`, `jtp`.`grain` AS `grain`, 
                 `jtp`.`terminer` AS `done`, `jtp`.`estampille` AS `timestamp`
             FROM `fabplan`.`job_type_porte` AS `jtp`
-            WHERE `jtp`.`id_job_type_porte` = :id;
-        ");
+            WHERE `jtp`.`id_job_type_porte` = :id " . 
+            (new \MYSQLDatabaseLockingReadTypes($databaseConnectionLockingReadType))->toLockingReadString() . ";"
+        );
         $stmt->bindValue(':id', $id, PDO::PARAM_INT);
         $stmt->execute();
         
         $instance = null;
         if($row = $stmt->fetch())
         {
-            $instance = new self($id, $row["jobTypeId"], $row["quantityToProduce"], $row["producedQuantity"], (float)$row["length"], 
-                (float)$row["width"], $row["grain"], $row["done"], $row["timestamp"]);
+            $instance = new self($id, $row["jobTypeId"], $row["quantityToProduce"], $row["producedQuantity"], 
+                (float)$row["length"], (float)$row["width"], $row["grain"], $row["done"], $row["timestamp"]);
         }
         else
         {
             return null;    
         }
         
+        $this->setDatabaseConnectionLockingReadType($databaseConnectionLockingReadType);
         return $instance;
     }
     
@@ -98,23 +101,36 @@ class JobTypePorte implements JsonSerializable
      * @author Marc-Olivier Bazin-Maurice
      * @return JobTypePorte This JobTypePorte (for method chaining)
      */
-    public function save(FabPlanConnection $db) : JobTypePorte
-    {
-        $stmt = $db->getConnection()->prepare("
-                SELECT `jtp`.* FROM `fabplan`.`job_type_porte` AS `jtp`
-                WHERE `jtp`.`id_job_type_porte` = :id LIMIT 1;
-            ");
-        $stmt->bindValue(':id', $this->getId(), PDO::PARAM_INT);
-        $stmt->execute();
-        
-        if($stmt->fetch(PDO::FETCH_ASSOC) == null)
+    public function save(\FabPlanConnection $db) : \JobTypePorte
+    {        
+        if(self::withID($db, $this->getId()))
         {
             $this->insert($db);
         }
         else
         {
-            $this->update($db);
+            $dbTimestamp = \DateTime::createFromFormat("Y-m-d H:i:s", $this->getTimestampFromDatabase($db), "America/Montreal");
+            $localTimestamp = \DateTime::createFromFormat("Y-m-d H:i:s", $this->getTimestamp(), "America/Montreal");
+            if($this->getDatabaseConnectionReadingLockType() !== \MYSQLDatabaseLockingReadTypes::FOR_UPDATE)
+            {
+                throw new \Exception("The provided " . get_class($this) . " is not locked for update.");
+            }
+            elseif($databaseTimestamp > $localTimestamp)
+            {
+                throw new \Exception(
+                    "The provided " . get_class($this) . " is outdated. The last modification date of the database entry is
+                    \"{$dbTimestamp->format("Y-m-d H:i:s")}\" whereas the last modification date of the local copy is
+                    \"{$localTimestamp->format("Y-m-d H:i:s")}\"."
+                );
+            }
+            else
+            {
+                $this->update($db);
+            }
         }
+        
+        // Récupération de l'estampille à jour
+        $this->setTimestamp($this->getTimestampFromDatabase($db));
         
         return $this;
     }
@@ -198,6 +214,33 @@ class JobTypePorte implements JsonSerializable
         $stmt->execute();
         
         return $this;
+    }
+    
+    /**
+     * Gets the last modification date timestamp of the database instance of this object
+     *
+     * @param \FabPlanConnection $db The database from which the timestamp should be fetched.
+     *
+     * @throws
+     * @author Marc-Olivier Bazin-Maurice
+     * @return string The last modification date timestamp of the database instance of this object.
+     */
+    public function getTimestampFromDatabase(\FabPlanConnection $db) : ?string
+    {
+        $stmt= $db->getConnection()->prepare("
+            SELECT `jtp`.`estampille` FROM `fabplan`.`job_type_porte` AS `jtp` WHERE `jtp`.`id_job_type_porte` = :id;
+        ");
+        $stmt->bindValue(':id', $this->getId(), PDO::PARAM_INT);
+        $stmt->execute();
+        
+        if($row = $stmt->fetch())
+        {
+            return $row["estampille"];
+        }
+        else
+        {
+            return null;
+        }
     }
     
     /**
@@ -453,6 +496,32 @@ class JobTypePorte implements JsonSerializable
     public function jsonSerialize()
     {
         return get_object_vars($this);
+    }
+    
+    /**
+     * Gets the database connection locking read type applied to this object.
+     *
+     * @throws
+     * @author Marc-Olivier Bazin-Maurice
+     * @return int The database connection locking read type applied to this object.
+     */
+    private function getDatabaseConnectionLockingReadType() : int
+    {
+        return $this->__database_connection_locking_read_type;
+    }
+    
+    /**
+     * Sets the database connection locking read type applied to this object.
+     * @param int $databaseConnectionLockingReadType The new database connection locking read type applied to this object.
+     *
+     * @throws
+     * @author Marc-Olivier Bazin-Maurice
+     * @return \JobType This JobType.
+     */
+    private function setDatabaseConnectionLockingReadType(int $databaseConnectionLockingReadType) : \JobType
+    {
+        $this->__database_connection_locking_read_type = $databaseConnectionLockingReadType;
+        return $this;
     }
 }
 ?>

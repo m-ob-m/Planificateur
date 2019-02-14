@@ -10,7 +10,7 @@ include_once __DIR__ . "/../../varmodtype/model/modelTypeParameter.php";
  * \brief 		Modèle de paramètre de modèle-type-générique
  * \details 	Modèle de paramètre de modèle-type-générique
  */
-class ModelTypeGenericParameter extends Parameter implements JsonSerializable
+class ModelTypeGenericParameter extends \Parameter implements \JsonSerializable
 {   
     private $_fkDoorModel;
     private $_fkDoorType;
@@ -54,17 +54,18 @@ class ModelTypeGenericParameter extends Parameter implements JsonSerializable
      * @author Marc-Olivier Bazin-Maurice
      * @return ModelTypeGenericParameter The ModelTypeGenericParameter object retrieved from the database
      */
-    public static function withID(FabplanConnection $db, int $modelId, int $typeNo, string $key) : ?ModelTypeGenericParameter
+    public static function withID(\FabplanConnection $db, int $modelId, int $typeNo, string $key) : ?\ModelTypeGenericParameter
     {
-        $stmt = $db->getConnection()->prepare("
-            SELECT `dmd`.`paramValue` AS `specificValue`, `gp`.`parameter_value` AS `genericValue`, `gp`.`description` AS `description`
+        $stmt = $db->getConnection()->prepare(
+            "SELECT `dmd`.`paramValue` AS `specificValue`, `gp`.`parameter_value` AS `genericValue`, 
+                `gp`.`description` AS `description`
             FROM `fabplan`.`door_types` AS `dt`
             INNER JOIN `fabplan`.`generics` AS `g` ON `dt`.`generic_id` = `g`.`id` AND `dt`.`importNo` = :typeNo
             INNER JOIN `generic_parameters` AS `gp` ON `gp`.`generic_id` = `g`.`id` AND `gp`.`parameter_key` = :parameterKey
             INNER JOIN `fabplan`.`door_model` AS `dm` ON `dm`.`id_door_model` = :modelId
             LEFT JOIN `fabplan`.`door_model_data`AS `dmd` ON `dmd`.`paramKey` = `gp`.`parameter_key` 
-            	AND `dmd`.`fkDoorModel` = `dm`.`id_door_model` AND `dmd`.`fkDoorType` = `dt`.`importNo`;
-        ");
+            	AND `dmd`.`fkDoorModel` = `dm`.`id_door_model` AND `dmd`.`fkDoorType` = `dt`.`importNo`;"
+        );
         $stmt->bindValue(":modelId", $modelId, PDO::PARAM_INT);
         $stmt->bindValue(":typeNo", $typeNo, PDO::PARAM_INT);
         $stmt->bindValue(":parameterKey", $key, PDO::PARAM_STR);
@@ -91,7 +92,7 @@ class ModelTypeGenericParameter extends Parameter implements JsonSerializable
      * @author Marc-Olivier Bazin-Maurice
      * @return ModelTypeGenericParameter This ModelTypeGenericParameter (for method chaining)
      */
-    public function setDescription(?string $description) : ModelTypeGenericParameter
+    public function setDescription(?string $description) : \ModelTypeGenericParameter
     {
         $this->_description = $description;
         return $this;
@@ -106,7 +107,7 @@ class ModelTypeGenericParameter extends Parameter implements JsonSerializable
      * @author Marc-Olivier Bazin-Maurice
      * @return ModelTypeGenericParameter This ModelTypeGenericParameter (for method chaining)
      */
-    public function setDefaultValue(?string $defaultValue) : ModelTypeGenericParameter
+    public function setDefaultValue(?string $defaultValue) : \ModelTypeGenericParameter
     {
         $this->_defaultValue = $defaultValue;
         $this->setValue($this->_specificValue ?? $this->_defaultValue ?? null);
@@ -122,7 +123,7 @@ class ModelTypeGenericParameter extends Parameter implements JsonSerializable
      * @author Marc-Olivier Bazin-Maurice
      * @return ModelTypeGenericParameter This ModelTypeGenericParameter (for method chaining)
      */
-    public function setSpecificValue(?string $specificValue) : ModelTypeGenericParameter
+    public function setSpecificValue(?string $specificValue) : \ModelTypeGenericParameter
     {
         $this->_specificValue = $specificValue;
         $this->setValue($this->_specificValue ?? $this->_defaultValue ?? null);
@@ -138,7 +139,7 @@ class ModelTypeGenericParameter extends Parameter implements JsonSerializable
      * @author Marc-Olivier Bazin-Maurice
      * @return ModelTypeGenericParameter This ModelTypeGenericParameter (for method chaining)
      */
-    private function setValue(?string $value) : ModelTypeGenericParameter
+    private function setValue(?string $value) : \ModelTypeGenericParameter
     {
         $this->_value = $value;
         return $this;
@@ -177,7 +178,7 @@ class ModelTypeGenericParameter extends Parameter implements JsonSerializable
      * @author Marc-Olivier Bazin-Maurice
      * @return ModelTypeGenericParameter This ModelTypeGenericParameter (for method chaining)
      */
-    public function setModelId($modelId) : ModelTypeGenericParameter
+    public function setModelId($modelId) : \ModelTypeGenericParameter
     {
         $this->_fkDoorModel = $modelId;
         return $this;
@@ -192,7 +193,7 @@ class ModelTypeGenericParameter extends Parameter implements JsonSerializable
      * @author Marc-Olivier Bazin-Maurice
      * @return ModelTypeGenericParameter This ModelTypeGenericParameter (for method chaining)
      */
-    public function setTypeNo($typeNo) : ModelTypeGenericParameter
+    public function setTypeNo($typeNo) : \ModelTypeGenericParameter
     {
         $this->_fkDoorType= $typeNo;
         return $this;

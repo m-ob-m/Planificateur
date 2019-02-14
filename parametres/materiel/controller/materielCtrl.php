@@ -56,9 +56,9 @@ class MaterielController
 	    $stmt = $this->getDBConnection()->getConnection()->prepare("
             SELECT `m`.`id_materiel`
             FROM `fabplan`.`materiel` AS `m`
-            ORDER BY `m`.`id_materiel` " . (($ascending === true) ? "ASC" : "DESC") .
-	        (($quantity === 0) ? "" : " LIMIT :quantity OFFSET :offset") .
-	        ";"
+            ORDER BY `m`.`id_materiel` " . (($ascending === true) ? "ASC" : "DESC") . " " . 
+	        (($quantity === 0) ? "" : " LIMIT :quantity OFFSET :offset") . " " . 
+	        "FOR SHARE;"
 	        );
 	    $stmt->bindValue(":quantity", $quantity, PDO::PARAM_INT);
 	    $stmt->bindValue(":offset", $offset, PDO::PARAM_INT);

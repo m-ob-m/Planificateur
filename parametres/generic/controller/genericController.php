@@ -56,10 +56,10 @@ class GenericController
 	    $stmt = $this->getDBConnection()->getConnection()->prepare("
             SELECT `g`.`id`
             FROM `fabplan`.`generics` AS `g`
-            ORDER BY `g`.`id` " . (($ascending === true) ? "ASC" : "DESC") .
-	        (($quantity === 0) ? "" : " LIMIT :quantity OFFSET :offset") .
-	        ";"
-	        );
+            ORDER BY `g`.`id` " . (($ascending === true) ? "ASC" : "DESC") . " " . 
+	        (($quantity === 0) ? "" : "LIMIT :quantity OFFSET :offset") . " " . 
+	        "FOR SHARE;"
+	    );
 	    $stmt->bindValue(":quantity", $quantity, PDO::PARAM_INT);
 	    $stmt->bindValue(":offset", $offset, PDO::PARAM_INT);
 	    $stmt->execute();

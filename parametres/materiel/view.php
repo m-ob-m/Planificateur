@@ -15,15 +15,31 @@ Free for personal and commercial use under the CCA 3.0 license (html5up.net/lice
 */
 
 /* INCLUDE */
-include 'controller/materielCtrl.php';		// Classe controleur de cette vue
+include_once __DIR__ . '/controller/materielCtrl.php';		// Classe contrôleur de cette vue
 
-if(isset($_GET["id"]))
+$material = null;
+$db = new \FabPlanConnection();
+try
 {
-    $material = (new MaterielController())->getMateriel($_GET["id"]);
-} 
-else
+    $db->getConnection()->beginTransaction();
+    if(isset($_GET["id"]))
+    {
+        $material = (new \MaterielController())->getMateriel($_GET["id"]);
+    }
+    else
+    {
+        $material = new \Materiel();
+    }
+    $db->getConnection()->commit();
+}
+catch(\Exception $e)
 {
-	$material = new Materiel();
+    $db->getConnection()->rollback();
+    throw $e;
+}
+finally
+{
+    $db = null;
 }
 
 ?>

@@ -51,12 +51,15 @@
         /**
          * Linearization function
          *
-         * @param \MprMergeInputFile | \stdClass | string $inputFile An array containing the input file and its parameters.
+         * @param \MprMergeInputFile | \stdClass | string $inputFile An array containing the input file and its 
+         *                                                           parameters.
          * @param string $outputFilePath The desired path of the output mpr file.
-         * @param array[\MprVariable | \stdClass] $variables An array of variables applied to the the program before linearization.
+         * @param array[\MprVariable | \stdClass] $variables An array of variables applied to the the program before 
+         *                                                   linearization.
          *
-         * @throws \UnexpectedMprMergeInputFileParametersFormatException If the functions fails to generate a valid .mrg file.
-         *         \UnexpectedVariableFormatException If the variables are not provided in a valid format.
+         * @throws \UnexpectedMprMergeInputFileParametersFormatException If the functions fails to generate a valid 
+         *                                                               .mrg file.
+         * @throws \UnexpectedVariableFormatException If the variables are not provided in a valid format.
          * @author Marc-Olivier Bazin-Maurice
          * @return 
          */ 
@@ -120,7 +123,17 @@
                 {
                     // Perform linearization
                     $application = "C:\\Program Files (x86)\\Homag Group\\woodWOP6\\mprmerge.exe";
-                    shell_exec("\"{$application}\" \"-f={$mergerFile}\" \"-m={$parameterFile}\"");
+                    $commandStatus = null;
+                    $commandOutput = null;
+                    exec(
+                        "\"{$application}\" \"-f={$mergerFile}\" \"-m={$parameterFile}\"", 
+                        $commandOutput, 
+                        $commandStatus
+                    );
+                    if($commandStatus !== 0)
+                    {
+                        throw new \Exception("Error {$commandStatus}: " . implode("\r\n", $commandOutput));
+                    }
                 }
                 catch(\Exception $e)
                 {
@@ -135,7 +148,8 @@
             {
                 throw $e;
             }
-            finally{
+            finally
+            {
                 unlink($parameterFile);
             }
         }
@@ -143,12 +157,13 @@
         /**
          * Merge function
          *
-         * @param array[\MprMergeInputFile | \stdClass | string] $inputFiles An array containing the input files and their 
-         *                                                                   parameters.
+         * @param array[\MprMergeInputFile | \stdClass | string] $inputFiles An array containing the input files and 
+         *                                                                   their parameters.
          * @param string $outputFilePath The desired path of the output mpr file.
          *
-         * @throws \UnexpectedMprMergeInputFileParametersFormatException If the functions fails to generate a valid .mrg file.
-         *         \UnexpectedVariableFormatException If the variables are not provided in a valid format.
+         * @throws \UnexpectedMprMergeInputFileParametersFormatException If the functions fails to generate a valid 
+         *                                                               .mrg file.
+         * @throws \UnexpectedVariableFormatException If the variables are not provided in a valid format.
          * @author Marc-Olivier Bazin-Maurice
          * @return
          */ 
@@ -196,7 +211,17 @@
             {
                 // Perform linearization
                 $application = "C:\\Program Files (x86)\\Homag Group\\woodWOP6\\mprmerge.exe";
-                shell_exec("\"{$application}\" \"-f={$mergerFile}\"");
+                $commandStatus = null;
+                $commandOutput = null;
+                exec(
+                    "\"{$application}\" \"-f={$mergerFile}\"", 
+                    $commandOutput, 
+                    $commandStatus
+                );
+                if($commandStatus !== 0)
+                {
+                    throw new \Exception("Error {$commandStatus}: " . implode("\r\n", $commandOutput));
+                }
             }
             catch(\Exception $e)
             {
@@ -209,9 +234,11 @@
         }
         
         /**
-         * Creates a temporary variables file used to manipulate variables when using mprmerge.exe for linearization purposes.
+         * Creates a temporary variables file used to manipulate variables when using mprmerge.exe for linearization 
+         * purposes.
          *
-         * @param array[\MprVariable] $variables The variables that must be applied to the component before linearization.
+         * @param array[\MprVariable] $variables The variables that must be applied to the component before 
+         *                                       linearization.
          *
          * @throws \Exception If the temporary file could not be created.
          * @author Marc-Olivier Bazin-Maurice
@@ -243,18 +270,19 @@
         }
         
         /**
-         * Creates a temporary merger file used to indicate mprMerge how to merge the files together and / or how to simplify.
+         * Creates a temporary merger file used to indicate mprMerge how to merge the files together and / or how to 
+         * simplify.
          *
          * @param string $outputFile The path of the output file.
          * @param \MprMergeInputFile[] | \MprMergeInputFile $inputFiles The inputFiles and their parameters.
-         * @param [] $mergeOptions An associative array of options to apply to mprmerge.exe. By default, the numeric ones are 
-         *                         all set to 0.
+         * @param string[] $options An associative array of options to apply to mprmerge.exe. By default, the numeric 
+         *                         ones are all set to 0.
          *
          * @throws \Exception If the temporary file could not be created.
          * @author Marc-Olivier Bazin-Maurice
          * @return string The path of the temporary merger file.
          */ 
-        private function createTemporaryMergerFile(string $outputFile, $inputFiles, array $mergeOptions = array()) : string
+        private function createTemporaryMergerFile(string $outputFile, $inputFiles, array $options = array()) : string
         {
             $timestamp = round(microtime(true) * 1000);
             $mergerFilePath = sys_get_temp_dir() . "\\ComponentLevelMerger{$timestamp}.mrg";
@@ -267,9 +295,9 @@
             $mergerData = "[Options]\r\n";
             foreach(self::MERGER_FILE_OPTIONS as $key => $defaultValue)
             {
-                if(isset($mergeOptions[$key]))
+                if(isset($options[$key]))
                 {
-                    $mergerData .= "{$key}={$mergeOptions[$key]}\r\n";
+                    $mergerData .= "{$key}={$options[$key]}\r\n";
                 }
                 else
                 {

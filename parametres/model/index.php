@@ -16,6 +16,25 @@ Free for personal and commercial use under the CCA 3.0 license (html5up.net/lice
 
 /* INCLUDE */
 include_once __DIR__ . '/controller/modelController.php';		// Classe contrôleur de cette vue
+
+$models = array();
+$db = new \FabPlanConnection();
+try
+{
+    $db->getConnection()->beginTransaction();
+    $models = (new \ModelController())->getModels();
+    $db->getConnection()->commit();
+}
+catch(\Exception $e)
+{
+    $db->getConnection()->rollback();
+    throw $e;
+}
+finally
+{
+    $db = null;
+}
+
 ?>
 
 <!DOCTYPE HTML>
@@ -73,7 +92,7 @@ include_once __DIR__ . '/controller/modelController.php';		// Classe contrôleur
     						</tr>
 						</thead>
 						<tbody>
-    						<?php foreach ((new ModelController())->getModels() as $model): ?>
+    						<?php foreach ($models as $model): ?>
     							<tr class="link" onclick="openModel(<?= $model->getId(); ?>)">
     								<!-- Id -->
     								<td class="firstVisibleColumn"><?= $model->getId(); ?></td>

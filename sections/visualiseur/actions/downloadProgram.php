@@ -17,13 +17,27 @@ $responseArray = array("status" => null, "success" => array("data" => null), "fa
 
 try
 {
-    $db = new FabPlanConnection();
-    
     // Vérification des paramètres
     $jobTypePorteId = $_GET["jobTypePorteId"] ?? null;
     
-    $jobTypePorte = \JobTypePorte::withID($db, $jobTypePorteId);
-    $jobType = \JobType::withID($db, $jobTypePorte->getJobTypeId());
+    $db = new \FabPlanConnection();
+    try
+    {
+        $db->getConnection()->beginTransaction();
+        $jobTypePorte = \JobTypePorte::withID($db, $jobTypePorteId);
+        $jobType = \JobType::withID($db, $jobTypePorte->getJobTypeId());
+        $db->getConnection()->commit();
+    }
+    catch(\Exception $e)
+    {
+        $db->getConnection()->rollback();
+        throw $e;
+    }
+    finally
+    {
+        $db = null;
+    }
+    
     $programName = "{$jobType->getModelId()}_{$jobType->getTypeNo()}_{$jobType->getId()}.mpr";
     
     if($programName === null)
@@ -76,31 +90,6 @@ catch(Exception $e)
 finally
 {
     echo json_encode($responseArray);
-}
-
-/**
- * Removes files older than one day from the temporary folder.
- *
- * @throws
- * @author Marc-Olivier Bazin-Maurice
- * @return 
- */
-function cleanTemporaryFiles() : void
-{
-    if(file_exists(__DIR__ . "/../temp"))
-    {
-        foreach(new DirectoryIterator(__DIR__ . "/../temp") as $fileInfo)
-        {
-            if($fileInfo->isDot())
-            {
-                continue;
-            }
-            elseif($fileInfo->isFile() && time() - $fileInfo->getCTime() >= 24 * 60 * 60)
-            {
-                unlink($fileInfo->getRealPath());
-            }
-        }
-    }
 }
 
 /**

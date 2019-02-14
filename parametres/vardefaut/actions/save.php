@@ -42,10 +42,23 @@ try
     }
     
     findErrorsInParametersArray($parametersArray);
-    $generic = (new GenericController())
-        ->getGeneric($genericId)
-        ->setGenericParameters($parametersArray)
-        ->save(new FabPlanConnection(), true);
+    
+    $db = new \FabPlanConnection();
+    try
+    {
+        $db->getConnection()->beginTransaction();
+        $generic = \Generic::withID($db, $genericId)->setGenericParameters($parametersArray)->save($db, true);
+        $db->getConnection()->commit();
+    }
+    catch(\Exception $e)
+    {
+        $db->getConnection()->rollback();
+        throw $e;
+    }
+    finally
+    {
+        $db = null;
+    }
     
     // Retour au javascript
     $responseArray["status"] = "success";

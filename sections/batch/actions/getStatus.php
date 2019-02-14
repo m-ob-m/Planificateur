@@ -19,7 +19,22 @@ try
     $batchId = isset($_GET["batchId"]) ? intval($_GET["batchId"]) : null;
     
     // Get the information
-    $batch = (new \BatchController())->getBatch($batchId);
+    $db = new \FabPlanConnection();
+    try
+    {
+        $db->getConnection()->beginTransaction();
+        \Batch::withID($db, $batchId);
+        $db->getConnection()->commit();
+    }
+    catch(\Exception $e)
+    {
+        $db->getConnection()->rollback();
+        throw $e;
+    }
+    finally
+    {
+        $db = null;
+    }
     
     // Retour au javascript
     $responseArray["status"] = "success";

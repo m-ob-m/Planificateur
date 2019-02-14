@@ -48,8 +48,8 @@ class PlanificateurController
 	 *
 	 * \return    	PlanificateurController Cet objet
 	 */
-	function fetchBatch($start = null, $end = null) : PlanificateurController
-	{	
+	function fetchBatch($start = null, $end = null) : \PlanificateurController
+	{
 		$this->_batches = array();
 		
 		//Convert inputs to date
@@ -73,13 +73,16 @@ class PlanificateurController
 		
 		
 		//  Retrieve batches between specified boundaries.
+		$this->_db->getConnection()->beginTransaction();
 		$stmt1 = $this->_db->getConnection()->prepare('
-            SELECT `b`.`id_batch` AS `id`, `b`.`nom_batch` AS `name`, `b`.`date_debut` AS `startDate`, `b`.`date_fin` AS `endDate`, 
-                `b`.`jour_complet` AS `fullDay`, `b`.`commentaire` AS `comments`, `b`.`etat` AS `status`, 
-                `b`.`etat_mpr` AS `mprStatus`, `b`.`carrousel` AS `carrousel`, `b`.`estampille` AS `timestamp`
+            SELECT `b`.`id_batch` AS `id`, `b`.`nom_batch` AS `name`, `b`.`date_debut` AS `startDate`, 
+                `b`.`date_fin` AS `endDate`, `b`.`jour_complet` AS `fullDay`, `b`.`commentaire` AS `comments`, 
+                `b`.`etat` AS `status`, `b`.`etat_mpr` AS `mprStatus`, `b`.`carrousel` AS `carrousel`, 
+                `b`.`estampille` AS `timestamp`
             FROM `fabplan`.`batch` AS `b`
             WHERE `b`.`date_debut` BETWEEN :start AND :end 
-            ORDER BY `b`.`id_batch` DESC;
+            ORDER BY `b`.`id_batch` DESC
+            FOR SHARE;
         ');
 		$stmt1->bindValue(':start', $start->format('Y/m/d'), PDO::PARAM_STR);
 		$stmt1->bindValue(':end', $end->format('Y/m/d'), PDO::PARAM_STR);
@@ -103,7 +106,8 @@ class PlanificateurController
                 INNER JOIN `fabplan`.`batch_job` AS `bj` ON `b`.`id_batch` = `bj`.`batch_id`
                 INNER JOIN `fabplan`.`job` AS `j` ON `bj`.`job_id` = `j`.`id_job`
                 WHERE `b`.`id_batch` = :batchId
-                ORDER BY `j`.`numero` ASC;
+                ORDER BY `j`.`numero` ASC
+                FOR SHARE;
             ');
             $stmt2->bindValue(':batchId', $batch->id, PDO::PARAM_INT);
             $stmt2->execute();
@@ -115,7 +119,8 @@ class PlanificateurController
             
             array_push($this->_batches, $batch);
         }
-		
+        $this->_db->getConnection()->commit();
+        
 		return $this;
 	}
 	
@@ -139,7 +144,7 @@ class PlanificateurController
 		
 		foreach ($this->_batches as $batch)
 		{
-			$event = new stdClass();
+			$event = new \stdClass();
 			$event->editable = true;
 			
 			$event->color = $this->couleurEtat($batch->status , $batch->end);

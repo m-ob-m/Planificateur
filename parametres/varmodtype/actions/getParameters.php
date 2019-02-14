@@ -44,8 +44,9 @@ try
     }
     
     // Get the information
-    $modelType = (new ModelTypeController())->getModelType($modelId, $typeNo);
-    $parameters = createModelTypeParametersView($modelType);
+    $db->getConnection()->beginTransaction();
+    $parameters = createModelTypeParametersView($modelId, $typeNo);
+    $db->getConnection()->commit();
     
     // Retour au javascript
     $responseArray["status"] = "success";
@@ -64,18 +65,36 @@ finally
 /**
  * Generate a view for the ModelType interface
  *
- * @param ModelType $modelType The modelType object for which the view must be created
+ * @param int $modelId The unique numerical identifier of the model to create the view for.
+ * @param int $typeNo The import number of the type to create the view for.
  *
  * @throws
  * @author Marc-Olivier Bazin-Maurice
  * @return array The array containing the fields of the view.
  */ 
-function createModelTypeParametersView(ModelType $modelType) : array
+function createModelTypeParametersView(int $modelId, int $typeNo) : array
 {
-    $type = (new TypeController())->getTypeByImportNo($modelType->getTypeNo());
-    $generic = (new GenericController())->getGeneric($type->getGenericId());
+    $db = new \FabPlanConnection();
+    try
+    {
+        $db->getConnection()->beginTransaction();
+        $modelType = (new \ModelType())->setModelId($modelId)->setTypeNo($typeNo)->loadParameters($this->_db);
+        $type = \Type::withImportNo($db, $typeNo);
+        $generic = \Generic::withID($db, $type->getGenericId());
+        $db->getConnection()->commit();
+    }
+    catch(\Exception $e)
+    {
+        $db->getConnection()->rollback();
+        throw $e;
+    }
+    finally
+    {
+        $db = null;
+    }
     
     $parameters = array();
+    /* @var $genericParameter \GenericParameter */
     foreach($generic->getGenericParameters() as $genericParameter)
     {
         $key = $genericParameter->getKey();

@@ -59,8 +59,9 @@ class JobController
     function getJobByName(string $name) : ?Job
     {
         $stmt = $this->getDBConnection()->getConnection()->prepare("
-            SELECT `j`.`id_job` AS `id` FROM `fabplan`.`job` AS `j` WHERE `j`.`numero` = :name;"
-        );
+            SELECT `j`.`id_job` AS `id` FROM `fabplan`.`job` AS `j` 
+            WHERE `j`.`numero` = :name;
+        ");
         $stmt->bindValue(":name", $name, PDO::PARAM_STR);
         $stmt->execute();
         

@@ -23,10 +23,9 @@ $mprFile = fopen($mprPath, "r") or die("Unable to open mpr file!");
 		<meta charset="UTF-8" />
 	</head>
 	<body>
-		<?= str_replace("\r\n", "<br>", htmlspecialchars(utf8_encode(fread($mprFile, filesize($mprPath))), ENT_QUOTES, "UTF-8", true)); ?>
+		<?php $fileContents = utf8_encode(fread($mprFile, filesize($mprPath))); ?>
+		<?= str_replace("\r\n", "<br>", htmlspecialchars($fileContents, ENT_QUOTES, "UTF-8", true)); ?>
 	</body>
 </html>
 
-<?php 
-fclose($mprFile);
-?>
+<?php fclose($mprFile); ?>

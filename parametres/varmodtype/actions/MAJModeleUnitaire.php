@@ -91,77 +91,106 @@
      */ 
     function GenerateUnitaryPrograms(?int $modelId, ?int $typeNo) : void
     {
-        // Pour enlever les notices du eval()
-        error_reporting(E_ERROR | E_WARNING | E_PARSE);
+        $modelTypeGenericsToUpdate = array();
+        $db = new \FabPlanConnection();
+        try
+        {
+            $db->getConnection()->beginTransaction();
+            
+            // Sélectionner les modèles et types et les mettre à jour.
+            $modelsToUpdate = null;
+            if($modelId === null)
+            {
+                $modelsToUpdate = (new \ModelController())->getModels();
+            }
+            else
+            {
+                $modelsToUpdate = array(\Model::withID($db, $modelId));
+            }
+            
+            $typesToUpdate = null;
+            if($typeNo === null)
+            {
+                $typesToUpdate = (new \TypeController())->getTypes();
+            }
+            else
+            {
+                $typesToUpdate = array(\Type::withID($db, $typeNo));
+            }
+            
+            /* \var $type \Type */
+            foreach($typesToUpdate as $type)
+            {
+                /* \var $model \Model */
+                foreach($modelToUpdate as $model)
+                {
+                    $modelTypeGeneric = (new \ModelTypeGeneric($model->getId(), $type->getImportNo()))->loadParameters($db);
+                    $generic = \Generic::withID($db, $type->getGenericId());
+                    array_push($modelTypeGenericsToUpdate, 
+                        array("modelTypeGeneric" => $modelTypeGeneric, "model" => $model, "type" => $type, "generic" => $generic)
+                    );
+                }
+            }
+            
+            $db->getConnection()->commit();
+        }
+        catch(\Exception $e)
+        {
+            $db->getConnection()->rollback();
+            throw $e;
+        }
+        finally
+        {
+            $db = null;
+        }
         
-        //Sélectionner les modèles et types et les mettre à jour.
-        $modelsToUpdate = null;
-        if($modelId === null)
-        {
-            $modelsToUpdate = (new ModelController())->getModels();
-        }
-        else
-        {
-            $modelsToUpdate = array((new ModelController())->getModel($modelId));
-        }
-        
-        $typesToUpdate = null;
-        if($typeNo === null)
-        {
-            $typesToUpdate = (new TypeController())->getTypes();
-        }
-        else
-        {
-            $typesToUpdate = array((new TypeController())->getTypeByImportNo($typeNo));
-        }
-        
-        loopGenerateUnitaryPrograms($modelsToUpdate, $typesToUpdate);
+        loopGenerateUnitaryPrograms($modelTypeGenericsToUpdate);
     }
     
     
     /**
-     * Loop through model-type combinations and generate their unitary program
+     * Loop through model-type combinations and generate their unitary program.
      *
-     * @param Modele array $modelsToUpdate An array containing all the Model objects for which unitary programs must be generated.
-     * @param Type array $typesToUpdate An array containing all the Type objects for which unitary programs must be generated.
+     * @param array $modelTypeGenericsToUpdate An array containing all the Model objects for which unitary 
+     *                                                       programs must be generated.
      *
      * @throws 
      * @author Marc-Olivier Bazin-Maurice
      * @return 
      */ 
-    function loopGenerateUnitaryPrograms(array $modelsToUpdate, array $typesToUpdate) : void
+    function loopGenerateUnitaryPrograms(array $modelTypeGenericsToUpdate) : void
     {
-        if(empty($modelsToUpdate) || empty($typesToUpdate))
+        if(empty($modelTypeGenericsToUpdate))
         {
             throw new Exception("La demande de mise à jour des couples modèle-type n'affecte aucun couple.");
         }
         
-        foreach ($typesToUpdate as $type)
+        /* \var $modelTypeGeneric \ModelTypeGeneric */
+        foreach ($modelTypeGenericsToUpdate as $modelTypeGenericToUpdate)
         {
-            $generic = (new GenericController())->getGeneric($type->getGenericId());
-            foreach($modelsToUpdate as $model)
-            {
-                $name = getUnitaryProgramName($model, $type);
-                $modelTypeGeneric = (new ModelTypeGenericController())->getModelTypeGeneric($model->getId(), $type->getImportNo());
-                $test = Test::fromModelTypeGeneric($modelTypeGeneric)->setName($name);
-                generateSingleUnitaryProgram($test, $model, $type, $generic);
-            }
+            $model = $modelTypeGenericToUpdate["model"];
+            $type = $modelTypeGenericToUpdate["type"];
+            $generic = $modelTypeGenericToUpdate["generic"];
+            $modelTypeGeneric = $modelTypeGenericToUpdate["modelTypeGeneric"];
+            $name = getUnitaryProgramName($model, $type);
+            $test = \Test::fromModelTypeGeneric($modelTypeGeneric)->setName($name);
+            generateSingleUnitaryProgram($test, $model, $type, $generic);
         }
     }
     
     /**
      * Generate a unitary program for a model-type combination
      *
-     * @param Test $test A Test object.
-     * @param Model $model A model object for which a unitary program must be generated.
-     * @param Type $type A type object for which a unitary program must be generated.
-     * @param Generic $generic The generic object to use to produce this Test.
+     * @param \Test $test A Test object.
+     * @param \Model $model A model object for which a unitary program must be generated.
+     * @param \Type $type A type object for which a unitary program must be generated.
+     * @param \Generic $generic The generic object to use to produce this Test.
      *
      * @throws 
      * @author Marc-Olivier Bazin-Maurice
      * @return 
      */ 
-    function generateSingleUnitaryProgram(Test $test, Model $model, Type $type, Generic $generic) : void
+    function generateSingleUnitaryProgram(\Test $test, \Model $model, \Type $type, \Generic $generic) : void
     {
         // Les modèles 1 à 9 n'ont pas de programme par défaut.
         if($model->getId() > 0 && $model->getId() < 10)
@@ -170,11 +199,11 @@
         }
         
         // Créer le fichier mpr.
-        $mpr = new mprCutrite($_SERVER['DOCUMENT_ROOT'] . "\\" . _GENERICPROGRAMSDIRECTORY . $generic->getFilename());
+        $mpr = new \mprCutrite($_SERVER['DOCUMENT_ROOT'] . "\\" . _GENERICPROGRAMSDIRECTORY . $generic->getFilename());
         $mpr->extractMprBlocks();
         try 
         {
-            $mpr->makeMprFromTest($test, getParametersDescriptionsTable($generic));
+            $mpr->makeMprFromTest($test, $generic->getParametersAsKeyDescriptionPairs());
             $mpr->makeMprFile(getUnitaryProgramLocation($model, $type) . $test->getName());
         }
         catch(\MprExpression\UndefinedVariableException $e)
@@ -184,39 +213,24 @@
                 $message = "Generating unitary program for \"{$test->getName()}\": " . $e->getMessage();
                 throw new \Exception($message, $e->getCode(), $e);
             }
+            else 
+            {
+                // Failing is the intended behavior but doesn't require further treatment.
+            }
         }
-    } 
-    
-    /**
-     * Return the parameters description table for the specified Generic
-     *
-     * @param Generic $generic The Generic of this unitary program
-     *
-     * @throws
-     * @author Marc-Olivier Bazin-Maurice
-     * @return array The parameters description table
-     */ 
-    function getParametersDescriptionsTable(Generic $generic) : array
-    {
-        $descriptionTable = array();
-        foreach($generic->getGenericParameters() as $parameter)
-        {
-            $descriptionTable[$parameter->getKey()] = $parameter->getDescription();
-        }
-        return $descriptionTable;
     }
     
     /**
      * Return the unitary program standard filename
      *
-     * @param Model $model The model of the unitary program
-     * @param Type $type The type of the unitary program
+     * @param \Model $model The model of the unitary program
+     * @param \Type $type The type of the unitary program
      * 
      * @throws
      * @author Marc-Olivier Bazin-Maurice
      * @return string The standard filename for this unitary program
      */ 
-    function getUnitaryProgramName(Model $model, Type $type) : string
+    function getUnitaryProgramName(\Model $model, \Type $type) : string
     {
         return \FileFunctions\PathSanitizer::sanitize(
             "{$type->getDescription()}_{$model->getDescription()}.mpr", 
@@ -233,14 +247,14 @@
     /**
      * Create if necessary and return the standard location of the unitary program file for this unitary program
      * 
-     * @param Model $model The model of the unitary program
-     * @param Type $type The type of the unitary program
+     * @param \Model $model The model of the unitary program
+     * @param \Type $type The type of the unitary program
      *
      * @throws
      * @author Marc-Olivier Bazin-Maurice
      * @return string The full path to the location specific to this unitary program
      */ 
-    function getUnitaryProgramLocation(Model $model, Type $type) : string
+    function getUnitaryProgramLocation(\Model $model, \Type $type) : string
     {
         $relativeLocation = $type->getImportNo() . " - " . $type->getDescription() . "/" . $model->getDescription() . "/";
         $fullLocation = \FileFunctions\PathSanitizer::sanitize(_UNITARYPROGRAMSDIRECTORY . $relativeLocation);

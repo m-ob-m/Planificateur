@@ -23,7 +23,7 @@ try
     
     $id = $_GET["materialId"] ?? null;
     $accessDbPath = __DIR__ . "/../temp/mmatv9.mdb";
-    $material = (new MaterielController())->getMateriel($id);
+    $material = \Materiel::withID($db, $id);
     $boards = array();
     
     if($material !== null)

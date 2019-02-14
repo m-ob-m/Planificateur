@@ -79,7 +79,7 @@ class Porte
 	 * @author Marc-Olivier Bazin-Maurice
 	 * @return Porte
 	 */ 
-	public static function withLine(Batch $batch, string $line, string $cttFileContents) : Porte
+	public static function withLine(\Batch $batch, string $line, string $cttFileContents) : \Porte
 	{	
 		$parts = explode(",", $line);
 

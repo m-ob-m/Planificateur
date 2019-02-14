@@ -20,7 +20,6 @@ $responseArray = array("status" => null, "success" => array("data" => null), "fa
 
 try
 {
-    $db = new FabPlanConnection();
     $input =  json_decode(file_get_contents("php://input"));
     
     $batchId = $input->batchId ?? null;
@@ -34,8 +33,22 @@ try
         throw new \Exception("L'identifiant unique fourni n'est pas valide.");
     }
     
-    (new BatchController())->getBatch($batchId)->delete($db);
-    
+    $db = new \FabPlanConnection();
+    try
+    {
+        $db->getConnection()->beginTransaction();
+        \Batch::withID($db, $batchId)->delete($db);
+        $db->getConnection()->commit();
+    }
+    catch(\Exception $e)
+    {
+        $db->getConnection()->rollback();
+        throw $e;
+    }
+    finally
+    {
+        $db = null;
+    }
     
     // Retour au javascript
     $responseArray["status"] = "success";

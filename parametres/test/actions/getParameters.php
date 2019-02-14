@@ -24,7 +24,6 @@ try
     $testId = $_GET["testId"] ?? null;
     
     // Get the information
-    $test = (new TestController())->getTest($testId);
     $parameters = createTestParametersView($test);
     
     // Retour au javascript
@@ -44,18 +43,32 @@ finally
 /**
  * Generate a view for the Test interface
  *
- * @param Test $test The Test object for which the view must be created
+ * @param int $testId The unique numerical identifier of the Test for which the view must be created
  *
  * @throws
  * @author Marc-Olivier Bazin-Maurice
  * @return array The array containing the fields of the view.
  */ 
-function createTestParametersView(Test $test) : array
+function createTestParametersView(int $testId) : array
 {
-    $modelId = $test->getModelId();
-    $typeNo = $test->getTypeNo();
-    $modelTypeGeneric = (new ModelTypeGenericController())->getModelTypeGeneric($modelId, $typeNo);
-    
+    $db = new \FabPlanConnection();
+    try
+    {
+        $db->getConnection()->beginTransaction();
+        $test = \Test::withID($db, $testId);
+        $modelTypeGeneric = (new ModelTypeGeneric($test->getModelId(), $test->getTypeNo()))->loadParameters($db);  
+        $db->getConnection()->commit();
+    }
+    catch(\Exception $e)
+    {
+        $db->getConnection()->rollback();
+        throw $e;
+    }
+    finally
+    {
+        $db = null;
+    }
+        
     $parameters = array();
     foreach($test->getParameters() as $testParameter)
     {

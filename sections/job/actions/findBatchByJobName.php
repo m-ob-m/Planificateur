@@ -21,31 +21,45 @@ $responseArray = array("status" => null, "success" => array("data" => null), "fa
 try
 {
     $input =  json_decode(file_get_contents("php://input"));
-    $db = new FabPlanConnection();
     
     // Vérification des paramètres
     $name = (isset($input->productionNumber) ? $input->productionNumber : null);
     
-    $job = Job::withName($db, $name);
-    
-    $stmt = $db->getConnection()->prepare("
-        SELECT `bj`.`batch_Id` AS `batchId` 
-        FROM `fabplan`.`batch_job` AS `bj`
-        INNER JOIN `fabplan`.`job` AS `j` ON `bj`.`job_Id` = `j`.`id_Job`
-        WHERE `j`.`id_job` = :jobId
-        LIMIT 1;
-    ");
-    $stmt->bindValue(":jobId", $job->getId(), PDO::PARAM_INT);
-    $stmt->execute();
-    
-    $id = null;
-    if($row = $stmt->fetch())
+    $db = new \FabPlanConnection();
+    try
     {
-        $id = $row["batchId"];
+        $db->getConnection()->beginTransaction();
+        $job = Job::withName($db, $name);
+        $stmt = $db->getConnection()->prepare("
+            SELECT `bj`.`batch_Id` AS `batchId`
+            FROM `fabplan`.`batch_job` AS `bj`
+            INNER JOIN `fabplan`.`job` AS `j` ON `bj`.`job_Id` = `j`.`id_Job`
+            WHERE `j`.`id_job` = :jobId
+            LIMIT 1
+            FOR SHARE;
+        ");
+        $stmt->bindValue(":jobId", $job->getId(), PDO::PARAM_INT);
+        $stmt->execute();
+        
+        $id = null;
+        if($row = $stmt->fetch())
+        {
+            $id = $row["batchId"];
+        }
+        else
+        {
+            throw new \Exception("There is no Batch with the name \"{$name}\".");
+        }
+        $db->getConnection()->commit();
     }
-    else
+    catch(\Exception $e)
     {
-        throw new \Exception("There is no Batch with the name \"{$name}\".");
+        $db->getConnection()->rollback();
+        throw $e;
+    }
+    finally
+    {
+        $db = null;
     }
     
     // Retour au javascript

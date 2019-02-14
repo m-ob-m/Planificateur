@@ -11,7 +11,7 @@
     
     include_once __DIR__ . "/../../../parametres/parameter/parameter.php";
     
-    class JobTypeParameter  extends Parameter implements JsonSerializable
+    class JobTypeParameter extends \Parameter implements \JsonSerializable
     {
         private $_jobTypeId;
         
@@ -26,7 +26,7 @@
          * @author Marc-Olivier Bazin-Maurice
          * @return JobTypeParameter This JObTypeParameter
          */
-        function __construct(?int $jobTypeId = null, ?string $key = null, ?string $value = null)
+        public function __construct(?int $jobTypeId = null, ?string $key = null, ?string $value = null)
         {
             parent::__construct($key);
             $this->setJobTypeId($jobTypeId);
@@ -44,12 +44,12 @@
          * @author Marc-Olivier Bazin-Maurice
          * @return JobtypeParameter This JobTypeParameter
          */
-        static function withID(FabplanConnection $db, int $jobTypeId, string $key) :JobTypeParameter
+        public static function withID(\FabplanConnection $db, int $jobTypeId, string $key) : ?\JobTypeParameter
         {
-            $stmt = $db->getConnection()->prepare("
-                SELECT `jtp`.`param_value` AS `value` FROM `job_type_params` AS `jtp`
-                WHERE `jtp`.`job_type_id` = :jobTypeId AND `jtp`.`param_key` = :key;
-            ");
+            $stmt = $db->getConnection()->prepare(
+                "SELECT `jtp`.`param_value` AS `value` FROM `job_type_params` AS `jtp`
+                WHERE `jtp`.`job_type_id` = :jobTypeId AND `jtp`.`param_key` = :key;"
+            );
             $stmt->bindValue(':job_type_id', $jobTypeId, PDO::PARAM_INT);
             $stmt->bindValue(':key', $key, PDO::PARAM_STR);
             $stmt->execute();
@@ -72,23 +72,22 @@
          * @author Marc-Olivier Bazin-Maurice
          * @return JobTypeParameter This JobtypeParameter (for method chaining)
          */
-        public function save(FabPlanConnection $db) : JobTypeParameter
+        public function save(\FabPlanConnection $db) : \JobTypeParameter
         {
-            $stmt = $db->getConnection()->prepare("
-                SELECT `jtp`.`param_value` FROM `fabplan`.`job_type_params` AS `jtp`
-                WHERE `jtp`.`job_type_id` = :jobTypeId AND `jtp`.`param_key` = :key LIMIT 1;
-            ");
-            $stmt->bindValue(':jobTypeId', $this->getJobTypeId(), PDO::PARAM_INT);
-            $stmt->bindValue(':key', $this->getKey(), PDO::PARAM_STR);
-            $stmt->execute();
-            
-            if($stmt->fetch(PDO::FETCH_ASSOC) == null)
+            if($this->getId() === null)
             {
                 $this->insert($db);
             }
             else
             {
-                $this->update($db);
+                if($this->getDatabaseConnectionReadingLockType() !== \MYSQLDatabaseLockingReadTypes::FOR_UPDATE)
+                {
+                    throw new \Exception("The provided " . get_class($this) . " is not locked for update.");
+                }
+                else 
+                {
+                    $this->update($db);
+                }
             }
             
             return $this;
@@ -103,7 +102,7 @@
          * @author Marc-Olivier Bazin-Maurice
          * @return JobTypeParameter This JobTypeParameter (for method chaining)
          */
-        private function insert(FabPlanConnection $db) : JobTypeParameter
+        private function insert(\FabPlanConnection $db) : \JobTypeParameter
         {
             $stmt = $db->getConnection()->prepare("
                 INSERT INTO `fabplan`.`job_type_params` (`job_type_id`, `param_key`, `param_value`)
@@ -126,7 +125,7 @@
          * @author Marc-Olivier Bazin-Maurice
          * @return JobTypeParameter This JobTypeParameter (for method chaining)
          */
-        private function update(FabPlanConnection $db) : JobTypeParameter
+        private function update(\FabPlanConnection $db) : \JobTypeParameter
         {
             $stmt = $db->getConnection()->prepare("
                 UPDATE `fabplan`.`job_type_params`
@@ -150,7 +149,7 @@
          * @author Marc-Olivier Bazin-Maurice
          * @return JobTypeParameter This JobTypeParameter (for method chaining)
          */
-        public function delete(FabPlanConnection $db) : JobTypeParameter
+        public function delete(\FabPlanConnection $db) : \JobTypeParameter
         {
             $stmt = $db->getConnection()->prepare("
                 DELETE FROM `fabplan`.`job_type_params`
@@ -172,7 +171,7 @@
          * @author Marc-Olivier Bazin-Maurice
          * @return JobTypeParameter This JobTypeParameter (for method chaining)
          */
-        public function setJobTypeId(?int $jobTypeId) : JobTypeParameter
+        public function setJobTypeId(?int $jobTypeId) : \JobTypeParameter
         {
             $this->_jobTypeId = $jobTypeId;
             return $this;

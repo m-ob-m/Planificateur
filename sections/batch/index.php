@@ -17,20 +17,37 @@
     include_once __DIR__ . "/controller/batchController.php";
     include_once __DIR__ . "/../../parametres/materiel/controller/materielCtrl.php";
     
+    $batch = null;
     if(isset($_GET["id"]))
     {
         if(preg_match("/^\d+$/", $_GET["id"]))
         {
-            $batch = (new BatchController())->getBatch($_GET["id"]);
+            $db = new \FabPlanConnection();
+            try
+            {
+                $db->getConnection()->beginTransaction();
+                $batch = \Batch::withID($_GET["id"]);
+                $materials = (new \MaterielController())->getMateriels();
+                $db->getConnection()->commit();
+            }
+            catch(\Exception $e)
+            {
+                $db->getConnection()->rollback();
+                throw $e;
+            }
+            finally
+            {
+                $db = null;
+            }
         }
         else 
         {
-            $batch = new Batch();
+            $batch = new \Batch();
         }
     }
     else
     {
-        $batch = new Batch();
+        $batch = new \Batch();
     }
     
     $id = $batch->getId();
@@ -208,7 +225,7 @@
         							<td class="lastVisibleColumn">
         								<select id="material" style="text-align-last: center;" onchange="updatePannelsList();">
         									<option value="0">[Non spécifié]</option>
-        									<?php foreach((new MaterielController())->getMateriels() as $material) : ?>
+        									<?php foreach($materials as $material) : ?>
         										<?php $selected=(($batch->getMaterialId()===$material->getId())?"selected": ""); ?>
         										<option value="<?= $material->getId(); ?>" <?= $selected ?>><?= 
         								            $material->getDescription(); 

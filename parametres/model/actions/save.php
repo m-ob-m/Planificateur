@@ -55,18 +55,33 @@ finally
  */
 function saveModel(Model $model, ?int $referenceId = null) : Model
 {
-    $db = new FabPlanConnection();
-    $model->save($db);
-    if($referenceId <> null)
+    $db = new \FabPlanConnection();
+    try
     {
-        // Only on insert
-        $parameters = (new ModelController())->getModel($referenceId)->getModelTypeParametersForAllTypes($db);
-        foreach($parameters as $parameter)
+        $db->getConnection()->beginTransaction();
+        $model->save($db);
+        if($referenceId <> null)
         {
-            $parameter->setModelId($model->getId());
-            $parameter->save($db);
+            // Only on insert, fetch parameters from a reference model.
+            $parameters = Model::withID($db, $referenceId)->getModelTypeParametersForAllTypes($db);
+            /* @var $parameter \ModelTypeParameter */
+            foreach($parameters as $parameter)
+            {
+                $parameter->setModelId($model->getId())->save($db);
+            }
         }
+        $db->getConnection()->commit();
     }
+    catch(\Exception $e)
+    {
+        $db->getConnection()->rollback();
+        throw $e;
+    }
+    finally
+    {
+        $db = null;
+    }
+    
     return $model;
 }
 ?>

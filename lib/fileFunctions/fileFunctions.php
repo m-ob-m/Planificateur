@@ -382,11 +382,11 @@ namespace FileFunctions{
         private function __construct(){}
         
         /**
-         * Creates a DownloadLinkGenerator object initialized with a specific filepath
+         * Creates a download link from a specific filepath
          *
          * @param string $filepath The path to the file to download
          *
-         * @throws
+         * @throws \Exception If the file doesn't exist or is located outside of the server's root. 
          * @author Marc-Olivier Bazin-Maurice
          * @return string A download link
          */
@@ -394,7 +394,18 @@ namespace FileFunctions{
         {
             if(file_exists($filepath))
             {
-                return str_replace($_SERVER["DOCUMENT_ROOT"], "", str_replace(DIRECTORY_SEPARATOR, "/", realpath($filepath)));
+                $pattern = "/\A" . preg_quote($_SERVER["DOCUMENT_ROOT"], "/") . "(.*)\z/";
+                $count = null;
+                $forwardSlashesDelimitedFilepath = str_replace(DIRECTORY_SEPARATOR, "/", realpath($filepath));
+                $downloadLinkFromRoot = preg_replace($pattern, "$1", $forwardSlashesDelimitedFilepath, 1, $count);
+                if($count > 0)
+                {
+                    return $downloadLinkFromRoot;
+                }
+                else
+                {
+                    throw new \Exception("The downloadable file was created outside of the server's root.");
+                }
             }
             else 
             {
@@ -402,5 +413,87 @@ namespace FileFunctions{
             }
         }
     };
+    
+    class TemporaryFolder
+    {
+        private $path;
+        
+        /**
+         * Creates a new TemporaryFolder
+         * @param string $path The path of the temporary folder
+         *
+         * @throws
+         * @author Marc-Olivier Bazin-Maurice
+         * @return \FileFunctions\TemporaryFolder This TemporaryFolder
+         */
+        public function __construct(string $path)
+        {
+            $this->setPath($path);
+        }
+        
+        /**
+         * Returns the path of the temporary folder.
+         *
+         * @throws
+         * @author Marc-Olivier Bazin-Maurice
+         * @return string The path of the temporary folder.
+         */
+        public function getPath() : string
+        {
+            return $this->path;
+        }
+        
+        /**
+         * Sets the path of the temporary folder.
+         *
+         * @throws
+         * @author Marc-Olivier Bazin-Maurice
+         * @return \FileFunctions\TemporaryFolder This \FileFunctions\TemporaryFolder.
+         */
+        public function setPath(string $path) : \FileFunctions\TemporaryFolder
+        {
+            $this->path = $path;
+            return $this;
+        }
+        
+        /**
+         * Cleans the temporary folder.
+         * @param int $lifeExpectancy The number of seconds after which a file should be eligible for deletion.
+         * @param bool $deleteFolders (optional) If false, only files will be deleted. 
+         *                                       If true, directories won't avoid deletion.
+         *
+         * @throws
+         * @author Marc-Olivier Bazin-Maurice
+         * @return
+         */
+        public function clean(int $lifeExpectancy, bool $deleteFolders = false) : void
+        {
+            if(!file_exists($this->getPath()) || !is_dir($this->getPath()))
+            {
+                mkdir($this->getPath());
+            }
+            else
+            {
+                /* @var $fileInfo \DirectoryIterator */
+                foreach(new \DirectoryIterator($this->getPath()) as $fileInfo)
+                {
+                    if(!$fileInfo->isDot())
+                    {
+                        if (time() - $fileInfo->getCTime() >= $lifeExpectancy)
+                        {
+                            if($fileInfo->isFile())
+                            {
+                                unlink($fileInfo->getRealPath());
+                            }
+                            elseif($deleteFolders)
+                            {
+                                rmdir($fileInfo->getRealPath());
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
 };
 ?>

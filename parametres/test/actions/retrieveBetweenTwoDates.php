@@ -37,7 +37,8 @@ try
         INNER JOIN `fabplan`.`door_types` AS `dt` ON `dt`.`importNo` = `t`.`type_no`
         INNER JOIN `fabplan`.`generics` AS `g` ON `g`.`id` = `t`.`generic_id`
         WHERE `t`.`estampille` >= :startDate AND `t`.`estampille` <= :endDate
-        ORDER BY `t`.`estampille` DESC;
+        ORDER BY `t`.`estampille` DESC
+        FOR SHARE;
     ");
     $stmt->bindValue(':startDate', $startDate, PDO::PARAM_STR);
     $stmt->bindValue(':endDate', $endDate, PDO::PARAM_STR);

@@ -18,16 +18,35 @@ Free for personal and commercial use under the CCA 3.0 license (html5up.net/lice
 include 'controller/modelController.php';		// Classe contrôleur de cette vue
 
 $exists = null;
-if(isset($_GET["id"]))
+$thisModel = null;
+$models = array();
+$db = new \FabPlanConnection();
+try
 {
-    $thisModel = (new ModelController())->getModel($_GET["id"]);
-    $exists = true;
+    $db->getConnection()->beginTransaction();
+    $models = (new \ModelController())->getModels();
+    if(isset($_GET["id"]))
+    {
+        $thisModel = \Model::withID($db, $_GET["id"]);
+        $exists = true;
+    }
+    else
+    {
+        $thisModel = new \Model();
+        $exists = false;
+    }
+    $db->getConnection()->commit();
 }
-else 
+catch(\Exception $e)
 {
-    $thisModel = new Model();
-    $exists = false;
+    $db->getConnection()->rollback();
+    throw $e;
 }
+finally
+{
+    $db = null;
+}
+
 ?>
 
 <!DOCTYPE HTML>
@@ -112,7 +131,6 @@ else
             						<td class="lastVisibleColumn">
             							<select id="copyParametersFrom" style="text-align-last:center;">
             								<option value="" selected>Aucun</option>
-            								<?php $models = (new ModelController())->getModels(); ?>
                                         	<?php if(!empty($models)):?>
             									<?php foreach ($models as $model): ?>
             										<option value=<?= $model->getId() ?>><?= $model->getDescription(); ?></option>

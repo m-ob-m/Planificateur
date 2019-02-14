@@ -23,8 +23,22 @@ try
     
     // Vérification des paramètres
     $id = $_GET["id"] ?? null;
-    
-    $data = (new GenericController())->getGeneric($id)->getGenericParameters();
+    $db = new \FabPlanConnection();
+    try
+    {
+        $db->getConnection()->beginTransaction();
+        $data = \Generic::withID($db, $id)->getGenericParameters();
+        $db->getConnection()->commit();
+    }
+    catch(\Exception $e)
+    {
+        $db->getConnection()->rollback();
+        throw $e;
+    }
+    finally
+    {
+        $db = null;
+    }
     
     // Retour au javascript
     $responseArray["status"] = "success";
