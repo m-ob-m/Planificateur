@@ -29,7 +29,7 @@ class Model implements JsonSerializable
 	 * @author Marc-Olivier Bazin-Maurice
 	 * @return Test
 	 */
-	function __construct(?int $id = null, ?string $description = null, ?string $timestamp)
+	function __construct(?int $id = null, ?string $description = null, ?string $timestamp = null)
 	{
 	    $this->setId($id);
 	    $this->setDescription($description);
@@ -66,7 +66,7 @@ class Model implements JsonSerializable
 	        return null;
 	    }
 	    
-	    $this->setDatabaseConnectionLockingReadType($databaseConnectionLockingReadType);
+	    $instance->setDatabaseConnectionLockingReadType($databaseConnectionLockingReadType);
 	    return $instance;
 	}
 	
@@ -87,13 +87,13 @@ class Model implements JsonSerializable
 	    }
 	    else
 	    {
-	        $dbTimestamp = \DateTime::createFromFormat("Y-m-d H:i:s", $this->getTimestampFromDatabase($db), "America/Montreal");
-	        $localTimestamp = \DateTime::createFromFormat("Y-m-d H:i:s", $this->getTimestamp(), "America/Montreal");
-	        if($this->getDatabaseConnectionReadingLockType() !== \MYSQLDatabaseLockingReadTypes::FOR_UPDATE)
+	        $dbTimestamp = \DateTime::createFromFormat("Y-m-d H:i:s", $this->getTimestampFromDatabase($db));
+	        $localTimestamp = \DateTime::createFromFormat("Y-m-d H:i:s", $this->getTimestamp());
+	        if($this->getDatabaseConnectionLockingReadType() !== \MYSQLDatabaseLockingReadTypes::FOR_UPDATE)
 	        {
 	            throw new \Exception("The provided " . get_class($this) . " is not locked for update.");
 	        }
-	        elseif($databaseTimestamp > $localTimestamp)
+	        elseif($dbTimestamp > $localTimestamp)
 	        {
 	            throw new \Exception(
 	                "The provided " . get_class($this) . " is outdated. The last modification date of the database entry is
@@ -169,13 +169,20 @@ class Model implements JsonSerializable
 	 */
 	public function delete(FabPlanConnection $db) : Model
 	{
-	    $stmt = $db->getConnection()->prepare("DELETE FROM `fabplan`.`door_model_data` WHERE `fkDoorModel` = :modelId;");
-	    $stmt->bindValue(':modelId', $this->getId(), PDO::PARAM_INT);
-	    $stmt->execute();
-	    
-	    $stmt = $db->getConnection()->prepare("DELETE FROM `fabplan`.`door_model` WHERE `id_door_model` = :id;");
-	    $stmt->bindValue(':id', $this->getId(), PDO::PARAM_INT);
-	    $stmt->execute();
+	    if($this->getDatabaseConnectionLockingReadType() !== \MYSQLDatabaseLockingReadTypes::FOR_UPDATE)
+	    {
+	        throw new \Exception("The provided " . get_class($this) . " is not locked for update.");
+	    }
+	    else
+	    {
+    	    $stmt = $db->getConnection()->prepare("DELETE FROM `fabplan`.`door_model_data` WHERE `fkDoorModel` = :modelId;");
+    	    $stmt->bindValue(':modelId', $this->getId(), PDO::PARAM_INT);
+    	    $stmt->execute();
+    	    
+    	    $stmt = $db->getConnection()->prepare("DELETE FROM `fabplan`.`door_model` WHERE `id_door_model` = :id;");
+    	    $stmt->bindValue(':id', $this->getId(), PDO::PARAM_INT);
+    	    $stmt->execute();
+	    }
 	    
 	    return $this;
 	}
@@ -246,19 +253,20 @@ class Model implements JsonSerializable
 	/**
 	 * Get all ModelTypeParameters for this Model
 	 * 
-	 * @param FabplanConnection $db The database from which data must be retrieved
+	 * @param \FabplanConnection $db The database from which data must be retrieved
+	 * @param int $dbCLRT The type of locking read to apply (see \MYSQLDatabaseLockingReadTypes).
 	 *
 	 * @throws
 	 * @author Marc-Olivier Bazin-Maurice
 	 * @return array[ModelTypeParameter] The array of ModelTypeParameter objects for this Model
 	 */
-	public function getModelTypeParametersForAllTypes(FabplanConnection $db) : ?array
+	public function getModelTypeParametersForAllTypes(FabplanConnection $db, $dbCLRT = 0) : ?array
 	{
 	    $stmt = $db->getConnection()->prepare(
             "SELECT `dmd`.`fkDoorType` AS `typeNo`, `dmd`.`paramKey` AS `parameterKey`, `dmd`.`paramValue` AS `parameterValue`
             FROM `fabplan`.`door_model_data` AS `dmd`
             WHERE `dmd`.`fkDoorModel` = :modelId " . 
-	        (new \MYSQLDatabaseLockingReadTypes($databaseConnectionLockingReadType))->toLockingReadString() . ";"
+	        (new \MYSQLDatabaseLockingReadTypes($dbCLRT))->toLockingReadString() . ";"
         );
 	    $stmt->bindValue(":modelId", $this->getId(), PDO::PARAM_INT);
 	    $stmt->execute();
@@ -352,7 +360,7 @@ class Model implements JsonSerializable
 	 * @author Marc-Olivier Bazin-Maurice
 	 * @return \JobType This JobType.
 	 */
-	private function setDatabaseConnectionLockingReadType(int $databaseConnectionLockingReadType) : \JobType
+	private function setDatabaseConnectionLockingReadType(int $databaseConnectionLockingReadType) : \Model
 	{
 	    $this->__database_connection_locking_read_type = $databaseConnectionLockingReadType;
 	    return $this;

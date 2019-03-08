@@ -1,3 +1,5 @@
+"use strict";
+
 /**
  * Validates information entered by user
  * @param {int} id The id of the material.

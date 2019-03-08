@@ -28,7 +28,7 @@ try
     try
     {
         $db->getConnection()->beginTransaction();
-        buildJob($db, $inputJob)->save($db);
+        $job = buildJob($db, $inputJob)->save($db);
         $db->getConnection()->commit();
     }
     catch(\Exception $e)
@@ -81,10 +81,10 @@ function buildJob(\FabPlanConnection $db, \stdClass $inputJob) : \Job
             $type = \Type::withImportNo($db, $inputJobType->type->importNo);
             if($type === null)
             {
-                throw \Exception("Il n'y a pas de type avec l'identifiant unique \"{$inputJobType->type->importNo}\".");
+                throw \Exception("Il n'y a pas de type avec le numéro d'importation \"{$inputJobType->type->importNo}\".");
             }
             
-            $generic = \Generic::withID($db, $type->getGenericId());
+            $generic = $type->getGeneric();
             
             $parts = array();
             if(!empty($inputJobType->parts))
@@ -119,14 +119,14 @@ function buildJob(\FabPlanConnection $db, \stdClass $inputJob) : \Job
                 $mprfile = $inputJobType->mprFile;
             }
             
-            $jobType = new \JobType($inputJobType->id, $inputJob->id, $model->getId(), $type->getImportNo(),
-                $mprFile, null, null, $parameters, $parts);
+            $jobType = new \JobType($inputJobType->id, $inputJob->id, $model, $type,
+                $mprFile, null, $parameters, $parts);
             array_push($jobTypes, $jobType);
         }
     }
     
     $status = null;
-    $job = \Job::withID($inputJob->id);
+    $job = \Job::withID($db, $inputJob->id, MYSQLDatabaseLockingReadTypes::FOR_UPDATE);
     if($job === null)
     {
         throw new \Exception("La création de job n'a pas encore été implémentée.");

@@ -49,14 +49,14 @@ class Generic implements \JsonSerializable
     /**
      * Generic constructor using ID of existing record
      *
-     * @param FabPlanConnection $db The database in which the record exists
+     * @param \FabPlanConnection $db The database in which the record exists
      * @param int $id The id of the record in the database
      *
      * @throws
      * @author Marc-Olivier Bazin-Maurice
      * @return Generic The Generic associated to the specified ID in the specified database
      */
-    public static function withID($db, $id, int $databaseConnectionLockingReadType = 0) :? \Generic
+    public static function withID(\FabplanConnection $db, ?int $id, int $databaseConnectionLockingReadType = 0) :? \Generic
     {
         // Récupérer le Generic
         $stmt = $db->getConnection()->prepare(
@@ -68,7 +68,8 @@ class Generic implements \JsonSerializable
         
         if ($row = $stmt->fetch())	// Récupération de l'instance de matériel
         {
-            $instance = new self($row["id"], $row["filename"], $row["description"], $row["heightParameter"], $row["timestamp"]);
+            $instance = new self($row["id"], $row["filename"], $row["description"], $row["heightParameter"], 
+                $row["timestamp"]);
         }
         else
         {
@@ -112,7 +113,7 @@ class Generic implements \JsonSerializable
      * @author Marc-Olivier Bazin-Maurice
      * @return Generic This Generic (for method chaining)
      */
-    function save(FabPlanConnection $db, bool $overwriteParameters) : Generic
+    function save(FabPlanConnection $db, bool $overwriteParameters) : \Generic
     {
         if($this->getId() === null)
         {
@@ -120,13 +121,13 @@ class Generic implements \JsonSerializable
         }
         else
         {
-            $dbTimestamp = \DateTime::createFromFormat("Y-m-d H:i:s", $this->getTimestampFromDatabase($db), "America/Montreal");
-            $localTimestamp = \DateTime::createFromFormat("Y-m-d H:i:s", $this->getTimestamp(), "America/Montreal");
-            if($this->getDatabaseConnectionReadingLockType() !== \MYSQLDatabaseLockingReadTypes::FOR_UPDATE)
+            $dbTimestamp = \DateTime::createFromFormat("Y-m-d H:i:s", $this->getTimestampFromDatabase($db));
+            $localTimestamp = \DateTime::createFromFormat("Y-m-d H:i:s", $this->getTimestamp());
+            if($this->getDatabaseConnectionLockingReadType() !== \MYSQLDatabaseLockingReadTypes::FOR_UPDATE)
             {
                 throw new \Exception("The provided " . get_class($this) . " is not locked for update.");
             }
-            elseif($databaseTimestamp > $localTimestamp)
+            elseif($dbTimestamp > $localTimestamp)
             {
                 throw new \Exception(
                     "The provided " . get_class($this) . " is outdated. The last modification date of the database entry is
@@ -224,29 +225,30 @@ class Generic implements \JsonSerializable
     /**
      * Delete the Generic object from the database
      *
-     * @param FabPlanConnection $db The database from which the record must be deleted
+     * @param \FabPlanConnection $db The database from which the record must be deleted
      *
      * @throws
      * @author Marc-Olivier Bazin-Maurice
-     * @return Generic This Generic (for method chaining)
+     * @return \Generic This Generic (for method chaining)
      */
-    public function delete(FabPlanConnection $db) : Generic
+    public function delete(\FabPlanConnection $db) : \Generic
     {
-        if(!empty($this->getAssociatedTypes()))
+        if($this->getDatabaseConnectionLockingReadType() !== \MYSQLDatabaseLockingReadTypes::FOR_UPDATE)
+        {
+            throw new \Exception("The provided " . get_class($this) . " is not locked for update.");
+        }
+        elseif(!empty($this->getAssociatedTypes()))
         {
             throw new \Exception("This Generic still has associated Types.");
         }
-        
-        foreach($this->_genericParameters as $genericParameter)
+        else
         {
-            $genericParameter->delete($db);
+            $stmt = $db->getConnection()->prepare("
+                DELETE FROM `fabplan`.`generics` WHERE `fabplan`.`generics`.`id` = :id;
+            ");
+            $stmt->bindValue(':id', $this->_id, PDO::PARAM_INT);
+            $stmt->execute();
         }
-        
-        $stmt = $db->getConnection()->prepare("
-            DELETE FROM `fabplan`.`generics` WHERE `fabplan`.`generics`.`id` = :id;
-        ");
-        $stmt->bindValue(':id', $this->_id, PDO::PARAM_INT);
-        $stmt->execute();
         
         return $this;
     }
@@ -290,7 +292,7 @@ class Generic implements \JsonSerializable
         $associatedTypes = array();
         foreach((new TypeController())->getTypes() as $type)
         {
-            if($type->getGenericId() === $this->getId())
+            if($type->getGeneric()->getId() === $this->getId())
             {
                 array_push($associatedTypes, $type);
             }
@@ -584,7 +586,7 @@ class Generic implements \JsonSerializable
      * @author Marc-Olivier Bazin-Maurice
      * @return \JobType This JobType.
      */
-    private function setDatabaseConnectionLockingReadType(int $databaseConnectionLockingReadType) : \JobType
+    private function setDatabaseConnectionLockingReadType(int $databaseConnectionLockingReadType) : \Generic
     {
         $this->__database_connection_locking_read_type = $databaseConnectionLockingReadType;
         return $this;

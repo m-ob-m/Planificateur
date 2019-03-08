@@ -1,3 +1,5 @@
+"use strict";
+
 $(function(){
 	refreshParameters();
 });
@@ -139,6 +141,19 @@ function retrieveParameters(modelId, typeNo)
 	});
 }
 
+function exportParameters()
+{
+	return exportParametersToXlsx($("select#model option:selected").val())
+	.catch(function(error){
+		showError("La sauvegarde de la combinaison modèle-type a échouée", error);
+		return Promise.reject();
+	})
+	.then(function(downloadLink){
+		downloadFile(downloadLink);
+	})
+	.catch(function(error){/* Do nothing. */});
+}
+
 /**
  * Saves parameters to the database
  * @param {jquery} table The parameters table
@@ -156,6 +171,40 @@ function saveParameters(modelId, typeNo, parameters)
 			"contentType": "application/json;charset=utf-8",
 			"url": "/Planificateur/parametres/varmodtype/actions/save.php",
 			"data": JSON.stringify({"modelId": modelId, "typeNo": typeNo, "parameters": parameters}),
+			"dataType": "json",
+			"async": true,
+			"cache": false,
+		})
+		.done(function(response){
+			if(response.status === "success")
+			{
+				resolve(response.success.data);
+			}
+			else
+			{
+				reject(response.failure.message);
+			}
+		})
+		.fail(function(error){
+			reject(error.responseText);
+		});
+	});
+}
+
+/**
+ * Exports the parameters of the selected model to an xlsx file.
+ * @param {int} modelId The id of the current Model
+ * 
+ * @return {Promise}
+ */
+function exportParametersToXlsx(modelId)
+{	
+	return new Promise(function(resolve, reject){
+		$.ajax({
+			"type": "GET",
+			"contentType": "application/json;charset=utf-8",
+			"url": "/Planificateur/parametres/varmodtypegen/actions/exportToExcel.php",
+			"data": {"modelId": modelId},
 			"dataType": "json",
 			"async": true,
 			"cache": false,

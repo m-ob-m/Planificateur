@@ -1,3 +1,5 @@
+"use strict";
+
 /**
  * Validates user input
  * @param {int} id The id of the model (is "" if new)

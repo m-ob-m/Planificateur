@@ -1,3 +1,5 @@
+"use strict";
+
 $(function()
 	{
 		refreshParameters()
@@ -15,6 +17,7 @@ function refreshParameters()
 {
 	let id = parseInt($("select#generic option:selected").val());
 	
+	$('#loadingModal').css({"display": "block"});
 	return retrieveParameters(id)
 	.then(function(parameters){
 		$("table#parametersTable >tbody >tr").remove();
@@ -26,6 +29,7 @@ function refreshParameters()
 		{
 			$("table#parametersTable >tbody").append(newParameter());
 		}
+		$('#loadingModal').css({"display": "none"});
 	})
 	.catch(function(error){
 		showError("Le rafraîchissement des paramètres a échoué", error);

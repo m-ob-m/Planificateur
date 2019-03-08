@@ -110,7 +110,8 @@ class ModelTypeParameter extends \Parameter
         {
             $stmt = $db->getConnection()->prepare("
                 INSERT INTO `fabplan`.`door_model_data` (`paramKey`, `paramValue`, `fkDoorModel`, `fkDoorType`)
-                VALUES (:key, :value, :modelId, :typeNo);");
+                VALUES (:key, :value, :modelId, :typeNo);"
+            );
             $stmt->bindValue(':key', $this->getKey(), PDO::PARAM_STR);
             $stmt->bindValue(':value', $this->getValue(), PDO::PARAM_STR);
             $stmt->bindValue(':modelId', $this->getModelId(), PDO::PARAM_INT);
@@ -121,6 +122,7 @@ class ModelTypeParameter extends \Parameter
         }
         catch (Exception $e)
         {
+            echo json_encode($this);
             throw $e;
         }
     }
@@ -168,25 +170,24 @@ class ModelTypeParameter extends \Parameter
      */
     public function delete(\FabPlanConnection $db) : \ModelTypeParameter
     {
-        try
+        if($this->getDatabaseConnectionLockingReadType() !== \MYSQLDatabaseLockingReadTypes::FOR_UPDATE)
+        {
+            throw new \Exception("The provided " . get_class($this) . " is not locked for update.");
+        }
+        else
         {
             $stmt = $db->getConnection()->prepare("
                 DELETE FROM `fabplan`.`door_model_data`
-                WHERE `door_model_data`.`fkDoorModel` = :modelId 
-                    AND `door_model_data`.`fkDoorType` = :typeNo 
+                WHERE `door_model_data`.`fkDoorModel` = :modelId AND `door_model_data`.`fkDoorType` = :typeNo 
                     AND `door_model_data`.`paramKey` = :key;
             ");
             $stmt->bindValue(':key', $this->getKey(), PDO::PARAM_STR);
             $stmt->bindValue(':modelId', $this->getModelId(), PDO::PARAM_INT);
             $stmt->bindValue(':typeNo', $this->getTypeNo(), PDO::PARAM_INT);
             $stmt->execute();
-            
-            return $this;
         }
-        catch (Exception $e)
-        {
-            throw $e;
-        }
+        
+        return $this;
     }
     
     /**
@@ -268,6 +269,18 @@ class ModelTypeParameter extends \Parameter
     {
         $this->_value = $value;
         return $this;
+    }
+    
+    /**
+     * Get a JSON compatible representation of this object.
+     *
+     * @throws
+     * @author Marc-Olivier Bazin-Maurice
+     * @return array This object in a JSON compatible format
+     */
+    public function jsonSerialize()
+    {
+        return get_object_vars($this);
     }
 }
 ?>

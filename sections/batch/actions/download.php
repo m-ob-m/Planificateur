@@ -35,7 +35,7 @@ try
     try
     {
         $db->getConnection()->beginTransaction();
-        $batch = \Batch::withID($db, $id);
+        $batch = \Batch::withID($db, $id, MYSQLDatabaseLockingReadTypes::FOR_UPDATE);
         if(!\Materiel::withID($db, $batch->getMaterialId())->getEstMDF())
         {
             throw new \Exception("Seul le nesting de pièces de MDF est supporté.");
@@ -117,7 +117,7 @@ function createZipArchiveForBatch(\Batch $batch, int $action) : string
     /* Nettoyage des fichiers temporaires. */
     $KEEP_FILES_FOR_X_DAYS = 31;
     $temporaryFolder = __DIR__ . "/../temp";
-    (new \FileFunctions\TemporaryFolder($path))->clean($KEEP_FILES_FOR_X_DAYS * 24 * 60 * 60);
+    (new \FileFunctions\TemporaryFolder($temporaryFolder))->clean($KEEP_FILES_FOR_X_DAYS * 24 * 60 * 60);
     
     $filesToDelete  = array();
     
@@ -134,7 +134,7 @@ function createZipArchiveForBatch(\Batch $batch, int $action) : string
     $zipPath = "{$temporaryFolder}/{$zipName}";
     
     // Ouvrir une archive
-    $zip = new ZipArchive();
+    $zip = new \ZipArchive();
     $openStatus = $zip->open($zipPath, ZipArchive::CREATE | ZipArchive::OVERWRITE);
     if($openStatus !== true)
     {
@@ -211,7 +211,7 @@ function createCsvForBatch(\Batch $batch) : string
 function createMprForJobType(\JobType $jobType) : string
 {
     $mprName = \FileFunctions\PathSanitizer::sanitize(
-        "{$jobType->getModelId()}_{$jobType->getTypeNo()}_{$jobType->getId()}.mpr",
+        "{$jobType->getModel()->getId()}_{$jobType->getType()->getImportNo()}_{$jobType->getId()}.mpr",
         array(
             "inputPathDelimiter" => "", 
             "allowSlashesInFilename" => false, 

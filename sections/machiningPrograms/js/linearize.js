@@ -1,3 +1,5 @@
+"use strict";
+
 /**
  * Initiates the simplification process.
  */

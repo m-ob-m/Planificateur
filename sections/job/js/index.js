@@ -1,3 +1,5 @@
+"use strict";
+
 $(document).ready(function(){
 	getJobTypesForJob($("input#job_id").val())
 	.then(function(){

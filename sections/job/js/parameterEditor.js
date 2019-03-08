@@ -1,3 +1,5 @@
+"use strict";
+
 /**
  * Opens the parameters editor.
  * @this {jquery} The JobType block to edit
@@ -259,6 +261,7 @@ function saveParametersToBlock()
 			"quickEdit": parseInt($(this).find(">td:nth-child(5) >input").val())
 		});
 		block.data("jobTypeParameters")[key] = $(this).find(">td:nth-child(2) >textarea").val();
+		updateJobTypeBlockIdentifier.apply(block);
 	});
 }
 

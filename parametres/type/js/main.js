@@ -1,6 +1,5 @@
-/**
- * Open the interface to create a new Type
- */
+"use strict";
+
 /**
  * Opens view window for this Type.
  * @param {int} id The id of the Type to view (null means new Type).

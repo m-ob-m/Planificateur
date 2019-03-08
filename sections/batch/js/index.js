@@ -1,3 +1,5 @@
+"use strict";
+
 $(document).ready(function()
 {	
 	$("input#fullDay").change(function(){
@@ -10,7 +12,7 @@ $(document).ready(function()
 	});
 	
 	initializeFields()
-	.catch(function(){/* Do nothing. */});
+	.catch(function(error){/* Do nothing. */});
 	
 	$('input#jobNumber').keypress(
 		function(key){(key.keyCode === 13) ? $("button#addJobButton").click() : false;
@@ -52,7 +54,7 @@ function initializeFields()
 			updateSessionStorage();
 			getJobs($("input#batchId").val())
 			.then(function(){
-				updatePannelsList();
+				return updatePannelsList();
 			})
 			.then(function(){
 				initializeDates();
@@ -109,20 +111,23 @@ function extrapolateMaximumEndDate()
  */
 function verifyStatus(id)
 {
-	if(id !== null && id !== "")
-	{
-		return retrieveBatchStatus(id)
-		.then(function(status){
-			if(status !== null && status !== window.sessionStorage.getItem("status"))
-			{
-				window.location.reload();
-			}
-		});
-	}
-	else
-	{
-		return Promise.reject("This is a new Batch.");
-	}
+	return new Promise(function(resolve, reject){
+		if(id !== null && id !== "")
+		{
+			return retrieveBatchStatus(id)
+			.then(function(status){
+				if(status !== null && status !== window.sessionStorage.getItem("status"))
+				{
+					window.location.reload();
+				}
+				resolve();
+			});
+		}
+		else
+		{
+			reject("This is a new Batch.");
+		}
+	});
 }
 
 /**
@@ -304,7 +309,7 @@ function generateConfirm(action = 1)
 {
 	generatePrograms($("#batchId").val(), action)
 	.catch(function(error){
-		/* Do nothing. */
+		showError("La génération des programmes a échouée", error);
 	});
 }
 
@@ -316,38 +321,40 @@ function generateConfirm(action = 1)
  */
 function generatePrograms(id, action = 1)
 {
-	if(compareWithSessionStorage())
-	{
-		return Promise.resolve(function(){$("#loadingModal").css({"display": "block"});})
-		.then(function(){
+	return new Promise(function(resolve, reject){
+		if(!compareWithSessionStorage())
+		{
+			let message = "Des différences ont été trouvées entre les dernières données sauvegardées et les données " +
+			"actuelles. Veuillez sauvegarder ou recharger la page, puis réessayer."
+			reject(message);
+		}
+		else if(!isPositiveInteger(id))
+		{
+			reject("Veuillez sauvegarder les données avant de télécharger le projet.");
+		}
+		else
+		{
+			$("#loadingModal").css({"display": "block"});
 			return downloadBatch(id, action)
 			.finally(function(){
 				$("#loadingModal").css({"display": "none"});
+			})
+			.then(function(downloadableFile){
+				if (action === 1)
+				{
+					window.location.reload(); //Batch was sent to CutRite for nesting.
+					
+				}
+				else
+				{
+					downloadFile(downloadableFile.url, downloadableFile.name); // Local copy of the individual programs.
+				}
+			})
+			.catch(function(error){
+				reject(error);
 			});
-		})
-		.then(function(downloadableFile){
-			if (action === 1)
-			{
-				window.location.reload(); //Batch was sent to CutRite for nesting.
-				
-			}
-			else
-			{
-				downloadFile(downloadableFile.url, downloadableFile.name); // Local copy of the individual programs.
-			}
-		})
-		.catch(function(error){
-			showError("La génération des programmes a échouée", error);
-			return Promise.reject();
-		});
-	}
-	else
-	{
-		let message = "Des différences ont été trouvées entre les dernières données sauvegardées et les données " +
-		"actuelles. Veuillez sauvegarder ou recharger la page, puis réessayer."
-		showError("La génération des programmes a échouée", message);
-		return Promise.reject();
-	}
+		}
+	});
 }
 
 /**
@@ -381,25 +388,33 @@ function deleteConfirm()
 function updatePannelsList()
 {
 	return new Promise(function(resolve, reject){
-		retrievePannels($("select#material").val())
-		.then(function(pannelCodes){
-			let value = $("select#boardSize").val();
-			
-			$("select#boardSize").empty().append($("<option></option>").text("").val(""));
-			
-			pannelCodes.map(function(pannelCode){
-				$("select#boardSize").append($("<option></option>").text(pannelCode).val(pannelCode));
-			});
-			
-			$("select#boardSize").val(($("select#boardSize >option[value='" + value + "']").length > 0) ? value : "");
-		})
-		.then(function(){
+		let materialId = $("select#material").val();
+		if(isPositiveInteger(materialId, false))
+		{
+			retrievePannels($("select#material").val())
+			.then(function(pannelCodes){
+				let value = $("select#boardSize").val();
+				
+				$("select#boardSize").empty().append($("<option></option>").text("").val(""));
+				
+				pannelCodes.map(function(pannelCode){
+					$("select#boardSize").append($("<option></option>").text(pannelCode).val(pannelCode));
+				});
+				
+				$("select#boardSize").val(($("select#boardSize >option[value='" + value + "']").length > 0) ? value : "");
+			})
+			.then(function(){
+				resolve();
+			})
+			.catch(function(error){
+				showError("Échec de la récupération de la liste des panneaux disponibles", error);
+				reject();
+			})
+		}
+		else
+		{
 			resolve();
-		})
-		.catch(function(error){
-			showError("Échec de la récupération de la liste des panneaux disponibles", error);
-			reject();
-		})
+		}
 	});
 }
 

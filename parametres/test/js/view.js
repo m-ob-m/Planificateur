@@ -1,3 +1,5 @@
+"use strict";
+
 $(function(){
 	refreshParameters()
 	.catch(function(){/* Do nothing. */});
@@ -138,7 +140,7 @@ function validateInformation(id, name, modelId, typeNo, mpr, parameters)
 			err += "L'identificateur unique doit être un entier positif.";
 		}
 		
-		if(!(new RegExp("^[a-z0-9_]+$")).test(name))
+		if(!(new RegExp("^[A-Za-z0-9_]+$")).test(name))
 		{
 			err += "Le nom du test ne peut pas être vide et ne doit contenir que des caractères alphanumériques et des \"_\".";
 		}
@@ -172,11 +174,27 @@ function validateInformation(id, name, modelId, typeNo, mpr, parameters)
  */
 function newParameter(parameter, isNew)
 {
-	let key = ((parameter === null) ? null : parameter.key);
-	let value = ((parameter.specificValue !== null) ? parameter.specificValue : parameter.defaultValue);
-	let description = ((parameter === null) ? null : parameter.description);
-	let defaultValue = ((parameter === null) ? null : parameter.defaultValue);
-	let oldValue = ((parameter.specificValue !== null && !isNew) ? parameter.specificValue : "");
+	let key = (parameter !== null && parameter.hasOwnProperty("key")) ? parameter.key : null;
+	let description = (parameter !== null && parameter.hasOwnProperty("description")) ? parameter.description :null;
+	let defaultValue = (parameter !== null && parameter.hasOwnProperty("defaultValue")) ? parameter.defaultValue : null;
+	
+	let value = null;
+	let oldValue = null;
+	if(parameter !== null)
+	{
+		if(parameter.hasOwnProperty("specificValue"))
+		{
+			value = parameter.specificValue;
+			if(parameter.specificValue !== null && !isNew)
+			{
+				oldValue = parameter.specificValue
+			}
+		}
+		else if(parameter.hasOwnProperty("defaultValue"))
+		{
+			value = parameter.defaultValue;
+		}
+	}
 	
 	let row = $("<tr></tr>")
 	.css({"height": "50px"});
@@ -286,7 +304,19 @@ function refreshParametersCustom(id)
 			$("div#mprFileDialogContainer").show();
 		}
 		
-		return promise = retrieveCustomMpr(id)
+		return new Promise(function(resolve, reject){
+			if(id !== null && id !== "")
+			{
+				retrieveCustomMpr(id)
+				.then(function(mpr){
+					resolve(mpr);
+				});
+			}
+			else
+			{
+				resolve("");
+			}
+		})
 		.catch(function(error){
 			reject(error);
 		})
@@ -359,7 +389,7 @@ function makeStandardParametersTable()
 	.css({"width": "35%"})
 	.text("Valeur par défaut");
 	
-	oldValueHeader = $("<th></th>")
+	let oldValueHeader = $("<th></th>")
 	.css({"display": "none"})
 	.text("Valeur précédente");
 	
@@ -385,11 +415,7 @@ function makeStandardParametersTable()
 function fillStandardParametersTable(parameters, isCreating = false)
 {
 	$("table#parametersTable >tbody >tr").remove();
-	if(parameters.length < 1)
-	{
-		$("table#parametersTable >tbody").append(newParameter(null, true));
-	}
-	else
+	if(parameters !== undefined && parameters.length > 0)
 	{
 		$(parameters).each(function(){
 			$("table#parametersTable >tbody").append(newParameter(this, isCreating));

@@ -1,3 +1,5 @@
+"use strict";
+
 /**
  * Updates the calendar planning interface.
  * 
@@ -213,7 +215,8 @@ function getBatchIdFromJobName(jobName)
  */
 function findJobByProductionNumber()
 {
-	return getBatchIdFromJobName($("form#findBatchByJobNumberForm > input[name=jobNumero]").val())
+	var productionNumber = $("form#findBatchByJobNumberForm > input[name=jobNumero]").val();
+	return getBatchIdFromJobName(productionNumber)
 	.catch(function(error){
 		showError("La job \"" + productionNumber + "\" n'a pas été trouvée : ", error);
 		return Promise.reject();

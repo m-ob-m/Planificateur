@@ -28,7 +28,9 @@
         $db->getConnection()->beginTransaction();
         $types = (new \TypeController())->getTypes();
         $models = (new \ModelController())->getModels();
-        $test = isset($_GET["id"]) ? \Test::withID($_GET["id"]) : new \Test(null, "", 7000, 0);
+        $defaultModel = $models[0];
+        $defaultType = $types[0];
+        $test = isset($_GET["id"]) ? \Test::withID($db, $_GET["id"]) : new \Test(null, "", $defaultModel, $defaultType);
         $db->getConnection()->commit();
     }
     catch(\Exception $e)
@@ -108,7 +110,9 @@
             					<label for="type">Type : 
                 					<select id="type" <?= $disabled; ?> onchange="$('#parametersForm').submit();">
                 						<?php foreach($types as $type):?>
-                        					<?php $selected =  (($test->getTypeNo() == $type->getImportNo()) ? "selected" : ""); ?>
+                							<?php $typeNo = $type->getImportNo(); ?>
+                							<?php $testTypeImportNo = $test->getType()->getImportNo(); ?>
+                        					<?php $selected =  (($testTypeImportNo == $typeNo) ? "selected" : ""); ?>
                         					<option value=<?= $type->getImportNo(); ?> <?= $selected; ?>>
                         						<?= $type->getDescription(); ?>
                         					</option>
@@ -121,7 +125,9 @@
                         			<select id="model" <?= $disabled; ?> onchange="$('#parametersForm').submit();">
                 					<?php foreach($models as $model):?>
                 						<?php if($model->getId() >= 2): ?>
-                        					<?php $selected =  (($test->getModelId() == $model->getId()) ? "selected" : ""); ?>
+                							<?php $modelId = $model->getId(); ?>
+                							<?php $testModelId = $test->getModel()->getId(); ?>
+                        					<?php $selected =  (($testModelId == $modelId) ? "selected" : ""); ?>
                         					<option value=<?= $model->getId(); ?> <?= $selected; ?>>
                         						<?= $model->getDescription(); ?>
                         					</option>

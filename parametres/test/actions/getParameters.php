@@ -24,7 +24,7 @@ try
     $testId = $_GET["testId"] ?? null;
     
     // Get the information
-    $parameters = createTestParametersView($test);
+    $parameters = createTestParametersView($testId);
     
     // Retour au javascript
     $responseArray["status"] = "success";
@@ -56,7 +56,7 @@ function createTestParametersView(int $testId) : array
     {
         $db->getConnection()->beginTransaction();
         $test = \Test::withID($db, $testId);
-        $modelTypeGeneric = (new ModelTypeGeneric($test->getModelId(), $test->getTypeNo()))->loadParameters($db);  
+        $modelTypeGeneric = (new \ModelTypeGeneric($test->getModel(), $test->getType()))->loadParameters($db);  
         $db->getConnection()->commit();
     }
     catch(\Exception $e)
