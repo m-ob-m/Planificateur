@@ -1,3 +1,5 @@
+"use strict";
+
 $(function(){
 	$("input#startDate").val(moment().tz("America/Montreal").subtract(1, "month").format("YYYY-MM-DDTHH:mm:ss"));
 	$("input#endDate").val(moment().tz("America/Montreal").format("YYYY-MM-DDTHH:mm:ss"));

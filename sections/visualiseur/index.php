@@ -17,7 +17,7 @@
     try
     {
         $db->getConnection()->beginTransaction();
-        $batch =  \Batch::withID($_GET["id"]) ?? new \Batch();
+        $batch =  \Batch::withID($db, $_GET["id"]) ?? new \Batch();
         $db->getConnection()->commit();
     }
     catch(\Exception $e)
@@ -47,12 +47,17 @@
         fclose($cttFile);
     }
     
-    $collection = (new CollectionPanneaux($batch, $pc2FileContents, $cttFileContents));
+    $collection = (new \CollectionPanneaux($batch, $pc2FileContents, $cttFileContents));
     
     $now = time();
     
+    $tempDirectory = __DIR__ . "/temp/";
+    if (!file_exists($tempDirectory)) {
+        mkdir($tempDirectory, 0777, true);
+    }
+    
     // Suppression des vieilles images
-    $scan = scandir("temp\\");
+    $scan = scandir($tempDirectory);
     foreach($scan as $file)
     {
         // Si le nom du fichier est plus grand que trois lettres pour enlever les répertoires . et ..
@@ -104,60 +109,65 @@
 	<body style="background-image: none; background-color: #FFFFFF;">
 		<div style="display: flex; flex-flow: row;">
 			<div style="flex: 1 1 auto;">
-        	<?php foreach($collection->getPanneaux() as $index => $panneau): ?>
-    			<div class="pannelContainer" style="page-break-after: always;">
-                	<!-- Entete de navigation (on veut l'avoir sur chaque page lors de l'impression) -->
-                	<div style="width: 100%; margin-top: 2px; margin-bottom: 2px; text-align: center; overflow: hidden;">
-                		<button title="Premier" class="no-print" onclick="goToFirst();">&lt;&lt;</button>
-                		<button title="Précédent" class="no-print" onclick="goToPrevious();">&lt;</button>
-                		<div id="index" style="display: inline-block; border: 1px black solid; padding: 2px;"><?= 
-                            ($index + 1) . " / " . count($collection->getPanneaux()); 
-                        ?></div>
-                		<button title="Suivant" class="no-print" onclick="goToNext();">&gt;</button>
-                		<button title="Dernier" class="no-print" onclick="goToLast();">&gt;&gt;</button>
-                		<button class="no-print" onclick="printPannel();">Imprimer</button>
-                		<button class="no-print" onclick="printAllPannels();">Imprimer tout</button> 
-                		<div id="quantity" style="display: inline-block; border: 1px black solid; padding: 2px;">Qté : <?= 
-                            $panneau->getQuantite(); 
-                        ?></div>
-                		<div id="batchName" style="display: inline-block; border: 1px black solid;  padding: 2px;"><?= 
-                            $batch->getName(); 
-                         ?></div>
-                		<button class="no-print" onclick="window.close();" style="float: right; margin-right: 2px;">
-                			<img src="/Planificateur/images/exit.png" style="width: 16px; height: 16px;">
-                		Sortir</button>
+			<?php if(!empty($collection->getPanneaux())): ?>
+            	<?php foreach($collection->getPanneaux() as $index => $panneau): ?>
+        			<div class="pannelContainer" style="page-break-after: always;">
+                    	<!-- Entete de navigation (on veut l'avoir sur chaque page lors de l'impression) -->
+                    	<div style="width: 100%; margin-top: 2px; margin-bottom: 2px; text-align: center; overflow: hidden;">
+                    		<button title="Premier" class="no-print" onclick="goToFirst();">&lt;&lt;</button>
+                    		<button title="Précédent" class="no-print" onclick="goToPrevious();">&lt;</button>
+                    		<div id="index" style="display: inline-block; border: 1px black solid; padding: 2px;"><?= 
+                                ($index + 1) . " / " . count($collection->getPanneaux()); 
+                            ?></div>
+                    		<button title="Suivant" class="no-print" onclick="goToNext();">&gt;</button>
+                    		<button title="Dernier" class="no-print" onclick="goToLast();">&gt;&gt;</button>
+                    		<button class="no-print" onclick="printPannel();">Imprimer</button>
+                    		<button class="no-print" onclick="printAllPannels();">Imprimer tout</button> 
+                    		<div id="quantity" style="display: inline-block; border: 1px black solid; padding: 2px;">Qté : <?= 
+                                $panneau->getQuantite(); 
+                            ?></div>
+                    		<div id="batchName" style="display: inline-block; border: 1px black solid;  padding: 2px;"><?= 
+                                $batch->getName(); 
+                             ?></div>
+                    		<button class="no-print" onclick="window.close();" style="float: right; margin-right: 2px;">
+                    			<img src="/Planificateur/images/exit.png" style="width: 16px; height: 16px;">
+                    		Sortir</button>
+                    	</div>
+                    	
+                    	<div style="display: flex; flex-flow: row;">
+                        	<div style="flex: 1 1 auto; float: left;"></div>
+                        	<div style="flex: 0 1 auto;">
+                        		<?php $sourceFileName = $batch->getName() . fillZero($index + 1, 4) . ".jpg";?>
+                        		<?php $sourceFilePath = CR_FABRIDOR . "SYSTEM_DATA\\DATA\\" . $sourceFileName; ?>
+                        		<?php $destinationFilePath = __DIR__ . "/temp/panel_{$sourceFileName}"; ?>
+                                <?php copy($sourceFilePath, $destinationFilePath); ?>
+                        		<div class="pannel">
+                        			<img src="temp/panel_<?= $sourceFileName; ?>">
+                        			<?php foreach($panneau->getPortes() as $porte): ?>
+                        				<?php $idjt = $porte->getIdJobType(); ?>
+                        				<?php $idjtp = $porte->getIdJobTypePorte(); ?>
+                        				<?php $mpr = $porte->getNomMpr(); ?>
+                        				<?php $l = $porte->getViewLeft(); ?>
+                    				    <?php $t = $porte->getViewTop() - 30; // Haut de pièce décalé de 30px vers le bas. ?>
+    									<?php $w = $porte->getViewHeight(); ?>
+                    				    <?php $h = $porte->getViewWidth(); ?>
+    									<div class="porte no-print" onclick="displayDoorProperties(<?= $idjtp; ?>);" 
+    										style="left: <?= $l; ?>px; top: <?= $t; ?>px; width: <?= $w; ?>px;
+    											 height: <?= $h; ?>px;">
+                        					<?= $porte->getNoCommande(); ?><br>
+                        					<?= $porte->getModele(); ?><br>
+                        					<?= $porte->getHauteurPo() . " X " . $porte->getLargeurPo(); ?>
+                        				</div>
+                        			<?php endforeach; ?>
+                        		</div>
+                            </div>
+                            <div style="flex: 1 1 auto; float: right;"></div>
+                    	</div>
                 	</div>
-                	
-                	<div style="display: flex; flex-flow: row;">
-                    	<div style="flex: 1 1 auto; float: left;"></div>
-                    	<div style="flex: 0 1 auto;">
-                    		<?php $sourceFileName = $batch->getName() . fillZero($index + 1, 4) . ".jpg";?>
-                    		<?php $sourceFilePath = CR_FABRIDOR . "SYSTEM_DATA\\DATA\\" . $sourceFileName; ?>
-                    		<?php $destinationFilePath = __DIR__ . "/temp/panel_{$sourceFileName}"; ?>
-                            <?php copy($sourceFilePath, $destinationFilePath); ?>
-                    		<div class="pannel">
-                    			<img src="temp/panel_<?= $sourceFileName; ?>">
-                    			<?php foreach($panneau->getPortes() as $porte): ?>
-                    				<?php $idjt = $porte->getIdJobType(); ?>
-                    				<?php $idjtp = $porte->getIdJobTypePorte(); ?>
-                    				<?php $mpr = $porte->getNomMpr(); ?>
-                    				<?php $l = $porte->getViewLeft(); ?>
-                				    <?php $t = $porte->getViewTop() - 30; // Le haut de la pièce est décalé de 30px vers le bas. ?>
-									<?php $w = $porte->getViewHeight(); ?>
-                				    <?php $h = $porte->getViewWidth(); ?>
-									<div class="porte no-print" onclick="displayDoorProperties(<?= $idjtp; ?>);" 
-										style="left: <?= $l; ?>px; top: <?= $t; ?>px; width: <?= $w; ?>px; height: <?= $h; ?>px;">
-                    					<?= $porte->getNoCommande(); ?><br>
-                    					<?= $porte->getModele(); ?><br>
-                    					<?= $porte->getHauteurPo() . " X " . $porte->getLargeurPo(); ?>
-                    				</div>
-                    			<?php endforeach; ?>
-                    		</div>
-                        </div>
-                        <div style="flex: 1 1 auto; float: right;"></div>
-                	</div>
-            	</div>
-            <?php endforeach; ?>
+                <?php endforeach; ?>
+            <?php else: ?>
+    			<p>Il n'y a rien à afficher. Veuillez regénérer le projet.</p>
+    		<?php endif;?>
             </div>
         	<div id="rightPannel" class="no-print" style="flex: 0 1 auto; display: none;">	
                 <!-- Visualisation des propriétés -->

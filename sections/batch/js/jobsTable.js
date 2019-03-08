@@ -1,3 +1,5 @@
+"use strict";
+
 /**
  * Fills the list of Jobs of this Batch
  * @param {job[]} jobs An array of job identidfiers
@@ -41,7 +43,7 @@ function addJob(identifier, isName = false)
 				{
 					$("table#orders > tbody").append(newJob(job));
 					$("input#jobNumber").val("");
-					return Promise.resolve();
+					return Promise.resolve(job);
 				}
 				else
 				{
@@ -51,8 +53,8 @@ function addJob(identifier, isName = false)
 				}
 				
 			})
-			.then(function(){
-				resolve();
+			.then(function(job){
+				resolve(job);
 			})
 			.catch(function(){
 				reject();
@@ -72,12 +74,25 @@ function addJob(identifier, isName = false)
  */
 function addJobButtonPressed()
 {
-	addJob($('#jobNumber').val(), true)
-	.then(function(){
+	addJob($('input#jobNumber').val(), true)
+	.then(function(job){
+		if(!$('input#startDate').val() || !$('input#batchId').val())
+		{
+			let deliveryDate = job.hasOwnProperty("deliveryDate") ? job.deliveryDate : "";
+			let deliveryMoment = moment.tz(deliveryDate, getExpectedMomentFormat(), "America/Montreal");
+			$('input#startDate').val(deliveryMoment.subtract(3, "days").add(8, "hours").format(getExpectedMomentFormat()));
+		}
+		
+		if(!$('input#endDate').val() || !$('input#batchId').val())
+		{
+			let deliveryDate = job.hasOwnProperty("deliveryDate") ? job.deliveryDate : "";
+			let deliveryMoment = moment.tz(deliveryDate, getExpectedMomentFormat(), "America/Montreal");
+			$('input#endDate').val(deliveryMoment.subtract(3, "days").add(17, "hours").format(getExpectedMomentFormat()));
+		}
 		updateSessionStorage();
 	})
-	.catch(function(){
-		/* Do nothing. */
+	.catch(function(error){
+		// Do nothing.
 	});
 }
 

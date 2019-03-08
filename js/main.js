@@ -1,3 +1,5 @@
+"use strict";
+
 /**
  * Update all unitary programs
  * @param {int} modelId The model id for which programs must be updated, null means all
@@ -159,7 +161,7 @@ function downloadFile(url, fileName)
 	req.onload = function (event) 
 	{
 		let blob = req.response;
-	    link = document.createElement("a");
+	    let link = document.createElement("a");
 	    $(link).attr({"href": window.URL.createObjectURL(blob), "download": fileName});
 	    $(link).css({"visibility": "hidden", "display": "none"});
 	    $(link).appendTo("html >body");

@@ -43,7 +43,7 @@ try
             copy(MMATV9_MDB, $accessDbPath);
         }
         
-        $accessDb =  new PDO("odbc:DRIVER={Microsoft Access Driver (*.mdb)}; DBQ={$accessDbPath}; Uid=; Pwd;");
+        $accessDb =  new \PDO("odbc:DRIVER={Microsoft Access Driver (*.mdb)}; DBQ={$accessDbPath}; Uid=; Pwd;");
         $stmt = $accessDb->prepare("
             SELECT [b].[BoardsCode] AS [BoardCode]
             FROM [Boards] AS [b]
@@ -59,6 +59,10 @@ try
         natsort($boards);
         
         $accessDb = null;
+    }
+    else 
+    {
+        throw new \Exception("Il n'y a aucun matériel associé à l'identifiant numérique unique \"{$id}\".");
     }
     
     // Retour au javascript

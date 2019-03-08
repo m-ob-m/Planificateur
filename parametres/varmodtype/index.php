@@ -73,6 +73,11 @@
     					<nav id="nav">
     						<ul>
     							<li>
+    								<a href="javascript: void(0);" onclick="exportParameters();" class="imageButton">
+    									<img src="/Planificateur/images/export32.png">
+    								Exporter</a>
+    							</li>
+    							<li>
     								<a href="javascript: void(0);" onclick="saveConfirm();" class="imageButton">
     									<img src="/Planificateur/images/save.png">
     								Sauvegarder</a>

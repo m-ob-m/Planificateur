@@ -33,33 +33,54 @@
             throw new \Exception("No model unique identifier provided.");
         }
         $genericId = $_GET["genericId"] ?? null;
-    
-        $workbook = new \PhpOffice\PhpSpreadsheet\Spreadsheet();
-        $workSheetsIndex = array();
-        $modelTypeGenericsToExport = retrieveModelTypeGenericsToExport($modelId, $genericId);
-        /* @var $modelTypeGenericToExport \ModelTypeGeneric */
-        foreach($modelTypeGenericsToExport as $modelTypeGenericToExport)
+        
+        $db = new \FabPlanConnection();
+        try
         {
-            $worksheet = null;
-            $generic = $modelTypeGenericToExport["generic"];
-            $model = $modelTypeGenericToExport["model"];
-            $genericIdAsString = strval($generic->getId());
-            if(array_key_exists($genericIdAsString, $workSheetsIndex))
+            $db->getConnection()->beginTransaction();
+            
+            $model = \Model::withID($db, $modelId);
+            if($model === null)
             {
-                $worksheet = $workbook->getSheet($workSheetsIndex[$genericIdAsString]->index);
+                throw new \Exception("There is no Model with a unique numerical identifier of \"{$modelId}\".");
+            }
+            
+            $typesToExport = null;
+            if($genericId === null)
+            {
+                $typesToExport = (new \TypeController())->getTypes();
             }
             else
             {
-                $worksheet = CreateWorksheetForModelGeneric($workbook, $model, $generic);
-                $workSheetsIndex[$genericIdAsString] = (object)array(
-                    "index" => $workbook->getActiveSheetIndex(),
-                    "nextEmptyColumn" => 2
-                );
+                $genericToExport = \Generic::withID($db, $genericId);
+                if($genericToExport === null)
+                {
+                    throw new \Exception("There is no Generic with a unique numerical identifier of \"{$genericId}\".");
+                }
+                $typesToExport = $genericToExport->getAssociatedTypes();
             }
-            ModelTypeGenericCombinationToSpreadsheetColumn($worksheet, $modelTypeGenericToExport);
-            $workSheetsIndex[$genericIdAsString]->nextEmptyColumn++;
+            
+            /* @var \Type $type */
+            $modelTypeGenericCombinations = array();
+            foreach($typesToExport as $type)
+            {
+                $modelTypeGeneric = (new \ModelTypeGeneric($model->getId(), $type->getImportNo()))->loadParameters();
+                array_push($modelTypeGenericCombinations, $modelTypeGeneric);
+            }
+            
+            exportModelTypeGenericCombinationsToExcel($modelTypeGenericCombinations);
+            
+            $db->getConnection()->commit();
         }
-        $workbook->setActiveSheetIndex(0);
+        catch(\Exception $e)
+        {
+            $db->getConnection()->rollback();
+            throw $e;
+        }
+        finally
+        {
+            $db = null;
+        }
         
         /* Clean the temporary folder. */
         $TemporaryFolderPath = __DIR__ . "/temp";
@@ -88,6 +109,49 @@
     finally
     {
         echo json_encode($responseArray);
+    }
+    
+    /**
+     * Creates an Excel workbook and then inserts the specific parameters of different model-type-generic combinations. 
+     * The workbook can be edited and then re-sent to update the parameters.
+     *
+     * @param array[\ModelTypeGeneric] The ModelTypeGeneric objects of which parameters are to be stored into the 
+     *                                 workbook.
+     *
+     * @throws
+     * @author Marc-Olivier Bazin-Maurice
+     * @return PHPSpreadSheetWorkBook The new workbook
+     */
+    function exportModelTypesToExcel(array $modelTypeGenericCombinations)
+        : PHPSpreadSheetWorkBook
+    {
+        $workbook = new \PhpOffice\PhpSpreadsheet\Spreadsheet();
+        $workSheetsIndex = array();
+        
+        /* @var $modelTypeGenericCombination \ModelTypeGeneric */
+        foreach($modelTypeGenericCombinations as $modelTypeGenericCombination)
+        {
+            $worksheet = null;
+            $generic = \Generic::withID($db, $modelTypeGenericToExport->getGenericId());
+            $model = \Model::withID($db, $modelTypeGenericToExport->getModelId());
+            $genericIdAsString = strval($generic->getId());
+            if(array_key_exists($genericIdAsString, $workSheetsIndex))
+            {
+                $worksheet = $workbook->getSheet($workSheetsIndex[$genericIdAsString]->index);
+                $worksheet->setTitle($generic->getFilename());
+            }
+            else
+            {
+                $worksheet = CreateWorksheetForModelGeneric($workbook, $model, $generic);
+                $workSheetsIndex[$genericIdAsString] = (object)array(
+                    "index" => $workbook->getActiveSheetIndex(),
+                    "nextEmptyColumn" => 2
+                );
+            }
+            ModelTypeGenericCombinationToSpreadsheetColumn($worksheet, $modelTypeGenericToExport);
+            $workSheetsIndex[$genericIdAsString]->nextEmptyColumn++;
+        }
+        $workbook->setActiveSheetIndex(0);
     }
     
     /**
@@ -225,11 +289,7 @@
             foreach($typesToExport as $type)
             {
                 $modelTypeGeneric = (new \ModelTypeGeneric($model->getId(), $type->getImportNo()))->loadParameters($db);
-                $generic = \Generic::withID($db, $type->getGenericId());
-                array_push(
-                    $modelTypeGenericsToExport,
-                    array("modelTypeGeneric" => $modelTypeGeneric, "model" => $model, "type" => $type, "generic" => $generic)
-                );
+                array_push($modelTypeGenericsToExport, $modelTypeGeneric);
             }
             
             $db->getConnection()->commit();

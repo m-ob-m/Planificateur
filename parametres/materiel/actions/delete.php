@@ -21,13 +21,20 @@ try
 {
     $input =  json_decode(file_get_contents("php://input"));
     
+    // Vérification des paramètres
     $id = (isset($input->id) ? $input->id : null);
     
     $db = new \FabPlanConnection();
     try
     {
         $db->getConnection()->beginTransaction();
-        \Materiel::withID($db, $id)->delete($db);
+        $material = \Materiel::withID($db, $id, \MYSQLDatabaseLockingReadTypes::FOR_UPDATE);
+        if($material === null)
+        {
+            throw new \Exception("Il n'y a aucun matériel possédant l'identifiant unique \"{$id}\".");
+        }
+        
+        $material->delete($db);
         $db->getConnection()->commit();
     }
     catch(\Exception $e)

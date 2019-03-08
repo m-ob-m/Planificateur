@@ -118,12 +118,12 @@ class mprCutrite
 	 * NB	html_entity_decode est utilisé présentement car l'importation semble créer
 	 * 		parfois des caractères HTML
 	 */
-	public function makeMprFromJobType(JobType $jobType)
+	public function makeMprFromJobType(\JobType $jobType)
 	{
 	    $var_token = "";
 	    $parameters = [];
 	    
-	    if($jobType->getModelId() === 2)
+	    if($jobType->getModel()->getId() === 2)
 	    {
 	        // Unification des sauts de ligne
 	        $this->_generic = preg_replace("/(?<!\r)\n|\r(?!\n)/", "\r\n", $jobType->getMprFile());
@@ -151,8 +151,8 @@ class mprCutrite
 	    }
 	    else
 	    { 
-	        $modelId = $jobType->getModelId();
-	        $typeNo = $jobType->getTypeNo();
+	        $modelId = $jobType->getModel()->getId();
+	        $typeNo = $jobType->getType()->getImportNo();
 	        $modelTypeGeneric = (new ModelTypeGenericController())->getModelTypeGeneric($modelId, $typeNo);
 	        $modelTypeGenericParameters = $modelTypeGeneric->getParametersAsKeyDescriptionPairs();
 	        foreach ($jobType->getParameters() as $parameter)
@@ -202,7 +202,7 @@ class mprCutrite
 		//Si le fichier mpr n'a pas de marque de fin (un !), on en ajoute une.
         $this->_mpr .= ((preg_match("/^.*!\s*$/s", $this->_mpr)) ? "" : "!");
 		
-        if($jobType->getModelId() === 2)
+        if($jobType->getModel()->getId() === 2)
         {
     		//Remettre l'encodage des caractères en ISO-8859-1
     		$this->_mpr = utf8_decode($this->_mpr);
@@ -225,7 +225,7 @@ class mprCutrite
 	    $var_token = "";
 	    $parameters = [];
 	    
-        if($test->getModelId() === 2)
+        if($test->getModel()->getId() === 2)
         {
             // Unification des sauts de ligne
             $this->_generic = preg_replace("/(?<!\r)\n|\r(?!\n)/", "\r\n",$test->getFichierMpr());

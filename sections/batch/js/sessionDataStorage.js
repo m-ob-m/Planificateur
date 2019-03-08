@@ -1,3 +1,5 @@
+"use strict";
+
 /**
  * Restores possibly unsaved information from the session's storage (can be used untill the data is erased or overwritten).
  * @return {Promise}
@@ -24,7 +26,7 @@ function restoreSessionStorage()
  */
 function updateSessionStorage()
 {
-	jobIds = [];
+	let jobIds = [];
 	$("table#orders >tbody >tr >td.jobIdCell").each(function(){
 		jobIds.push($(this).text());
 	});

@@ -1,3 +1,5 @@
+"use strict";
+
 /**
  * Creates a new interface for a JobType
  * 
@@ -17,6 +19,19 @@ function newJobType(jobType)
 	return jobTypeContainer;
 }
 
+/**
+ * Updates the identification string for a given block.
+ * @this {jquery} block The block to update.
+ */
+function updateJobTypeBlockIdentifier()
+{
+	let description = $(this).data().model.description + " - " + $(this).data().type.description;
+	$(this).find(">table >thead >tr >th >span.jobTypeIdentifier").text(description);
+}
+
+/**
+ * Reloads the quick edit parameters table.
+ */
 function reloadQuickEditParametersTable()
 {
 	let block = this;
@@ -25,16 +40,8 @@ function reloadQuickEditParametersTable()
 		if(this.quickEdit === 1)
 		{
 			let key = this.key;
-			let value = null;
-			if(typeof block.data("jobTypeParameters")[key] !== "undefined")
-			{
-				value = block.data("jobTypeParameters")[key];
-			}
-			else
-			{
-				value = this.value;
-			}
-			
+			let specificValue = block.data("jobTypeParameters")[key];
+			let value = (typeof block.data("jobTypeParameters")[key] !== "undefined") ? specificValue : this.value;
 			addQuickEditParameter.apply(block, [key, value]);
 		}
 	});
@@ -84,10 +91,13 @@ function newJobTypeTable(block)
  */
 function newQuickEditParametersTable()
 {
-	return $("<table></table>").addClass("parametersTable noExternalBorder hoverEffectDisabled").css({"width": "100%"}).append(
+	return $("<table></table>")
+	.addClass("parametersTable noExternalBorder hoverEffectDisabled")
+	.css({"width": "100%"}).append(
 		$("<thead></thead>").append(
 			$("<tr></tr>").append(
-				$("<th></th>").addClass("titreBleu firstVisibleColumn lastVisibleColumn").attr("colspan", 2).html("Paramètres")
+				$("<th></th>").addClass("titreBleu firstVisibleColumn lastVisibleColumn").attr("colspan", 2)
+				.html("Paramètres")
 			),
 			$("<tr></tr>").append(
 				$("<th></th>").addClass("titreBleu firstVisibleColumn").css({"width": "50%"}).html("Clé"),
@@ -232,27 +242,22 @@ function newPart(part)
 	let row = $("<tr></tr>").css({"height": "23px"}).append(
 		$("<td></td>").css({"line-height": "0px"}).addClass("firstVisibleColumn"),
 		$("<td></td>").css({"line-height": "0px", "display": "none"}).append(
-			$("<input>")
-			.val((id !== undefined && id !== null && id !== "") ? id : 1)
+			$("<input>").val((id !== undefined && id !== null && id !== "") ? id : 1)
 		),
 		$("<td></td>").css({"line-height": "0px"}).append(
-			$("<input>")
-			.val((qty !== undefined && qty !== null && qty !== "") ? qty : 1)
+			$("<input>").val((qty !== undefined && qty !== null && qty !== "") ? qty : 1)
 			.change(function(){dataHasChanged(true);})
 		),
 		$("<td></td>").css({"line-height": "0px"}).append(
-			$("<input>")
-			.val((length !== undefined && length !== null && length !== "") ? length : 0)
+			$("<input>").val((length !== undefined && length !== null && length !== "") ? length : 0)
 			.change(function(){dataHasChanged(true);})
 		),
 		$("<td></td>").css({"line-height": "0px"}).append(
-				$("<input>")
-				.val((width !== undefined && width !== null && width !== "") ? width : 0)
+				$("<input>").val((width !== undefined && width !== null && width !== "") ? width : 0)
 				.change(function(){dataHasChanged(true);})
 		),
 		$("<td></td>").css({"line-height": "0px"}).addClass("lastVisibleColumn").append(
-			$("<select></select>")
-			.append(
+			$("<select></select>").append(
 				$("<option></option>").text("Aucun").val("N"),
 				$("<option></option>").text("Horizontal").val("X"),
 				$("<option></option>").text("Vertical").val("Y")
@@ -313,26 +318,34 @@ function modifyPart()
 		let newBlock = $(this);
 		$("div#blocksList")
 		.append(
-			$("<div></div>").css({"cursor": "pointer"}).click(function(){
-				movePartBetweenBlocks.apply(partRow, [newBlock]);
-			}).append(
-				$("<span></span>").text(newBlock.find(">table >thead >tr >th >span").text())
-			)
+			$("<div></div>").css({"cursor": "pointer"}).click(function(){movePartBetweenBlocks.apply(partRow, [newBlock]);})
+			.append($("<span></span>").text(newBlock.find(">table >thead >tr >th >span").text()))
 		);
 	});
 	
 	/* Déplacer l'élément vers un nouveau bloc. */
 	$("div#blocksList").append(
 		$("<div></div>").css({"cursor": "pointer"}).click(function(){
-			let newBlock = newJobType(originalBlock.data({"id": null,"parts": []}).data()); 
+			let newBlockData = JSON.parse(JSON.stringify(originalBlock.data()));
+			newBlockData.id = null;
+			newBlockData.parts = [];
+			let newBlock = newJobType(newBlockData); 
 			$("div#blocksContainer").append(newBlock); 
 			movePartBetweenBlocks.apply(partRow, [newBlock]);
-		}).append(
-			$("<span></span>").text("Nouveau bloc")
-		)
+		}).append($("<span></span>").text("Nouveau bloc"))
 	);
 	
 	$("div.modal#moveBetweenBlocksModal").show();
+}
+
+/**
+ * Finds the parent block of an element.
+ * @this {jquery} An element
+ * @return {jquery} The node of the block to which this element belongs.
+ */
+function findBlock()
+{
+	return this.parents("div.blockContainer");
 }
 
 /**
@@ -341,7 +354,9 @@ function modifyPart()
  */
 function removePart()
 {
+	let block = findBlock.apply(this);
 	this.remove();
+	updateJobTypePartsMetaData.apply(block);
 	dataHasChanged(true);
 }
 
@@ -383,14 +398,10 @@ function newQuickEditParameter(key, value)
 {
 	let block = this;
 	return $("<tr></tr>").css({"height": "23px"}).append(
-		$("<td></td>")
-		.addClass("firstVisibleColumn").css({"line-height": "0px"})
-		.append(
-			$("<input>").prop({"disabled": true}).val(key)
-		),
+		$("<td></td>").addClass("firstVisibleColumn").css({"line-height": "0px"}).append($("<input>")
+		.prop({"disabled": true}).val(key)),
 		$("<td></td>").addClass("lastVisibleColumn").css({"line-height": "0px"}).append(
-			$("<input>").val(value)
-			.change(function(){
+			$("<input>").val(value).change(function(){
 				block.data("jobTypeParameters")[key] = $(this).val();
 				dataHasChanged(true);
 			})
@@ -407,7 +418,10 @@ function newQuickEditParameter(key, value)
 function movePartBetweenBlocks(destinationBlock)
 {
 	this.detach();
+	let sourceBlock = findBlock.apply(this);
 	destinationBlock.find(">table >tbody >tr >td:last-child >table >tbody").append(this);
+	updateJobTypePartsMetaData.apply(sourceBlock);
+	updateJobTypePartsMetaData.apply(destinationBlock);
 	dataHasChanged(true);
 	return this;
 }
@@ -455,8 +469,8 @@ function updateJobTypePartsMetaData()
  * Gets or sets the state of the dataHasChanged boolean.
  * @param {bool | null} The new status to apply to the dataHasChanged boolean. If null, the current status of the boolean is 
  * 					  returned.
- * @return {null | bool} If the status of the dataHasChanged boolean is being set, null is returned. Otherwise, the current state 
- * 						 of the boolean is returned.
+ * @return {null | bool} If the status of the dataHasChanged boolean is being set, null is returned. Otherwise, the current 
+ * 						 state of the boolean is returned.
  */
 function dataHasChanged(status = null)
 {

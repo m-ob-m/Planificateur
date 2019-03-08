@@ -53,6 +53,8 @@ class Job implements JsonSerializable
 	 *
 	 * @param FabPlanConnection $db The database in which the record exists
 	 * @param int $id The id of the record in the database
+	 * @param int $databaseConnectionLockingReadType The type of lock to apply to the selected record 
+	 *            (see \MYSQLDatabaseLockingReadTypes)
 	 *
 	 * @throws
 	 * @author Marc-Olivier Bazin-Maurice
@@ -95,7 +97,7 @@ class Job implements JsonSerializable
 	        array_push($instance->_jobTypes, Jobtype::withID($db, $row["id"]));
 	    }
 	    
-	    $this->setDatabaseConnectionLockingReadType($databaseConnectionLockingReadType);
+	    $instance->setDatabaseConnectionLockingReadType($databaseConnectionLockingReadType);
 	    return $instance;
 	}
 	
@@ -146,7 +148,7 @@ class Job implements JsonSerializable
 	        array_push($instance->_jobTypes, Jobtype::withID($db, $row["id"]));
 	    }
 	    
-	    $this->setDatabaseConnectionLockingReadType($databaseConnectionLockingReadType);
+	    $instance->setDatabaseConnectionLockingReadType($databaseConnectionLockingReadType);
 	    return $instance;
 	}
 	
@@ -174,13 +176,13 @@ class Job implements JsonSerializable
 	    }
 	    else
 	    {
-	        $dbTimestamp = \DateTime::createFromFormat("Y-m-d H:i:s", $this->getTimestampFromDatabase($db), "America/Montreal");
-	        $localTimestamp = \DateTime::createFromFormat("Y-m-d H:i:s", $this->getTimestamp(), "America/Montreal");
-	        if($this->getDatabaseConnectionReadingLockType() !== \MYSQLDatabaseLockingReadTypes::FOR_UPDATE)
+	        $dbTimestamp = \DateTime::createFromFormat("Y-m-d H:i:s", $this->getTimestampFromDatabase($db));
+	        $localTimestamp = \DateTime::createFromFormat("Y-m-d H:i:s", $this->getTimestamp());
+	        if($this->getDatabaseConnectionLockingReadType() !== \MYSQLDatabaseLockingReadTypes::FOR_UPDATE)
 	        {
 	            throw new \Exception("The provided " . get_class($this) . " is not locked for update.");
 	        }
-	        elseif($databaseTimestamp > $localTimestamp)
+	        elseif($dbTimestamp > $localTimestamp)
 	        {
 	            throw new \Exception(
 	                "The provided " . get_class($this) . " is outdated. The last modification date of the database entry is
@@ -236,9 +238,9 @@ class Job implements JsonSerializable
 	 *
 	 * @throws
 	 * @author Marc-Olivier Bazin-Maurice
-	 * @return Job This Job (for method chaining)
+	 * @return \Job This Job (for method chaining)
 	 */
-	private function update(FabPlanConnection $db) : Job
+	private function update(\FabPlanConnection $db) : \Job
 	{
 	    $stmt = $db->getConnection()->prepare("
             UPDATE `fabplan`.`job`
@@ -251,9 +253,10 @@ class Job implements JsonSerializable
 	    $stmt->bindValue(':status', $this->getStatus(), PDO::PARAM_STR);
 	    $success = $stmt->execute();
 	    
+	    /* @var \JobType $jobType */
 	    foreach($this->_jobTypes as $jobType)
 	    {
-	        $jobType->save($db);
+	       $jobType->save($db);
 	    }
 	    
 	    return $this;
@@ -262,19 +265,25 @@ class Job implements JsonSerializable
 	/**
 	 * Delete the JobType object from the database
 	 *
-	 * @param FabPlanConnection $db The database from which the record must be deleted
+	 * @param \FabPlanConnection $db The database from which the record must be deleted
 	 *
 	 * @throws
 	 * @author Marc-Olivier Bazin-Maurice
-	 * @return JobType This JobType (for method chaining)
+	 * @return \JobType This JobType (for method chaining)
 	 */
-	public function delete(FabPlanConnection $db) : Job
+	public function delete(\FabPlanConnection $db) : \Job
 	{   
-	    $this->emptyInDatabase($db);
 	    
-	    $stmt = $db->getConnection()->prepare("DELETE FROM `fabplan`.`job` WHERE `id_job` = :id;");
-	    $stmt->bindValue(':id', $this->getId(), PDO::PARAM_INT);
-	    $stmt->execute();
+	    if($this->getDatabaseConnectionLockingReadType() !== \MYSQLDatabaseLockingReadTypes::FOR_UPDATE)
+	    {
+	        throw new \Exception("The provided " . get_class($this) . " is not locked for update.");
+	    }
+	    else
+	    {
+    	    $stmt = $db->getConnection()->prepare("DELETE FROM `fabplan`.`job` WHERE `id_job` = :id;");
+    	    $stmt->bindValue(':id', $this->getId(), PDO::PARAM_INT);
+    	    $stmt->execute();
+	    }
 	    
 	    return $this;
 	}
@@ -317,9 +326,16 @@ class Job implements JsonSerializable
 	 */
 	public function emptyInDatabase(\FabPlanConnection $db) : \Job
 	{
-	    foreach($this->_jobTypes as $jobType)
+	    $stmt = $db->getConnection()->prepare("
+            SELECT `jt`.`id_job_type` AS `jobTypeId` FROM `fabplan`.`job_type` AS `jt` 
+            WHERE `jt`.`job_id` = :id;
+	    ");
+	    $stmt->bindValue(':id', $this->getId(), PDO::PARAM_INT);
+	    $stmt->execute();
+	    
+	    while($row = $stmt->fetch())
 	    {
-	        $jobType->delete($db);
+	        \JobType::withID($db, $row["jobTypeId"], \MYSQLDatabaseLockingReadTypes::FOR_UPDATE)->delete($db);
 	    }
 	    
 	    return $this;
@@ -329,12 +345,14 @@ class Job implements JsonSerializable
 	 * Gets the batch to which this job belongs
 	 *
 	 * @param FabPlanConnection $db The database in which the records must be found.
+	 * @param int $databaseConnectionLockingReadType The type of lock to apply to the selected record 
+	 *            (see \MYSQLDatabaseLockingReadTypes)
 	 *
 	 * @throws
 	 * @author Marc-Olivier Bazin-Maurice
 	 * @return JobType This JobType (for method chaining)
 	 */
-	public function getParentBatch(\FabPlanConnection $db) : ?\Batch
+	public function getParentBatch(\FabPlanConnection $db, int $databaseConnectionLockingReadType = 0) : ?\Batch
 	{
 	    $stmt = $db->getConnection()->prepare(
             "SELECT `b`.`id_batch` AS `batchId` 
@@ -549,7 +567,7 @@ class Job implements JsonSerializable
 	 * @author Marc-Olivier Bazin-Maurice
 	 * @return \JobType This JobType.
 	 */
-	private function setDatabaseConnectionLockingReadType(int $databaseConnectionLockingReadType) : \JobType
+	private function setDatabaseConnectionLockingReadType(int $databaseConnectionLockingReadType) : \Job
 	{
 	    $this->__database_connection_locking_read_type = $databaseConnectionLockingReadType;
 	    return $this;

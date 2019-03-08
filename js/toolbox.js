@@ -1,10 +1,15 @@
+"use strict";
+
 /**
- * Tests if str represents a positive integer.
- * @param {string} str a string that may or may not represent a positive integer.
+ * Tests if the parameter represents a positive integer.
+ * @param {mixed} value A value that may or may not represent a positive integer.
+ * @param {bool} allow0 If true, then 0 is considered a valid positive integer.
  * 
- * @return true if string represents a positive integer, false otherwise.
+ * @return true if the value is a positive integer or a string representing a positive integer.
  */
-function isPositiveInteger(str) 
+function isPositiveInteger(value, allow0 = true) 
 {
-	return (new RegExp("^\\+?\\d+$")).test(str);
+	let n = Math.floor(Number(value));
+    return n !== Infinity && String(n) === value && (allow0 ? n >= 0 : n > 0);
+
 }

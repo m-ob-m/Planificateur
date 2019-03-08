@@ -230,7 +230,7 @@ namespace MprExpression
             catch(\Exception $e)
             {
                 //This is an unexpected Exception.
-                $message = "Cannot evaluate expression \"{$name} = {$expressionToEvaluate}\": {$e->getMessage()}";
+                $message = "Cannot evaluate expression \"{$name} = {$mprExpression}\": {$e->getMessage()}";
                 throw new \Exception($message);
             }
         }

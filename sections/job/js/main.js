@@ -1,3 +1,5 @@
+"use strict";
+
 /**
  * Redirects to the page of the specified batch
  * @param {int} batchId The id of the batch

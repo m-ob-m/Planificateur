@@ -44,5 +44,10 @@
     /*
      * Chemin du fichier d'origine de la base de données de panneaux
      */
-    define('MMATV9_MDB', "C:\V90\FABRIDOR\SYSTEM_DATA\LIBs\mmatv9.mdb");
+    define('MMATV9_MDB', "C:\\V90\\FABRIDOR\\SYSTEM_DATA\\LIBs\\mmatv9.mdb");
+    
+    /*
+     * Chemin du fichier d'origine des paramètres globaux des fichiers mpr
+     */
+    define('WWGLOB_VAR', "C:\\MACHINE1\\a1\\ml4\\wwglob.var");
 ?>

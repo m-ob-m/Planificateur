@@ -18,36 +18,39 @@
     include_once __DIR__ . "/../../parametres/materiel/controller/materielCtrl.php";
     
     $batch = null;
-    if(isset($_GET["id"]))
+    $materials = null;
+    $db = new \FabPlanConnection();
+    try
     {
-        if(preg_match("/^\d+$/", $_GET["id"]))
+        $db->getConnection()->beginTransaction();
+        $materials = (new \MaterielController())->getMateriels();
+        
+        if(isset($_GET["id"]))
         {
-            $db = new \FabPlanConnection();
-            try
+            if(preg_match("/^\d+$/", $_GET["id"]))
             {
-                $db->getConnection()->beginTransaction();
-                $batch = \Batch::withID($_GET["id"]);
-                $materials = (new \MaterielController())->getMateriels();
-                $db->getConnection()->commit();
+                $batch = \Batch::withID($db, $_GET["id"]);
             }
-            catch(\Exception $e)
+            else 
             {
-                $db->getConnection()->rollback();
-                throw $e;
-            }
-            finally
-            {
-                $db = null;
+                $batch = new \Batch();
             }
         }
-        else 
+        else
         {
             $batch = new \Batch();
         }
+        
+        $db->getConnection()->commit();
     }
-    else
+    catch(\Exception $e)
     {
-        $batch = new \Batch();
+        $db->getConnection()->rollback();
+        throw $e;
+    }
+    finally
+    {
+        $db = null;
     }
     
     $id = $batch->getId();

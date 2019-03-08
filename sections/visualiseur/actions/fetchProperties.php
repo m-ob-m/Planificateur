@@ -33,7 +33,7 @@ try
         $job = \Job::withID($db, $jobType->getJobId());
         $model = \Model::withID($db, $jobType->getModelId());
         $type = \Type::withImportNo($db, $jobType->getTypeNo());
-        $generic = \Generic::withID($type->getGenericId());
+        $generic = $type->getGeneric();
         $db->getConnection()->commit();
     }
     catch(\Exception $e)
