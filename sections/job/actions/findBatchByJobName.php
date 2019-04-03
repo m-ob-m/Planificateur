@@ -48,7 +48,7 @@ try
         }
         else
         {
-            throw new \Exception("There is no Batch with the name \"{$name}\".");
+            throw new \Exception("There is no Job with the name \"{$name}\".");
         }
         $db->getConnection()->commit();
     }

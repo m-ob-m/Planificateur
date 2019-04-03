@@ -47,8 +47,8 @@
         public static function withID(\FabplanConnection $db, int $jobTypeId, string $key) : ?\JobTypeParameter
         {
             $stmt = $db->getConnection()->prepare(
-                "SELECT `jtp`.`param_value` AS `value` FROM `job_type_params` AS `jtp`
-                WHERE `jtp`.`job_type_id` = :jobTypeId AND `jtp`.`param_key` = :key;"
+                "SELECT `jtp`.`param_value` AS `value` FROM `fabplan`.`job_type_params` AS `jtp`
+                WHERE `jtp`.`job_type_id` = :job_type_id AND `jtp`.`param_key` = :key;"
             );
             $stmt->bindValue(':job_type_id', $jobTypeId, PDO::PARAM_INT);
             $stmt->bindValue(':key', $key, PDO::PARAM_STR);
@@ -74,13 +74,13 @@
          */
         public function save(\FabPlanConnection $db) : \JobTypeParameter
         {
-            if($this->getId() === null)
+            if(self::withID($db, $this->getJobTypeId(), $this->getKey()) === null)
             {
                 $this->insert($db);
             }
             else
             {
-                if($this->getDatabaseConnectionReadingLockType() !== \MYSQLDatabaseLockingReadTypes::FOR_UPDATE)
+                if($this->getDatabaseConnectionLockingReadType() !== \MYSQLDatabaseLockingReadTypes::FOR_UPDATE)
                 {
                     throw new \Exception("The provided " . get_class($this) . " is not locked for update.");
                 }

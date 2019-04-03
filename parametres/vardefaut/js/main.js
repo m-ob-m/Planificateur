@@ -1,3 +1,5 @@
+"use strict";
+
 function openGenericParameters(id = null)
 {
 	let next_page = ["/Planificateur/parametres/vardefaut/index.php"];

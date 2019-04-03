@@ -18,36 +18,39 @@
     include_once __DIR__ . "/../../parametres/materiel/controller/materielCtrl.php";
     
     $batch = null;
-    if(isset($_GET["id"]))
+    $materials = null;
+    $db = new \FabPlanConnection();
+    try
     {
-        if(preg_match("/^\d+$/", $_GET["id"]))
+        $db->getConnection()->beginTransaction();
+        $materials = (new \MaterielController())->getMateriels();
+        
+        if(isset($_GET["id"]))
         {
-            $db = new \FabPlanConnection();
-            try
+            if(preg_match("/^\d+$/", $_GET["id"]))
             {
-                $db->getConnection()->beginTransaction();
-                $batch = \Batch::withID($_GET["id"]);
-                $materials = (new \MaterielController())->getMateriels();
-                $db->getConnection()->commit();
+                $batch = \Batch::withID($db, $_GET["id"]);
             }
-            catch(\Exception $e)
+            else 
             {
-                $db->getConnection()->rollback();
-                throw $e;
-            }
-            finally
-            {
-                $db = null;
+                $batch = new \Batch();
             }
         }
-        else 
+        else
         {
             $batch = new \Batch();
         }
+        
+        $db->getConnection()->commit();
     }
-    else
+    catch(\Exception $e)
     {
-        $batch = new \Batch();
+        $db->getConnection()->rollback();
+        throw $e;
+    }
+    finally
+    {
+        $db = null;
     }
     
     $id = $batch->getId();
@@ -197,7 +200,9 @@
         							</td>
         						</tr>						
             					<tr>
-            						<td class="firstVisibleColumn" style="background-color: #c6e0b4; border-bottom: none;">Fin</td>
+            						<td class="firstVisibleColumn" style="background-color: #c6e0b4; border-bottom: none;">
+										Fin
+									</td>
             						<td class="lastVisibleColumn">
             							<input type=<?= $momentType; ?> step=1 id="endDate" value="<?= $end; ?>">
             						</td>
@@ -226,7 +231,8 @@
         								<select id="material" style="text-align-last: center;" onchange="updatePannelsList();">
         									<option value="0">[Non spécifié]</option>
         									<?php foreach($materials as $material) : ?>
-        										<?php $selected=(($batch->getMaterialId()===$material->getId())?"selected": ""); ?>
+        										<?php $materialId = $material->getId(); ?>
+												<?php $selected = $batch->getMaterialId() === $materialId ? "selected" : ""; ?>
         										<option value="<?= $material->getId(); ?>" <?= $selected ?>><?= 
         								            $material->getDescription(); 
         								        ?></option>
@@ -286,7 +292,7 @@
 									<?php elseif($batch->getMprStatus() === "G"): ?>
 										<td id="mprStatus" class="etatVert lastVisibleColumn">
 											<p style="float: left; width: min-content;">Prêt</p>
-											<a class="imageButton" href="javascript: void(0);" onclick="viewPrograms(<?= $id; ?>);" 
+											<a class="imageButton" href="#" onclick="viewPrograms(<?= $id; ?>); return false;" 
 												style="float: right; color: black; text-decoration: underline; width: auto;">
 												<img src="/Planificateur/images/search16.png" style="margin-right: 2px;">
 											Visualiser</a>

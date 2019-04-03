@@ -49,7 +49,7 @@ class mprCutrite
 		$blockTxt = "";	// Tampon de lecture de bloc
 		$header = false;
 		$dp = 0;		// Nombre d'enfants d'un block
-		$parent;		// Block parent
+		$parent = null;		// Block parent
 		
 		foreach($lines as $line)
 		{	
@@ -115,15 +115,13 @@ class mprCutrite
 	 * \brief       Permet de générer le texte d'un fichier CSV à partir d'une job
 	 * \details    	Permet de générer le texte d'un fichier CSV à partir d'une job
 	 * 
-	 * NB	html_entity_decode est utilisé présentement car l'importation semble créer
-	 * 		parfois des caractères HTML
 	 */
-	public function makeMprFromJobType(JobType $jobType)
+	public function makeMprFromJobType(\JobType $jobType)
 	{
 	    $var_token = "";
 	    $parameters = [];
 	    
-	    if($jobType->getModelId() === 2)
+	    if($jobType->getModel()->getId() === 2)
 	    {
 	        // Unification des sauts de ligne
 	        $this->_generic = preg_replace("/(?<!\r)\n|\r(?!\n)/", "\r\n", $jobType->getMprFile());
@@ -151,16 +149,14 @@ class mprCutrite
 	    }
 	    else
 	    { 
-	        $modelId = $jobType->getModelId();
-	        $typeNo = $jobType->getTypeNo();
-	        $modelTypeGeneric = (new ModelTypeGenericController())->getModelTypeGeneric($modelId, $typeNo);
-	        $modelTypeGenericParameters = $modelTypeGeneric->getParametersAsKeyDescriptionPairs();
-	        foreach ($jobType->getParameters() as $parameter)
+	        $generic = $jobType->getType()->getGeneric();
+	        $defaultKeyDescriptionindex = $generic->getParametersAsKeyDescriptionPairs();
+			$defaultKeyValueindex = $generic->getParametersAsKeyValuePairs();
+			$specificKeyValueIndex = $jobType->getParametersAsKeyValuePairs();
+	        foreach ($defaultKeyDescriptionindex as $key => $description)
 	        {
-	            $key = $parameter->getKey();
-	            $value = $parameter->getValue();
+	            $value = $specificKeyValueIndex[$key] ?? $defaultKeyValueindex[$key];
 	            $parameters[$key] = $value;
-	            $description = $modelTypeGenericParameters[$key];
 	            
 	            $var_token .= "{$key}=\"{$value}\"\r\n";
                 $var_token .= "KM=\"{$description}\"\r\n";
@@ -168,9 +164,9 @@ class mprCutrite
 	        
 	        $this->extractMprBlocks();
 	        $this->_mpr = str_replace("**var_token**\r\n", $var_token, $this->_header, $count);
-	    }
+		}
+		
 	    $parameters = array_merge($parameters, (new Carrousel())->getSymbolicToolNamesArray());
-	    
 		$count = 1;
 				
 		$child_count = 0;	// Nombre d'enfants d'un parent;
@@ -202,7 +198,7 @@ class mprCutrite
 		//Si le fichier mpr n'a pas de marque de fin (un !), on en ajoute une.
         $this->_mpr .= ((preg_match("/^.*!\s*$/s", $this->_mpr)) ? "" : "!");
 		
-        if($jobType->getModelId() === 2)
+        if($jobType->getModel()->getId() === 2)
         {
     		//Remettre l'encodage des caractères en ISO-8859-1
     		$this->_mpr = utf8_decode($this->_mpr);
@@ -225,7 +221,7 @@ class mprCutrite
 	    $var_token = "";
 	    $parameters = [];
 	    
-        if($test->getModelId() === 2)
+        if($test->getModel()->getId() === 2)
         {
             // Unification des sauts de ligne
             $this->_generic = preg_replace("/(?<!\r)\n|\r(?!\n)/", "\r\n",$test->getFichierMpr());

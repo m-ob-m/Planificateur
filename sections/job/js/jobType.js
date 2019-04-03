@@ -1,3 +1,5 @@
+"use strict";
+
 /**
  * Creates a new interface for a JobType
  * 
@@ -5,18 +7,30 @@
  */
 function newJobType(jobType)
 {
-	let modelDescription = ((jobType.model === null) ? "Modèle inconnu" : jobType.model.description);
-	let typeDescription = ((jobType.type === null) ? "Type inconnu" : jobType.type.description);
 	let jobTypeContainer = $("<div></div>");
-	
 	jobTypeContainer.addClass("blockContainer").data(jobType).append(newJobTypeTable(jobTypeContainer));
-	jobTypeContainer.find(">table >thead >tr >th >span.jobTypeIdentifier").text(modelDescription + " - " + typeDescription);
 	$(jobType.parts).each(function(){addPart.apply(jobTypeContainer, [this]);});
-	reloadQuickEditParametersTable.apply(jobTypeContainer);
+	refreshJobTypeBlock.apply(jobTypeContainer);
 	
 	return jobTypeContainer;
 }
 
+/**
+ * Refreshes information displaye for the selected block. 
+ * @this {jquery} The JobType block.
+ */
+function refreshJobTypeBlock()
+{
+	let modelDescription = ((this.data("model") === null) ? "Modèle inconnu" : this.data("model").description);
+	let typeDescription = ((this.data("type") === null) ? "Type inconnu" : this.data("type").description);
+	this.find(">table >thead >tr >th >span.jobTypeIdentifier").text(modelDescription + " - " + typeDescription);
+	reloadQuickEditParametersTable.apply(this);
+}
+
+/**
+ * Reloads parameters from a block's internal data into the quick edit table of the said block. 
+ * @this {jquery} The JobType block.
+ */
 function reloadQuickEditParametersTable()
 {
 	let block = this;
@@ -25,14 +39,11 @@ function reloadQuickEditParametersTable()
 		if(this.quickEdit === 1)
 		{
 			let key = this.key;
-			let value = null;
-			if(typeof block.data("jobTypeParameters")[key] !== "undefined")
-			{
-				value = block.data("jobTypeParameters")[key];
-			}
-			else
+			let value = block.data("jobTypeParameters")[key];
+			if(typeof value === "undefined" || value === "" || value === null)
 			{
 				value = this.value;
+				block.data("jobTypeParameters")[key] = this.value;
 			}
 			
 			addQuickEditParameter.apply(block, [key, value]);
@@ -180,30 +191,21 @@ function insertBlock(block, position = -1)
 /**
  * Removes a JobType from the list.
  * @this {jquery} The JobType to remove.
- * @return {Promise}
  */
-function removeJobType()
+async function removeJobType()
 {
 	let block = this;
-	return new Promise(function(resolve, reject){
-		askConfirmation("Retirement de bloc", "Voulez-vous vraiment retirer ce bloc?")
-		.catch(function(){/* Do nothing. */})
-		.then(function(){
-			if(block.siblings().length > 0)
-			{
-				removeBlock.apply(block);
-			}
-			else
-			{
-				emptyPartsTable.apply(block);
-			}
-		})
-		.then(function(){resolve();})
-		.catch(function(error){
-			showError("Le retirement du bloc a échoué", error);
-			reject();
-		});
-	});
+	if(await askConfirmation("Retirement de bloc", "Voulez-vous vraiment retirer ce bloc?"))
+	{
+		if(block.siblings().length > 0)
+		{
+			removeBlock.apply(block);
+		}
+		else
+		{
+			emptyPartsTable.apply(block);
+		}
+	}
 }
 
 /**
@@ -214,7 +216,7 @@ function removeJobType()
 function modifyJobType()
 {
 	/* Display the block modification window. */
-	openParameterEditor.apply(this, [reloadQuickEditParametersTable]);
+	openParameterEditor.apply(this, [refreshJobTypeBlock]);
 }
 
 /**
@@ -233,7 +235,7 @@ function newPart(part)
 		$("<td></td>").css({"line-height": "0px"}).addClass("firstVisibleColumn"),
 		$("<td></td>").css({"line-height": "0px", "display": "none"}).append(
 			$("<input>")
-			.val((id !== undefined && id !== null && id !== "") ? id : 1)
+			.val((id !== undefined && id !== null && id !== "") ? id : null)
 		),
 		$("<td></td>").css({"line-height": "0px"}).append(
 			$("<input>")
@@ -257,7 +259,7 @@ function newPart(part)
 				$("<option></option>").text("Horizontal").val("X"),
 				$("<option></option>").text("Vertical").val("Y")
 			)
-			.val(new RegExp("/^N$|^X$|^Y$/i").test(grain) ? grain : "N")
+			.val(new RegExp("^N$|^X$|^Y$", "i").test(grain) ? grain : "N")
 			.change(function(){dataHasChanged(true);})
 		)
 	);
@@ -295,7 +297,7 @@ function emptyPartsTable()
 
 /**
  * Opens the part modification modal window.
- * @this The Part's row
+ * @this {jquery} The Part's row
  */
 function modifyPart()
 {
@@ -439,7 +441,7 @@ function updateJobTypePartsMetaData()
 		block.data("parts").push({
 			"done": "N",
 			"grain": $(this).find(">td:nth-child(6) >select").val(),
-			"id": $(this).find(">td:nth-child(2) >input").val(),
+			"id": $(this).find(">td:nth-child(2) >input").val() !== "" ? $(this).find(">td:nth-child(2) >input").val() : null,
 			"jobTypeId": block.id,
 			"length": $(this).find(">td:nth-child(4) >input").val(),
 			"producedQuantity": "0",

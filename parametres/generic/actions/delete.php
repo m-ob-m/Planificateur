@@ -20,30 +20,29 @@ try
     $input =  json_decode(file_get_contents("php://input"));
     
     // Vérification des paramètres
-    $genericId = (isset($input->id) ? $input->id : null);
+    $id = (isset($input->id) ? $input->id : null);
+    
+    $db = new \FabPlanConnection();
+    try
+    {
+        $db->getConnection()->beginTransaction();
+        $generic = \Generic::withID($db, $id, \MYSQLDatabaseLockingReadTypes::FOR_UPDATE);
+        if($generic === null)
+        {
+            throw new \Exception("Il n'y a aucun générique possédant l'identifiant unique \"{$id}\".");   
+        }
         
-    if($genericId <> null)
-    {
-        $db = new FabPlanConnection();
-        try
-        {
-            $db->getConnection()->beginTransaction();
-            Generic::withID($db, $genericId)->delete($db);
-            $db->getConnection()->commit();
-        }
-        catch(\Exception $e)
-        {
-            $db->getConnection()->rollback();
-            throw $e;
-        }
-        finally 
-        {
-            $db = null;
-        }
+        $generic->delete($db);
+        $db->getConnection()->commit();
     }
-    else
+    catch(\Exception $e)
     {
-        throw new Exception("Cannot delete a generic that has a null id.");
+        $db->getConnection()->rollback();
+        throw $e;
+    }
+    finally 
+    {
+        $db = null;
     }
     
     // Retour au javascript

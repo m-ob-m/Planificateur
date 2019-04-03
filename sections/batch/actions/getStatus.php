@@ -19,11 +19,12 @@ try
     $batchId = isset($_GET["batchId"]) ? intval($_GET["batchId"]) : null;
     
     // Get the information
+    $batch = null;
     $db = new \FabPlanConnection();
     try
     {
         $db->getConnection()->beginTransaction();
-        \Batch::withID($db, $batchId);
+        $batch = \Batch::withID($db, $batchId);
         $db->getConnection()->commit();
     }
     catch(\Exception $e)
