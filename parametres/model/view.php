@@ -111,7 +111,7 @@ finally
 						</thead>
 						<tbody>
     						<tr>
-    							<td class="firstVisibleColumn" style="width:200px;">Identificateur</td>
+    							<td class="firstVisibleColumn" style="width:250px;">Identificateur</td>
     							<td class="lastVisibleColumn disabled">
     								<?php $id = $thisModel->getId(); ?>
     								<input type="text" id="id" value="<?= $id ?>" maxlength="11" disabled>
@@ -133,7 +133,8 @@ finally
             								<option value="" selected>Aucun</option>
                                         	<?php if(!empty($models)):?>
             									<?php foreach ($models as $model): ?>
-            										<option value=<?= $model->getId() ?>><?= $model->getDescription(); ?></option>
+            										<option value=<?= $model->getId() ?>><?= $model->getDescription(); ?>
+													</option>
             									<?php endforeach;?>	
             								<?php endif; ?>
             							</select>

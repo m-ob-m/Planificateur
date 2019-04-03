@@ -1,3 +1,5 @@
+"use strict";
+
 /**
  * Retrieves JobTypes for a specified job id.
  * 

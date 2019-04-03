@@ -19,13 +19,13 @@
     include_once __DIR__ . '/../generic/controller/genericController.php'; //Contrôleur de générique
     
     $generics = array();
-    $thisType = null;
+    $type = null;
     $db = new \FabPlanConnection();
     try
     {
         $db->getConnection()->beginTransaction();
         $generics = (new \GenericController())->getGenerics();
-        $thisType = isset($_GET["id"]) ? \Type::withID($_GET["id"]) : new \Type();
+        $type = isset($_GET["id"]) ? \Type::withID($db, intval($_GET["id"])) : new \Type();
         $db->getConnection()->commit();
     }
     catch(\Exception $e)
@@ -76,7 +76,7 @@
     										<img src="/Planificateur/images/save.png">
     									Sauvegarder</a>
     								</li>
-    								<?php if($thisType->getId() !== null): ?>
+    								<?php if($type->getId() !== null): ?>
     									<li>
     										<a href="javascript: void(0);" onclick="deleteConfirm();" class="imageButton">
     											<img src="/Planificateur/images/cancel16.png">
@@ -97,7 +97,7 @@
 		
 		<div id="features-wrapper">
 			<div class="container">
-				<?php if($thisType->getId() !== null): ?>
+				<?php if($type->getId() !== null): ?>
     				<h1 style="color:darkred;">
     					Attention! si vous modifiez le paramètre "Générique", les pièces créées avec le type actuel, 
     					mais un générique différent risquent de ne plus fonctionner correctement.
@@ -112,20 +112,20 @@
 					<tbody>
 						<tr>
 							<td class="firstVisibleColumn" style="width:200px;">Identificateur</td>
-							<td class="lastVisibleColumn disabled" id="id"><?= $thisType->getId(); ?></td>
+							<td class="lastVisibleColumn disabled" id="id"><?= $type->getId(); ?></td>
 						</tr>
 						<tr>
 							<td class="firstVisibleColumn">Numéro SIA</td>
 							<td class="lastVisibleColumn">
 								<input type="text" id="importNo" autocomplete="off" maxlength="2" 
-									value="<?= $thisType->getImportNo(); ?>">
+									value="<?= $type->getImportNo(); ?>">
 							</td>
 						</tr>
 						<tr>
 							<td class="firstVisibleColumn">Description</td>
 							<td class="lastVisibleColumn">
 								<input type="text" id="description" autocomplete="off" maxlength="128"
-									value="<?= $thisType->getDescription(); ?>">
+									value="<?= $type->getDescription(); ?>">
 							</td>
 						</tr>
 						<tr>
@@ -135,9 +135,10 @@
 									style="text-align-last:center;">
                                 	<?php if(!empty($generics)):?>
 										<?php foreach($generics as $generic): ?>
-											<?php $selectedGenericId = $thisType->getGenericId(); ?>
-											<?php $isSelected = (($generic->getId() === $selectedGenericId) ? "selected" : ""); ?>
-											<option value=<?= $generic->getId(); ?> <?= $isSelected; ?>>
+											<?php $selGeneric = $type->getGeneric(); ?>
+											<?php $selGenericId = ($selGeneric <> null) ? $selGeneric->getId() : null; ?>
+											<?php $isSel = (($generic->getId() === $selGenericId) ? "selected" : ""); ?>
+											<option value=<?= $generic->getId(); ?> <?= $isSel; ?>>
 												<?= $generic->getFilename(); ?>
 											</option>
 										<?php endforeach;?>	
@@ -145,7 +146,7 @@
 								</select>
 							</td>
 						</tr>
-						<?php if($thisType->getId() === null): ?>
+						<?php if($type->getId() === null): ?>
         					<tr>
         						<td class="firstVisibleColumn">Copier les paramètres de : </td>
         						<td class="lastVisibleColumn">

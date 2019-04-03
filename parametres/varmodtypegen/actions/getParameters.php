@@ -12,6 +12,8 @@
 // INCLUDE
 include_once __DIR__ . '/../controller/modelTypeGenericController.php'; // Contrôleur de Modèle-Type
 include_once __DIR__ . '/../../generic/controller/genericController.php'; // Contrôleur de Générique
+include_once __DIR__ . '/../../model/controller/modelController.php'; // Contrôleur de Modèle
+include_once __DIR__ . '/../../type/controller/typeController.php'; // Contrôleur de Type
 include_once __DIR__ . '/../../../lib/config.php';	// Fichier de configuration
 include_once __DIR__ . '/../../../lib/connect.php';	// Classe de connection à la base de données
 
@@ -19,36 +21,9 @@ include_once __DIR__ . '/../../../lib/connect.php';	// Classe de connection à l
 $responseArray = array("status" => null, "success" => array("data" => null), "failure" => array("message" => null));
 
 try
-{
-    $input =  json_decode(file_get_contents("php://input"));
-    
-    // Vérification des paramètres
-    if(!isset($_GET["modelId"]))
-    {
-        $modelId = null;
-    }
-    elseif(preg_match("/^\d+$/", $_GET["modelId"]))
-    {
-        $modelId = intval($_GET["modelId"]);
-    }
-    else
-    {
-        throw new \Exception("An invalid model id was provided.");
-    }
-    
-    // Vérification des paramètres
-    if(!isset($_GET["typeNo"]))
-    {
-        $typeNo = null;
-    }
-    elseif(preg_match("/^\d+$/", $_GET["typeNo"]))
-    {
-        $typeNo = intval($_GET["typeNo"]);
-    }
-    else
-    {
-        throw new \Exception("An invalid type import number was provided.");
-    }
+{    
+    $modelId = $_GET["modelId"] ?? null;
+    $typeNo = $_GET["typeNo"] ?? null;
     
     // Get the information
     $parameters = createModelTypeGenericParametersView($modelId, $typeNo);
@@ -83,8 +58,20 @@ function createModelTypeGenericParametersView(int $modelId, int $typeNo) : array
     try
     {
         $db->getConnection()->beginTransaction();
-        $modelTypeGeneric = (new \ModelTypeGeneric($modelId, $typeNo))->loadParameters($db);
-        $generic = Generic::withID($db, $modelTypeGeneric->getGenericId());
+        
+        $model = \Model::withID($db, $modelId);
+        if($model === null)
+        {
+            throw \Exception("Il n'y a pas de modèle avec l'identifiant unique \"{$modelId}\".");
+        }
+        
+        $type = \Type::withImportNo($db, $typeNo);
+        if($type === null)
+        {
+            throw \Exception("Il n'y a pas de type avec le numéro d'importation \"{$typeNo}\".");
+        }
+        
+        $modelTypeGeneric = (new \ModelTypeGeneric($model, $type))->loadParameters($db);
         $db->getConnection()->commit();
     }
     catch(\Exception $e)
@@ -109,7 +96,7 @@ function createModelTypeGenericParametersView(int $modelId, int $typeNo) : array
                 "description" => $modelTypeGenericParameter->getDescription(),
                 "defaultValue" => $modelTypeGenericParameter->getDefaultValue(),
                 "specificValue" => $modelTypeGenericParameter->getSpecificValue(),
-                "quickEdit" => $generic->getGenericParameterByKey($key)->getQuickEdit()
+                "quickEdit" => $modelTypeGeneric->getType()->getGeneric()->getGenericParameterByKey($key)->getQuickEdit()
             )
         );
     }

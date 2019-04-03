@@ -96,9 +96,9 @@
                         			<select id="generic" name="generic" onchange="$('#genericSelectionForm').submit();">
                         				<?php foreach($generics as $generic):?>
                         					<?php $selected =  (($selectedGenericId == $generic->getId()) ? "selected" : ""); ?>
-                        					<option value="<?php echo $generic->getId(); ?>" <?php echo $selected; ?>><?php 
-                        					   echo $generic->getDescription(); 
-                        					?></option>
+                        					<option value="<?= $generic->getId(); ?>" <?= $selected; ?>>
+                        					   <?= $generic->getDescription(); ?>
+                        					</option>
                         				<?php endforeach;?>
                         			</select>
                     			</label>

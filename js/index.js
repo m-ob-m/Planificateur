@@ -1,22 +1,16 @@
+"use strict";
+
 /**
  * Updates the calendar planning interface.
- * 
- * @return {Promise}
  */
-function reloadEvents()
+async function reloadEvents()
 {
-	return retrieveEvents()
-	.catch(function(error){
-		showError("La récupération des évènements a échouée", error);
-		return Promise.reject();
-	})
-	.then(function(events){
-		updateEventsCalendar(events)
-	})
-	.catch(function(){
-		/* Errors were treated as they were triggered. Some of them required different treatments so they couldn't be handled here. 
-		 * This is only here to prevent unhandled rejected promise errors generation. */
-	});
+	try {
+		updateEventsCalendar(await retrieveEvents());
+	}
+	catch (error) {
+		showError("La mise à jour des évènements a échouée", error);
+	}
 }
 
 /**
@@ -114,24 +108,16 @@ $(function(){
 /**
  * Reschedule an event
  * @param {FullCalendarEvent} event The event for which the planning is modified
- * 
- * @return {Promise}
  */
-function reschedule(event)
+async function reschedule(event)
 {
-	return rescheduleEvent(event)
-	.catch(function(error){
+	try {
+		event.color = await rescheduleEvent(event);
+		$('#calendar').fullCalendar('updateEvent', event);
+	}
+	catch (error) {
 		showError("Le changement de planification de l'évènement a échoué", error);
-		return Promise.reject();
-	})
-	.then(function(color){
-		event.color = color; // Le résultat modifie la couleur
-		$('#calendar').fullCalendar('updateEvent', event); 
-	})
-	.catch(function(){
-		/* Errors were treated as they were triggered. Some of them required different treatments so they couldn't be handled here. 
-		 * This is only here to prevent unhandled rejected promise errors generation. */
-	});
+	}
 }
 
 /**
@@ -208,21 +194,16 @@ function getBatchIdFromJobName(jobName)
 
 /**
  * Finds a job by production number
- * 
- * @return {Promise}
  */
-function findJobByProductionNumber()
+async function findJobByProductionNumber()
 {
-	return getBatchIdFromJobName($("form#findBatchByJobNumberForm > input[name=jobNumero]").val())
-	.catch(function(error){
-		showError("La job \"" + productionNumber + "\" n'a pas été trouvée : ", error);
-		return Promise.reject();
-	})
-	.then(function(id){
+	let productionNumber = $("form#findBatchByJobNumberForm > input[name=jobNumero]").val();
+	try 
+	{
+		let id = await getBatchIdFromJobName(productionNumber);
 		window.location.assign(["/Planificateur/sections/batch/index.php", "?", "id=", id].join(""));
-	})
-	.catch(function(){
-		/* Errors were treated as they were triggered. Some of them required different treatments so they couldn't be handled here. 
-		 * This is only here to prevent unhandled rejected promise errors generation. */
-	});
+	}
+	catch (error) {
+		showError("La job \"" + productionNumber + "\" n'a pas été trouvée : ", error);
+	}
 }

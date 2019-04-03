@@ -43,14 +43,17 @@
     		    /* @var $part JobTypePorte */
                 foreach($jobType->getParts() as $part)  
                 {
-                    $generic = \Generic::withID(new \FabPlanConnection(), $jobType->getGenericId());
-                    $externalProfile = $jobType->getParametersAsKeyValuePairs()["T_Ext"];
-                    $this->_csv .=  "{$jobType->getModelId()}_{$jobType->getTypeNo()}_{$jobType->getId()};" . 
+					$generic = $jobType->getType()->getGeneric();
+					$defaultExternalProfile = $jobType->getType()->getGeneric()->getParametersAsKeyValuePairs()["T_Ext"];
+                    $externalProfile = $jobType->getParametersAsKeyValuePairs()["T_Ext"] ?? $defaultExternalProfile;
+                    $modelId = $jobType->getModel()->getId();
+                    $typeNo = $jobType->getType()->getImportNo();
+                    $this->_csv .=  "{$modelId}_{$typeNo}_{$jobType->getId()};" . 
                         "{$material->getCodeCutRite()};" . 
                         "{$part->getQuantityToProduce()};" . 
     					(($generic->getHeightParameter() === "LPX") ? $part->getLength() : $part->getWidth()) . ";" .
     					(($generic->getHeightParameter() === "LPX") ? $part->getWidth() : $part->getLength()) . ";" .
-    					"{$jobType->getTypeNo()};" .
+    					"{$typeNo};" .
     					"{$part->getGrain()};" .
     					"{$externalProfile};" .
     					"{$job->getName()}_{$part->getId()};;;;;;;\n"; 

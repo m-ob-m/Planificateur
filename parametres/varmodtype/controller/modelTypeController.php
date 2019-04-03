@@ -14,8 +14,9 @@
  * Includes
  */
 include_once __DIR__ . '/../../../lib/config.php';	// Fichier de configuration
-include_once __DIR__ . '/../../../lib/connect.php';	// Classe de connection � la base de donn�es
+include_once __DIR__ . '/../../../lib/connect.php';	// Classe de connection à la base de données
 include_once __DIR__ . '/../model/modelType.php';	// Classe de parametre
+include_once __DIR__ . "/../../model/controller/modelController.php"; // Classe contrôleur de Modèle
 
 class ModelTypeController
 {
@@ -44,9 +45,25 @@ class ModelTypeController
 	 * @author Marc-Olivier Bazin-Maurice
 	 * @return ModelType The modelType object with $modelId as model id and $typeNo as type import no
 	 */ 
-    public function getModelType(?int $modelId, ?int $typeNo) : ModelType
+    public function getModelType(?int $modelId, ?int $typeNo) : \ModelType
     {
-        $this->_modelType = (new ModelType())->setModelId($modelId)->setTypeNo($typeNo)->loadParameters($this->_db);
+        $model = \Model::withID($this->_db, $modelId);
+        if($model === null)
+        {
+            throw new \Exception(
+                "Il n'y a aucun modèle possédant l'identifiant numérique unique \"{$modelId}\"."
+            );
+        }
+        
+        $type = \Type::withImportNo($this->_db, $typeNo);
+        if($type === null)
+        {
+            throw new \Exception(
+                "Il n'y a aucun type possédant le numéro d'importation \"{$typeNo}\"."
+            );
+        }
+        
+        $this->_modelType = (new ModelType())->setModel($model)->setType($type)->loadParameters($this->_db);
         return $this->_modelType;
     }
     

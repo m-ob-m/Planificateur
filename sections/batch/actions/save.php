@@ -28,18 +28,23 @@ try
     $startDate = $input->startDate ?? null;
     $endDate = $input->endDate ?? null;
     $fullDay = $input->fullDay ?? null;
-    $material = $input->material ?? null;
+    $materialId = $input->material ?? null;
     $boardSize = $input->boardSize ?? null;
     $status = $input->status ?? null;
     $comments = $input->comments ?? null;
     $jobIds = $input->jobIds ?? null;
-    $batch = new Batch($id, $material, $boardSize, $name, $startDate, $endDate, $fullDay, $comments, $status, "N");
     
     // Get the information
     $db = new \FabPlanConnection();
     try
     {
         $db->getConnection()->beginTransaction();
+        
+        $batch = \Batch::withID($db, $id, \MYSQLDatabaseLockingReadTypes::FOR_UPDATE);
+        $batch = ($batch === null) ? new \Batch() : $batch;
+        
+        $batch->setMaterialId($materialId)->setBoardSize($boardSize)->setName($name)->setStart($startDate)
+            ->setEnd($endDate)->setFullDay($fullDay)->setComments($comments)->setStatus($status)->setMprStatus("N");
         foreach($jobIds as $jobId)
         {
             $batch->addJob(\Job::withID($db, $jobId));

@@ -1,3 +1,5 @@
+"use strict";
+
 /**
  * Retrieves the list of parameters for a given test or model-type combination and display it
  * @param {int} testId The id of the test to retrieve parameters from (if "", model-type combination method will be used)

@@ -26,7 +26,13 @@ try
     try
     {
         $db->getConnection()->beginTransaction();
-        \Test::withID($db, $id)->delete($db);
+        $type = \Type::withID($db, $id, \MYSQLDatabaseLockingReadTypes::FOR_UPDATE);
+        if($type === null)
+        {
+            throw new \Exception("Il n'y a aucun type possédant l'identifiant unique \"{$id}\".");
+        }
+        
+        $type->delete($db);
         $db->getConnection()->commit();
     }
     catch(\Exception $e)

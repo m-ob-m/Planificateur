@@ -47,7 +47,7 @@
         
         // Retour au javascript
         $responseArray["status"] = "success";
-        $responseArray["success"]["data"] = ($test->getModelId() === 2) ? $test->getFichierMpr() : null;
+        $responseArray["success"]["data"] = ($test->getModel()->getId() === 2) ? $test->getFichierMpr() : null;
     }
     catch(Exception $e)
     {

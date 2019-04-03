@@ -75,11 +75,11 @@
     {
         $jobTypes = array();
         $i = 0;
-        foreach(\Job::withID($db, $id)->getJobTypes() as $jobType)
+        foreach(\Job::withID($db, $jobId)->getJobTypes() as $jobType)
         {
-            $model = \Model::withID($db, $jobType->getModelId());
-            $type = \Type::withImportNo($db, $jobType->getTypeNo());
-            $generic = \Generic::withID($db, $type->getGenericId());
+            $model = $jobType->getModel();
+            $type = $jobType->getType();
+            $generic = $type->getGeneric();
             $jobTypes[$i] = (object) array(
                 "id" => $jobType->getId(),
                 "jobId" => $jobType->getJobId(),
