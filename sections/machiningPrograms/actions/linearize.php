@@ -15,7 +15,7 @@
     // Structure de retour vers javascript
     $responseArray = array("status" => null, "success" => array("data" => null), "failure" => array("message" => null));
     
-    set_time_limit(3 * 60);
+    set_time_limit(40 * 60);
     
     try
     {
@@ -30,10 +30,8 @@
         
         // Vérification des paramètres
         $inputFileContents = $data->inputFile ?? null;
-        $outputFileName = \FileFunctions\PathSanitizer::sanitize($data->outputFileName ?? null, array("inputPathDelimiter" => ""));
-        $variables = $data->variables ?? array();
-        
-        
+        $outputFileName = \FileFunctions\PathSanitizer::sanitize($data->outputFileName ?? null, array("fileNameMode" => true));
+        $variables = $data->variables ?? array(); 
         
         if($inputFileContents === null)
         {

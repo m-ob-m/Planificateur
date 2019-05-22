@@ -8,23 +8,17 @@ $(
 /**
  * Retrieves the door properties and displays them on the screen
  * @param {int} doorId The id of the door
- * 
- * @return {Promise}
  */
-function displayDoorProperties(doorId)
+async function displayDoorProperties(doorId)
 {
-	return fetchDoorProperties(doorId)
-	.catch(function(error){
-		showError("La récupération des paramètres de la porte a échouée", error);
-		return Promise.reject();
-	})
-	.then(function(properties){
+	try{
+		let properties = await fetchDoorProperties(doorId);
 		formatDoorProperties(properties);
 		showPropertiesWindow();
-	})
-	.catch(function(error){
-		/* Do nothing.*/
-	})
+	}
+	catch(error){
+		showError("La récupération des paramètres de la porte a échouée", error);
+	}
 }
 
 /**
@@ -82,7 +76,6 @@ function closePropertiesWindow()
 /**
  * Creates a row for a new door property
  * @param {object} doorProperties An object containing the door properties
- * 
  */
 function formatDoorProperties(doorProperties)
 {	
@@ -209,6 +202,9 @@ function printAllPannels()
 	currentlyInvisibleElements.hide();
 }
 
+/**
+ * Gets a dowload link to the machining program of a door. 
+ */
 function getLinkToProgram(id)
 {
 	return new Promise(function(resolve, reject){
@@ -237,17 +233,16 @@ function getLinkToProgram(id)
 	});	
 }
 
-function downloadProgram(id)
+/**
+ * Downloads the machining program of a door. 
+ */
+async function downloadProgram(id)
 {
-	getLinkToProgram(id)
-	.catch(function(error){
-		showError("La récupération du programme d'usinage a échouée", error);
-		return Promise.reject();
-	})
-	.then(function(downloadableFile){
+	try{
+		let downloadableFile = await getLinkToProgram(id);
 		downloadFile(downloadableFile.url, downloadableFile.name);
-	})
-	.catch(function(error){
-		/* Do nothing.*/
-	})
+	}
+	catch(error){
+		showError("La récupération du programme d'usinage a échouée", error);
+	}
 }

@@ -14,38 +14,95 @@ include_once __DIR__ . '/../../../lib/config.php';	// Fichier de configuration
 include_once __DIR__ . '/../../../lib/connect.php';	// Classe de connection à la base de données
 include_once __DIR__ . '/modelTypeParameter.php'; // Classe de paramètres pour cet objet
 
-class ModelType implements JsonSerializable
+class ModelType implements \JsonSerializable
 {
-	protected $_modelId;
-	protected $_typeNo;
+	protected $_model;
+	protected $_type;
 	protected $_parameters;
     
 	/**
 	 * Build a new model/type combination.
 	 *
-	 * @param int $modelId The model id of the combination.
-	 * @param int $typeId The type id of the combination.
+	 * @param \Model $model The model of the combination.
+	 * @param \type $type The type of the combination.
 	 * @param array $parameters The parameters of the model/type combination 
 	 *
 	 * @throws
 	 * @author Marc-Olivier Bazin-Maurice
 	 * @return ModelType This ModelType (for method chaining)
 	 */
-	public function __construct(?int $modelId = null, ?int $typeNo = null, array $parameters = array())
+	public function __construct(?\Model $model = null, ?\Type $type = null, array $parameters = array())
 	{
-		$this->setModelId($modelId);
-		$this->setTypeNo($typeNo);
+		$this->setModel($model);
+		$this->setType($type);
 		$this->setParameters($parameters);
 	}
 
 	/**
-	 * Load test type parameters from the database  for the specified model/type combination.
+	 * Saves the model/type parameters to the database for the specified model/type combination.
 	 *
-	 * @param FabPlanConnection $db The database containing parameters to fetch.
+	 * @param \FabPlanConnection $db The database where the parameters must be written.
 	 *
 	 * @throws
 	 * @author Marc-Olivier Bazin-Maurice
-	 * @return ModelType This ModelType (for method chaining)
+	 * @return \ModelType This \ModelType (for method chaining)
+	 */
+	public function save(\FabPlanConnection $db)
+	{
+		$model = $this->getModel();
+		$modelDatabaseTimestamp = \DateTime::createFromFormat("Y-m-d H:i:s", $model->getTimestampFromDatabase($db));
+		$modelLocalTimestamp = \DateTime::createFromFormat("Y-m-d H:i:s", $model->getTimestamp());
+
+		$type = $this->getType();
+		$typeDatabaseTimestamp = \DateTime::createFromFormat("Y-m-d H:i:s", $type->getTimestampFromDatabase($db));
+		$typeLocalTimestamp = \DateTime::createFromFormat("Y-m-d H:i:s", $type->getTimestamp());
+		
+		if($this->getModel()->getDatabaseConnectionLockingReadType() !== \MYSQLDatabaseLockingReadTypes::FOR_UPDATE)
+		{
+			throw new \Exception("Model {$model->getDescription()} is not locked for update.");
+		}
+		
+		if($this->getType()->getDatabaseConnectionLockingReadType() !== \MYSQLDatabaseLockingReadTypes::FOR_UPDATE)
+		{
+			throw new \Exception("Type {$type->getDescription()} is not locked for update.");
+		}
+
+		if($modelDatabaseTimestamp > $modelLocalTimestamp)
+		{
+			throw new \Exception(
+				"Model {$model->getDescription()} is outdated. The last modification date of the database entry is
+				\"{$modelDatabaseTimestamp->format("Y-m-d H:i:s")}\" whereas the last modification date of the local copy is
+				\"{$modelLocalTimestamp->format("Y-m-d H:i:s")}\"."
+			);
+		}
+		
+		if($typeDatabaseTimestamp > $typeLocalTimestamp)
+		{
+			throw new \Exception(
+				"Type {$type->getDescription()} is outdated. The last modification date of the database entry is
+				\"{$typeDatabaseTimestamp->format("Y-m-d H:i:s")}\" whereas the last modification date of the local copy is
+				\"{$typeLocalTimestamp->format("Y-m-d H:i:s")}\"."
+			);
+		}
+
+		$this->emptyInDatabase($db);
+		/* @var $parameter \ModelTypeParameter */
+		foreach($this->getParameters() as $parameter)
+		{
+			$parameter->save($db);
+		}
+		
+	    return $this;
+	}
+
+	/**
+	 * Load model/type parameters from the database  for the specified model/type combination.
+	 *
+	 * @param \FabPlanConnection $db The database containing parameters to fetch.
+	 *
+	 * @throws
+	 * @author Marc-Olivier Bazin-Maurice
+	 * @return \ModelType This \ModelType (for method chaining)
 	 */
 	public function loadParameters(\FabPlanConnection $db)
 	{
@@ -56,18 +113,42 @@ class ModelType implements JsonSerializable
             ON `dmd`.`fkDoorType` = :typeNo AND `dmd`.`fkDoorModel` = `dm`.`id_door_model` 
                 AND `dm`.`id_door_model` = :modelId;"
         );
-	    $stmt->bindValue(':modelId', $this->getModelId(), \PDO::PARAM_INT);
-	    $stmt->bindValue(':typeNo', $this->getTypeNo(), \PDO::PARAM_INT);
+	    $stmt->bindValue(':modelId', $this->getModel()->getId(), \PDO::PARAM_INT);
+	    $stmt->bindValue(':typeNo', $this->getType()->getImportNo(), \PDO::PARAM_INT);
 	    $stmt->execute();
 	    
 	    $this->setParameters(array());
 	    foreach($stmt->fetchAll() as $row)
 	    {
+	        $modelId = $this->getModel()->getId();
+	        $typeNo = $this->getType()->getImportNo();
 	        array_push(
 	            $this->_parameters, 
-	            new ModelTypeParameter($row['key'], $row['value'], $this->getModelId(), $this->getTypeNo())
+	            new \ModelTypeParameter($row['key'], $row['value'], $modelId, $typeNo)
 	        );
 	    }
+	    
+	    return $this;
+	}
+
+	/**
+	 * Deletes model/type parameters from the database for the specified model/type combination.
+	 *
+	 * @param \FabPlanConnection $db The database containing parameters to delete.
+	 *
+	 * @throws
+	 * @author Marc-Olivier Bazin-Maurice
+	 * @return \ModelType This \ModelType (for method chaining)
+	 */
+	private function emptyInDatabase(\FabPlanConnection $db) : \ModelType
+	{
+	    $stmt = $db->getConnection()->prepare(
+            "DELETE `fabplan`.`door_model_data` FROM `fabplan`.`door_model_data` 
+			WHERE `fabplan`.`door_model_data`.`fkDoorModel` = :modelId AND `fabplan`.`door_model_data`.`fkDoorType` = :typeNo;"
+        );
+	    $stmt->bindValue(':modelId', $this->getModel()->getId(), \PDO::PARAM_INT);
+	    $stmt->bindValue(':typeNo', $this->getType()->getImportNo(), \PDO::PARAM_INT);
+	    $stmt->execute();
 	    
 	    return $this;
 	}
@@ -75,30 +156,30 @@ class ModelType implements JsonSerializable
 	/**
 	 * Set the type No
 	 *
-	 * @param int $typeNo The new type number
+	 * @param \Type $type The new type
 	 *
 	 * @throws
 	 * @author Marc-Olivier Bazin-Maurice
-	 * @return ModelType This ModelType (for method chaining)
+	 * @return \ModelType This \ModelType (for method chaining)
 	 */
-	public function setTypeNo(?int $typeNo) : ModelType
+	public function setType(?\Type $type) : \ModelType
 	{
-	    $this->_typeNo = $typeNo;
+	    $this->_type = $type;
 	    return $this;
 	}
 	
 	/**
-	 * Set the model id
+	 * Set the model
 	 *
-	 * @param int $modelId The new model id
+	 * @param \Model $model The new model
 	 *
 	 * @throws
 	 * @author Marc-Olivier Bazin-Maurice
-	 * @return ModelType This ModelType (for method chaining)
+	 * @return \ModelType This \ModelType (for method chaining)
 	 */
-	public function setModelId(?int $modelId) : ModelType
+	public function setModel(?\Model $model) : \ModelType
 	{
-	    $this->_modelId = $modelId;
+	    $this->_model = $model;
 	    return $this;
 	}
 	
@@ -109,36 +190,36 @@ class ModelType implements JsonSerializable
 	 *
 	 * @throws
 	 * @author Marc-Olivier Bazin-Maurice
-	 * @return ModelType This ModelType (for method chaining)
+	 * @return \ModelType This \ModelType (for method chaining)
 	 */
-	public function setParameters(array $parameters) : ModelType
+	public function setParameters(array $parameters) : \ModelType
 	{
 	    $this->_parameters = $parameters;
 	    return $this;
 	}
 	
 	/**
-	 * Get the model id
+	 * Get the model
 	 *
 	 * @throws
 	 * @author Marc-Olivier Bazin-Maurice
-	 * @return int The new model id
+	 * @return \Model The model
 	 */
-	public function getModelId() : ?int
+	public function getModel() : ?\Model
 	{
-	    return $this->_modelId;
+	    return $this->_model;
 	}
 	
 	/**
-	 * Get the type number
+	 * Get the type
 	 *
 	 * @throws
 	 * @author Marc-Olivier Bazin-Maurice
-	 * @return int The new type import number
+	 * @return \Type The type
 	 */
-	public function getTypeNo() : ?int
+	public function getType() : ?\Type
 	{
-	    return $this->_typeNo;
+	    return $this->_type;
 	}
 	
 	/**
@@ -146,7 +227,7 @@ class ModelType implements JsonSerializable
 	 *
 	 * @throws
 	 * @author Marc-Olivier Bazin-Maurice
-	 * @return ModelTypeParameter array The parameters of this Modeltype
+	 * @return array[\ModelTypeParameter] The parameters of this \Modeltype
 	 */
 	public function getParameters() : array
 	{
@@ -158,7 +239,7 @@ class ModelType implements JsonSerializable
 	 *
 	 * @throws
 	 * @author Marc-Olivier Bazin-Maurice
-	 * @return string array The parameters of this Modeltype
+	 * @return string array The parameters of this \Modeltype
 	 */
 	public function getParametersAsKeyValuePairs() : array
 	{
@@ -175,7 +256,7 @@ class ModelType implements JsonSerializable
 	 *
 	 * @throws
 	 * @author Marc-Olivier Bazin-Maurice
-	 * @return string array The parameters of this Modeltype
+	 * @return string array The parameters of this \Modeltype
 	 */
 	public function getParametersAsKeyDescriptionPairs() : array
 	{

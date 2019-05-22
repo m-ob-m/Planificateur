@@ -32,7 +32,7 @@
         try
         {
             $db->getConnection()->beginTransaction();
-            GenerateTestProgram(Test::withID($db, $testId));
+            GenerateTestProgram($db, \Test::withID($db, $testId));
             $db->getConnection()->commit();
         }
         catch(\Exception $e)
@@ -68,28 +68,32 @@
      * @author Marc-Olivier Bazin-Maurice
      * @return
      */
-    function GenerateTestProgram(Test $test) : void
+    function GenerateTestProgram(\FabplanConnection $db, \Test $test) : void
     { 
-        $defaultName = $test->getModelId() . "_" . $test->getTypeNo() . "_" .  $test->getId();
+        $type = $test->getType();
+        $modelId = $test->getModel()->getId();
+        $typeNo = $type->getImportNo();
+        $defaultName = $modelId . "_" . $typeNo . "_" .  $test->getId();
         $mprname = ($test->getName() <> "") ? ($test->getName()) : $defaultName;
         $filepath = _TESTDIRECTORY . "{$mprname}.mpr";
         
         // Vérification si programme générique utilisé
-        if($test->getModelId() === 1)
+        if($modelId === 1)
         {
             throw new \Exception("Vous ne pouvez pas télécharger des modèles génériques!");
         }
-        elseif($test->getModelId() === 2)
+        elseif($modelId === 2)
         {
-            $mpr = new mprCutrite(__DIR__ . "/../../../lib/" . (new GenericController())->getGenerics()[0]->getFilename());
+            $dummyGeneric = (new \GenericController())->getGenerics()[0];
+            $mpr = new \mprCutrite(__DIR__ . "/../../../lib/" . $dummyGeneric->getFilename());
             $mpr->makeMprFromTest($test, array());
             $mpr->makeMprFile($filepath);
         }
         else 
         {
-            $generic = \Generic::withID($test->getGenericId());
+            $generic = \Generic::withID($db, $type->getGeneric()->getId());
             $parametersDescription = getParametersDescriptionsTable($generic);
-            $mpr = new mprCutrite(__DIR__ . "/../../../lib/" . $generic->getFilename());
+            $mpr = new \mprCutrite(__DIR__ . "/../../../lib/" . $generic->getFilename());
             $mpr->extractMprBlocks();
             $mpr->makeMprFromTest($test, $parametersDescription);
             $mpr->makeMprFile($filepath);

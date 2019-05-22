@@ -37,7 +37,7 @@ try
     try
     {
         $db->getConnection()->beginTransaction();
-        \Batch::withID($db, $batchId)->delete($db);
+        \Batch::withID($db, $batchId, MYSQLDatabaseLockingReadTypes::FOR_UPDATE)->delete($db);
         $db->getConnection()->commit();
     }
     catch(\Exception $e)
