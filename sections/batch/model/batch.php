@@ -515,7 +515,7 @@ class Batch implements JsonSerializable
 	    {
             if($job->getId === $id)
             {
-                unset($jobs[$index]);
+                unset($this->jobs[$index]);
             }
 	    }
 	    return $this;
@@ -591,7 +591,7 @@ class Batch implements JsonSerializable
 	    $stmt->bindValue(':mprStatus', $this->getMprStatus(), PDO::PARAM_STR);
 	    $stmt->bindValue(':carrousel', $this->getCarrousel()->toCsv(), PDO::PARAM_STR);
 	    $stmt->execute();
-	    $this->setId($db->getConnection()->lastInsertId());
+	    $this->setId(intval($db->getConnection()->lastInsertId()));
 	    
 	    //Mettre à jour les liens entre les jobs et la batch
 	    $this->unlinkAllJobs($db);
@@ -830,7 +830,7 @@ class Batch implements JsonSerializable
         	            $NpasTh = \MprExpression\Evaluator::evaluate($parameters["NpasTh"] ?? 0, null, $parameters);
         	            for($i = 1; $i <= $NpasTh; $i++)
         	            {
-        	                $tool = \MprExpression\Evaluator::evaluate($parameters["T_Th" . $i] ?? 0, $parameters);
+        	                $tool = \MprExpression\Evaluator::evaluate($parameters["T_Th" . $i] ?? 0, null, $parameters);
         	                if(!$this->_carrousel->toolExists($tool))
         	                {
         	                    $this->_carrousel->addTool($tool);
@@ -884,7 +884,7 @@ class Batch implements JsonSerializable
 	 * @author Marc-Olivier Bazin-Maurice
 	 * @return int The database connection locking read type applied to this object.
 	 */
-	private function getDatabaseConnectionLockingReadType() : int
+	public function getDatabaseConnectionLockingReadType() : int
 	{
 	    return $this->__database_connection_locking_read_type;
 	}

@@ -38,7 +38,7 @@ try
         $db = null;
     }
     
-    $programName = "{$jobType->getModelId()}_{$jobType->getTypeNo()}_{$jobType->getId()}.mpr";
+    $programName = "{$jobType->getModel()->getId()}_{$jobType->getType()->getImportNo()}_{$jobType->getId()}.mpr";
     
     if($programName === null)
     {
@@ -60,7 +60,9 @@ try
         }
         
         $mpr = fread($sourceFileHandle, filesize(CR_FABRIDOR . "SYSTEM_DATA/mpr/{$programName}"));
-        fwrite($destinationFileHandle, applyDimensionsToMpr($mpr, $jobTypePorte->getLength(), $jobTypePorte->getWidth()));
+        $mpr = mb_convert_encoding($mpr, "ISO-8859-1", "UTF-8");
+        $mpr = applyDimensionsToMpr($mpr, strval($jobTypePorte->getLength()), strval($jobTypePorte->getWidth()));
+        fwrite($destinationFileHandle, $mpr);
         
         if(!fclose($destinationFileHandle))
         {

@@ -30,7 +30,7 @@
         
         // Vérification des paramètres
         $inputFileContents = $data->inputFile ?? null;
-        $outputFileName = \FileFunctions\PathSanitizer::sanitize($data->outputFileName ?? null, array("inputPathDelimiter" => ""));
+        $outputFileName = \FileFunctions\PathSanitizer::sanitize($data->outputFileName ?? null, array("fileNameMode" => true));
         $variables = $data->variables ?? array(); 
         
         if($inputFileContents === null)

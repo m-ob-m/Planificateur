@@ -104,7 +104,8 @@
 			<div id="features-wrapper">
 				<div id="parametersFormContainer" class="container">
 					<!-- Sélection du modèle/type dont on veut éditer les paramètres par défaut -->
-					<form id="parametersForm" class="parametersForm" action="javascript: void(0);" onsubmit="refreshParameters();">
+					<form id="parametersForm" class="parametersForm" action="javascript: void(0);" 
+						onsubmit="refreshParameters();">
 						<div class="formContainer">
         					<div class="hFormElement">
             					<label for="type">Type : 
@@ -145,8 +146,7 @@
                     		<br>
                     		<div id="mprFileDialogContainer" class="hFormElement">
                 				<label for="mprFileDialog">Sélectionner un fichier : 
-                    				<input type="file" id="mprFileDialog" name="mprFileDialog" value="" 
-                    					onchange="readMpr($(this).prop('files')[0]);">
+                    				<input type="file" id="mprFileDialog" name="mprFileDialog" value="">
                     			</label>
                     		</div>
                     		<div class="hFormElement" style="display:none;">

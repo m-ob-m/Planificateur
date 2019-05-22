@@ -1,6 +1,6 @@
 "use strict";
 
-$(document).ready(function()
+$(document).ready(async function()
 {	
 	$("input#fullDay").change(function(){
 		let startDate = moment.tz($("input#startDate").val(), getExpectedMomentFormat(), "America/Montreal");
@@ -11,61 +11,63 @@ $(document).ready(function()
 		$("input#endDate").attr({"type": type}).val(endDate.format(getExpectedMomentFormat()));
 	});
 	
-	initializeFields()
-	.catch(function(error){/* Do nothing. */});
+	await initializeFields();
 	
-	$('input#jobNumber').keypress(
+	$('input#batchName').keyup(
+		function(key){(key.keyCode === 13) ? $('input#jobNumber').focus() : false;
+	});
+
+	$('input#jobNumber').keyup(
 		function(key){(key.keyCode === 13) ? $("button#addJobButton").click() : false;
 	});
 	
 	// When the status of the Batch changes, the page must reload.
 	window.setInterval(
-		function(){
-			verifyStatus(window.sessionStorage.getItem("id"))
-			.catch(function(){/* Do nothing. */});
-		}
-		, 10000
+		async function(){
+			let id = $("input#batchId").val();
+			if(id !== null && id !== "")
+			{
+				await verifyStatus(id);
+			}
+		}, 
+		10000
 	);
 });
 
 /**
  * Initializes some fields on the page.
- * @return {Promise}
  */
-function initializeFields()
+async function initializeFields()
 {
-	return new Promise(function(resolve, reject){
-		let sessionData = window.sessionStorage;
-		if(sessionData.getItem("__type") === "batch" && $("input#batchId").val() === sessionData.getItem("id"))
-		{
-			restoreSessionStorage()
-			.then(function(){
-				initializeDates();
-				updateSessionStorage();
-				resolve();
-			})
-			.catch(function(error){
-				reject(error);
-			});
-		}
-		else
-		{
-			// Fill the list of jobs.
+	let sessionData = window.sessionStorage;
+	if(sessionData.getItem("__type") === "batch" && $("input#batchId").val() === sessionData.getItem("id"))
+	{
+		try{
+			await restoreSessionStorage();
+			initializeDates();
 			updateSessionStorage();
-			getJobs($("input#batchId").val())
-			.then(function(){
-				return updatePannelsList();
-			})
-			.then(function(){
-				initializeDates();
-				updateSessionStorage();
-				resolve();
-			})
-			.catch(function(error){
-				reject(error);
-			});
 		}
-	});
+		catch(error){
+			showError("La restauration des données de session a échouée", error);
+		};
+	}
+	else
+	{
+		// Fill the list of jobs.
+		try{
+			/* IMPORTANT!!! Pour pouvoir insérer les jobs dans le tableau sans message d'erreur pour job déjà liée à une batch, 
+			on met à jour les données de session afin qu'elles contiennent le nom de la batch au minimum. Par la suite, on les 
+			remet à jour à la fin de l'initialisation de la page.*/
+			updateSessionStorage();
+			await getJobs($("input#batchId").val());
+			updatePannelsList();
+			initializeDates();
+			updateSessionStorage();
+		}
+		catch(error){
+			showError("La restauration des données pour cett batch a échouée", error);
+		}
+	}
 }
 
 /**
@@ -73,19 +75,19 @@ function initializeFields()
  */
 function initializeDates()
 {
-	let maximumEndDate = extrapolateMaximumEndDate();
-	let maximumStartDate = maximumEndDate.isValid() ? extrapolateMaximumEndDate().subtract(1, "days") : extrapolateMaximumEndDate();
+	let maximumEndDate = extrapolateMaxEndDate();
+	let maximumStartDate = maximumEndDate.isValid() ? extrapolateMaxEndDate().subtract(1, "days") : extrapolateMaxEndDate();
 	let currentStartDate = moment.tz($("input#startDate").val(), getExpectedMomentFormat(), "America/Montreal");
 	let currentEndDate = moment.tz($("input#endDate").val(), getExpectedMomentFormat(), "America/Montreal");
 	
-	let chron = currentEndDate.isValid() && maximumStartDate.isBefore(currentEndDate) ? true : false;
-	if(!currentStartDate.isValid() && maximumStartDate.isValid() && (chron || !currentEndDate.isValid()))
+	let chronologicalCheck = currentEndDate.isValid() && maximumStartDate.isBefore(currentEndDate);
+	if(!currentStartDate.isValid() && maximumStartDate.isValid() && (chronologicalCheck || !currentEndDate.isValid()))
 	{
 		$("input#startDate").val(maximumStartDate.format(getExpectedMomentFormat()));
 	}
 	
-	chron = currentStartDate.isValid() && maximumEndDate.isAfter(currentStartDate) ? true : false;
-	if(!currentEndDate.isValid() && maximumEndDate.isValid() && (chron || !currentStartDate.isValid()))
+	chronologicalCheck = currentStartDate.isValid() && maximumEndDate.isAfter(currentStartDate);
+	if(!currentEndDate.isValid() && maximumEndDate.isValid() && (chronologicalCheck || !currentStartDate.isValid()))
 	{
 		$("input#endDate").val(maximumEndDate.format(getExpectedMomentFormat()));
 	}
@@ -95,7 +97,7 @@ function initializeDates()
  * Returns the maximum end date of this batch (based upon the delivery dates of its underlying jobs).
  * @return Moment The maximum end date of this batch (or an empty string).
  */
-function extrapolateMaximumEndDate()
+function extrapolateMaxEndDate()
 {
 	let dates = [];
 	$("table#orders >tbody >tr >td:nth-child(4)").each(function(){
@@ -107,49 +109,34 @@ function extrapolateMaximumEndDate()
 /**
  * If the status of the Batch has changed, reloads the page.
  * @param {int} id The id of the current Batch
- * @return {Promise}
  */
-function verifyStatus(id)
+async function verifyStatus(id)
 {
-	return new Promise(function(resolve, reject){
-		if(id !== null && id !== "")
+	try{
+		let status = await retrieveBatchStatus(id);
+		if(status !== null && status !== window.sessionStorage.getItem("status"))
 		{
-			return retrieveBatchStatus(id)
-			.then(function(status){
-				if(status !== null && status !== window.sessionStorage.getItem("status"))
-				{
-					window.location.reload();
-				}
-				resolve();
-			});
+			window.location.reload();
 		}
-		else
-		{
-			reject("This is a new Batch.");
-		}
-	});
+	}
+	catch(error){
+		showError("Failed to retrieve the status of the batch.", error);
+	}
 }
 
 /**
  * Retrieve the list of Jobs of this Batch
  * @param {int} batchId The unique identifier of this Batch
- * @return {Promise}
  */
-function getJobs(batchId)
+async function getJobs(batchId)
 {
-	return new Promise(function(resolve, reject){
-		retrieveJobs(batchId)
-		.then(function(jobs){
-			return fillJobsList(jobs, false);
-		})
-		.then(function(){
-			resolve();
-		})
-		.catch(function(error){
-			showError("La récupération des jobs de la batch a échouée", error);
-			reject(error);
-		});
-	});
+	try{
+		let jobs = await retrieveJobs(batchId);
+		await fillJobsList(jobs, false);
+	}
+	catch(error){
+		showError("La récupération des jobs de la batch a échouée", error);
+	};
 }
 
 /**
@@ -164,82 +151,81 @@ function getJobs(batchId)
  * @param {string} status The status (E = Entered, X = In execution, P = Urging, A = Waiting, N = Non-delivered, T = Completed)
  * @param {string} comments The comments entered for this Batch (will be overwritten if an error occurs in CutQueue)
  * @param {string} jobIds An array containing the unique identifiers of the Jobs contained in this Batch
- * @return {Promise}
+ * 
+ * @return {bool} If information is valid, returns true. Otherwise, returns false.
  */
 function validateInformation(id, name, startDate, endDate, fullDay, material, boardSize, status, comments, jobIds)
 {
-	return new Promise(function(resolve, reject){
-		let err = "";
-		let tempDate;
-		
-		if(!isPositiveInteger(id) && id !== "" && id !== null)
+	let err = "";
+	
+	if(!isPositiveInteger(id) && id !== "" && id !== null)
+	{
+		err += "L'identificateur unique doit être un entier positif.\n";
+	}
+	
+	if (!(typeof name === 'string' || name instanceof String) || (name === ""))
+	{
+		err += "Le nom de la batch ne peut pas être vide.\n";
+	}
+	
+	if(!startDate.isValid())
+	{
+		err += "Veuillez entrer une date de début valide.\n";
+	}
+	
+	if(!endDate.isValid())
+	{
+		err += "Veuillez entrer une date de fin valide.\n";
+	}
+	
+	if(endDate.isValid() && !endDate.isAfter(startDate))
+	{
+		err += "La date de fin est avant la date de début.\n"
+	}
+	
+	if(fullDay !== "Y" && fullDay !== "N")
+	{
+		err += "Erreur interne : L'état de la boîte à cocher \"Toute la journée\" n'est pas valide. " +
+				"Modifiez l'état de la boîte et réessayez.\n";
+	}
+	
+	if(!(typeof material === 'string' || material instanceof String) || material === "" || material === "0")
+	{
+		err += "Veuillez sélectionner un matériel.\n";
+	}
+	
+	if(!(typeof boardSize === 'string' || boardSize instanceof String) || (boardSize === ""))
+	{
+		err += "Veuillez entrer une taille de panneau.\n";
+	}
+	
+	if(!status.match(/^[EXPANT]{1}$/))
+	{
+		err += "Le statut choisi est invalide.\n";
+	}
+	
+	if(!(typeof comments === 'string' || comments instanceof String))
+	{
+		err += "Les commentaires doivent être une donnée de type \"chaîne de caractère\".\n";
+	}
+	
+	jobIds.forEach(function(element){
+		if(!isPositiveInteger(element) || !element)
 		{
-			err += "L'identificateur unique doit être un entier positif.\n";
-		}
-		
-		if (!(typeof name === 'string' || name instanceof String) || (name === ""))
-		{
-			err += "Le nom de la batch ne peut pas être vide.\n";
-		}
-		
-		if(!startDate.isValid())
-		{
-			err += "Veuillez entrer une date de début valide.\n";
-		}
-		
-		if(!endDate.isValid())
-		{
-			err += "Veuillez entrer une date de fin valide.\n";
-		}
-		
-		if(endDate.isValid() && !endDate.isAfter(startDate))
-		{
-			err += "La date de fin est avant la date de début.\n"
-		}
-		
-		if(fullDay !== "Y" && fullDay !== "N")
-		{
-			err += "Erreur interne : L'état de la boîte à cocher \"Toute la journée\" n'est pas valide. " +
-					"Modifiez l'état de la boîte et réessayez.\n";
-		}
-		
-		if(!(typeof material === 'string' || material instanceof String) || material === "" || material === "0")
-		{
-			err += "Veuillez sélectionner un matériel.\n";
-		}
-		
-		if(!(typeof boardSize === 'string' || boardSize instanceof String) || (boardSize === ""))
-		{
-			err += "Veuillez entrer une taille de panneau.\n";
-		}
-		
-		if(!status.match(/^[EXPANT]{1}$/))
-		{
-			err += "Le statut choisi est invalide.\n";
-		}
-		
-		if(!(typeof comments === 'string' || comments instanceof String))
-		{
-			err += "Les commentaires doivent être une donnée de type \"chaîne de caractère\".\n";
-		}
-		
-		jobIds.forEach(function(element){
-			if(!isPositiveInteger(element) || !element)
-			{
-				err += "Erreur interne : les identifiants uniques des jobs doivent être des entiers positifs.\n";
-			}
-		});
-		
-		// S'il y a erreur, afficher la fenêtre d'erreur
-		if(err !== "")
-		{
-			reject(err);
-		}
-		else
-		{
-			resolve();
+			err += "Erreur interne : les identifiants uniques des jobs doivent être des entiers positifs.\n";
 		}
 	});
+	
+	// S'il y a erreur, afficher la fenêtre d'erreur
+	if(err == "")
+	{
+		return true;
+	}
+	else
+	{
+		showError("Les informations du modèle-type ne sont pas valides", err);
+		return false;
+	}
 }
 
 /**
@@ -253,7 +239,7 @@ function downloadConfirm()
 /**
  * Prompts user to confirm the saving of the current Type.
  */
-function saveConfirm()
+async function saveConfirm()
 {
 	let jobIds = [];
 	$("table#orders >tbody >tr >td.jobIdCell").each(function(){
@@ -266,29 +252,22 @@ function saveConfirm()
 		$("#material").val(), $("#boardSize").val(), $("#status").val(), $("#comments").val(), jobIds
 	];
 	
-	validateInformation.apply(null, args)
-	.catch(function(error){
-		showError("La sauvegarde de la batch a échouée", error);
-		return Promise.reject();
-	})
-	.then(function(){
-		return askConfirmation("Sauvegarde de batch", "Voulez-vous vraiment sauvegarder cette batch?")
-		.then(function(){
+	if(validateInformation.apply(null, args)){
+		if(await askConfirmation("Sauvegarde de batch", "Voulez-vous vraiment sauvegarder cette batch?"))
+		{
 			$("#loadingModal").css({"display": "block"});
-			return saveBatch.apply(null, args)
-			.catch(function(error){
-				showError("La sauvegarde de la batch a échouée", error);
-				return Promise.reject();
-			})
-			.then(function(id){
+			try{
+				let id = await saveBatch.apply(null, args);
 				goToBatch(id);
-			})
-			.finally(function(){
+			}
+			catch(error){
+				showError("La sauvegarde de la batch a échouée", error);
+			}
+			finally{
 				$("#loadingModal").css({"display": "none"});
-			});
-		});
-	})
-	.catch(function(){/* Do nothing. */});
+			}
+		}
+	}
 }
 
 /**
@@ -305,117 +284,91 @@ function toogleCheckBox()
  * Generates nested machining programs.
  * @param {int} [action=1] The action requested. If 1, then the project is nested. Otherwise, an archive is downloaded.
  */
-function generateConfirm(action = 1)
+async function generateConfirm(action = 1)
 {
-	generatePrograms($("#batchId").val(), action)
-	.catch(function(error){
-		showError("La génération des programmes a échouée", error);
-	});
+	await generatePrograms($("#batchId").val(), action);
 }
 
 /**
  * Downloads a Batch to CutQueue's queue.
  * @param {int} id The id of the Batch
  * @param {int} [action=1] The action requested. If 1, then the project is nested. Otherwise, an archive is downloaded.
- * @return {Promise}
  */
-function generatePrograms(id, action = 1)
+async function generatePrograms(id, action = 1)
 {
-	return new Promise(function(resolve, reject){
-		if(!compareWithSessionStorage())
-		{
-			let message = "Des différences ont été trouvées entre les dernières données sauvegardées et les données " +
-			"actuelles. Veuillez sauvegarder ou recharger la page, puis réessayer."
-			reject(message);
+	if(compareWithSessionStorage())
+	{
+		$("#loadingModal").css({"display": "block"});
+		try{
+			let downloadableFile = await downloadBatch(id, action);
+			if (action === 1)
+			{
+				window.location.reload(); //Batch was sent to CutRite for nesting.
+			}
+			else
+			{
+				downloadFile(downloadableFile.url, downloadableFile.name); // Local copy of the individual programs.
+			}
 		}
-		else if(!isPositiveInteger(id))
+		catch(error)
 		{
-			reject("Veuillez sauvegarder les données avant de télécharger le projet.");
+			showError("La génération du programme d'usinage a échouée", error);
 		}
-		else
-		{
-			$("#loadingModal").css({"display": "block"});
-			return downloadBatch(id, action)
-			.finally(function(){
-				$("#loadingModal").css({"display": "none"});
-			})
-			.then(function(downloadableFile){
-				if (action === 1)
-				{
-					window.location.reload(); //Batch was sent to CutRite for nesting.
-					
-				}
-				else
-				{
-					downloadFile(downloadableFile.url, downloadableFile.name); // Local copy of the individual programs.
-				}
-			})
-			.catch(function(error){
-				reject(error);
-			});
+		finally{
+			$("#loadingModal").css({"display": "none"});
 		}
-	});
+	}
+	else
+	{
+		let message = "Des différences ont été trouvées entre les dernières données sauvegardées et les données " +
+		"actuelles. Veuillez sauvegarder ou recharger la page, puis réessayer."
+		showError("La génération des programmes a échouée", message);
+	}
 }
 
 /**
  * Prompts user to confirm the deletion of the current Type.
- * @return {Promise}
  */
-function deleteConfirm()
+async function deleteConfirm()
 {
-	return askConfirmation("Suppression de batch", "Voulez-vous vraiment supprimer cette batch?")
-	.then(function(){
+	if(await askConfirmation("Suppression de batch", "Voulez-vous vraiment supprimer cette batch?"))
+	{
 		$("#loadingModal").css({"display": "block"});
-		return deleteBatch($("#batchId").val())
-		.catch(function(error){
-			showError("La suppression de la batch a échouée", error);
-			return Promise.reject();
-		})
-		.then(function(){
+		try{
+			await deleteBatch($("#batchId").val());
 			goToIndex();
-		})
-		.finally(function(){
+		}
+		catch(error){
+			showError("La suppression de la batch a échouée", error);
+		}
+		finally{
 			$("#loadingModal").css({"display": "none"});
-		});
-	})
-	.catch(function(){/* Do nothing. */});
+		}
+	}
 }
 
 /**
  * Retrieves the list of possible pannels for a given material id
- * @return {Promise}
  */
-function updatePannelsList()
+async function updatePannelsList()
 {
-	return new Promise(function(resolve, reject){
-		let materialId = $("select#material").val();
-		if(isPositiveInteger(materialId, false))
-		{
-			retrievePannels($("select#material").val())
-			.then(function(pannelCodes){
-				let value = $("select#boardSize").val();
+	let materialId = parseInt($("select#material >option:selected").val());
+	if(materialId !== 0)
+	{
+		try{
+			let pannelCodes = await retrievePannels($("select#material").val());
+			let value = $("select#boardSize").val();
 				
-				$("select#boardSize").empty().append($("<option></option>").text("").val(""));
-				
-				pannelCodes.map(function(pannelCode){
-					$("select#boardSize").append($("<option></option>").text(pannelCode).val(pannelCode));
-				});
-				
-				$("select#boardSize").val(($("select#boardSize >option[value='" + value + "']").length > 0) ? value : "");
-			})
-			.then(function(){
-				resolve();
-			})
-			.catch(function(error){
-				showError("Échec de la récupération de la liste des panneaux disponibles", error);
-				reject();
-			})
+			$("select#boardSize").empty().append($("<option></option>").text("").val(""));
+			pannelCodes.map(function(pannelCode){
+				$("select#boardSize").append($("<option></option>").text(pannelCode).val(pannelCode));
+			});
+			$("select#boardSize").val(($("select#boardSize >option[value='" + value + "']").length > 0) ? value : "");
 		}
-		else
-		{
-			resolve();
+		catch(error){
+			showError("Échec de la récupération de la liste des panneaux disponibles", error);
 		}
-	});
+	}
 }
 
 /**

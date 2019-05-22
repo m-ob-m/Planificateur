@@ -4,96 +4,66 @@
  * Fills the list of Jobs of this Batch
  * @param {job[]} jobs An array of job identidfiers
  * @param {bool} [IsName=false] Set to false if identifiers are IDs. If they are names, this must be set to true.
- * @return {Promise}
  */
-function fillJobsList(jobs, isName = false)
+async function fillJobsList(jobs, isName = false)
 {
-	return new Promise(function(resolve, reject){
-		let promises = jobs.map(function(job){
-			return addJob(job, false);
-		});
-		Promise.all(promises)
-		.then(function(){
-			resolve();
-		})
-		.catch(function(){
-			reject();
-		});
-	});
+	return await Promise.all(jobs.map(async function(job){
+		return addJob(job, false);
+	}));
 }
 
 /**
  * Adds a job to the Batch's orders
  * @param {mixed} identfier The name or the id of a Job
  * @param {bool} [IsName=false] Set to false if identifier is an ID. If it is a name, this must be set to true.
- * @return {Promise}
+ * @return {bool} True if the job was added to the table, false otherwise. 
  */
-function addJob(identifier, isName = false)
+async function addJob(identifier, isName = false)
 {
-	return new Promise(function(resolve, reject){
-		if(identifier !== null && identifier !== "")
-		{
-			getJobSummary(identifier, isName)
-			.catch(function(error){
-				showError("La récupération d'un résumé de la job a échouée", error);
-				return Promise.reject();
-			})
-			.then(function(job){
-				if(job.belongsToBatch === null || job.belongsToBatch === window.sessionStorage.getItem("name"))
-				{
-					$("table#orders > tbody").append(newJob(job));
-					$("input#jobNumber").val("");
-					return Promise.resolve(job);
-				}
-				else
-				{
-					let title = "L'ajout de la job a échoué";
-					showError(title, "Cette job appartient déjà à la batch nommée \"" + job.belongsToBatch + "\".");
-					return Promise.reject();
-				}
-				
-			})
-			.then(function(job){
-				resolve(job);
-			})
-			.catch(function(){
-				reject();
-			});
-			
+	if(identifier !== null && identifier !== "")
+	{
+		try{
+			let job = await getJobSummary(identifier, isName);
+			if(job.belongsToBatch === null || job.belongsToBatch === window.sessionStorage.getItem("name"))
+			{
+				$("table#orders > tbody").append(newJob(job));
+				$("input#jobNumber").val("");
+			}
+			else
+			{
+				let title = "L'ajout de la job a échoué";
+				showError(title, "Cette job appartient déjà à la batch nommée \"" + job.belongsToBatch + "\".");
+				return false;
+			}
 		}
-		else
-		{
-			showError("L'ajout de la job a échoué", "Le nom de la job ne peut pas être vide.");
-			reject();
+		catch(error){
+			showError("La récupération d'un résumé de la job a échouée", error);
+			return false;
 		}
-	});
+	}
+	else
+	{
+		showError("L'ajout de la job a échoué", "Le nom de la job ne peut pas être vide.");
+		return false;
+	}
+	return true;
 }
 
 /**
  * Callback for the onclick event of the "Add Job" button.
  */
-function addJobButtonPressed()
+async function addJobButtonPressed()
 {
-	addJob($('input#jobNumber').val(), true)
-	.then(function(job){
-		if(!$('input#startDate').val() || !$('input#batchId').val())
+	let jobName = $('#jobNumber').val();
+	if(await addJob(jobName, true))
+	{
+		initializeDates();
+		if($("input#batchName").val() === null || $("input#batchName").val() === "")
 		{
-			let deliveryDate = job.hasOwnProperty("deliveryDate") ? job.deliveryDate : "";
-			let deliveryMoment = moment.tz(deliveryDate, getExpectedMomentFormat(), "America/Montreal");
-			$('input#startDate').val(deliveryMoment.subtract(3, "days").add(8, "hours").format(getExpectedMomentFormat()));
-		}
-		
-		if(!$('input#endDate').val() || !$('input#batchId').val())
-		{
-			let deliveryDate = job.hasOwnProperty("deliveryDate") ? job.deliveryDate : "";
-			let deliveryMoment = moment.tz(deliveryDate, getExpectedMomentFormat(), "America/Montreal");
-			$('input#endDate').val(deliveryMoment.subtract(3, "days").add(17, "hours").format(getExpectedMomentFormat()));
+			$("input#batchName").val(jobName);
 		}
 		updateSessionStorage();
-	})
-	.catch(function(error){
-		// Do nothing.
-	});
+	}
 }
 
 /**

@@ -34,7 +34,7 @@
             \FileFunctions\PathSanitizer::sanitize(
                 "{$name}.mpr", 
                 array(
-                    "inputPathDelimiter" => "",
+                    "fileNameMode" => true,
                     "allowSlashesInFilename" => false,
                     "transliterate" => true,
                     "fullyPortable" => true

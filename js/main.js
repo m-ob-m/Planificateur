@@ -5,16 +5,18 @@
  * @param {int} modelId The model id for which programs must be updated, null means all
  * @param {int} TypeNo The type id for which programs must be updated, null means all
  */
-function updateUnitaryPrograms(modelId = null, typeNo = null)
+async function updateUnitaryPrograms(modelId = null, typeNo = null)
 {
 	$('#loadingModal').css("display", "block");
-	updatePrograms()
-	.catch(function(error){
+	try{
+		await updatePrograms()
+	}
+	catch(error){
 		showError("La génération des programmes unitaires a échouée", error);
-	})
-	.finally(function(){
+	}
+	finally{
 		$('#loadingModal').css("display", "none");
-	});
+	};
 }
 
 /**
@@ -104,10 +106,10 @@ function askConfirmation(title, message)
 			.append($("<hr>"))
 			.append($("<p></p>").text(message))
 			.append($("<hr>"))
-			.append($("<button></button>").attr("type", "button").css("margin", "5px").text("Oui").click(function(){resolve();}))	
+			.append($("<button></button>").attr("type", "button").css("margin", "5px").text("Oui").click(function(){resolve(true);}))	
 			.append($(" ")).append($(" ")).append($(" ")).append($(" ")).append($(" "))
 			.append($(" ")).append($(" ")).append($(" ")).append($(" ")).append($(" "))
-			.append($("<button></button>").attr("type", "button").text("Non").css("margin", "5px").click(function(){reject();}))
+			.append($("<button></button>").attr("type", "button").text("Non").css("margin", "5px").click(function(){resolve(false);}))
 			.append($("<br>"))
 			.append($("<hr>"))
 			.append($("<h1></h1>").text("Cliquer sur cette fenetre pour la fermer..."))
@@ -162,9 +164,9 @@ function downloadFile(url, fileName)
 	{
 		let blob = req.response;
 	    let link = document.createElement("a");
-	    $(link).attr({"href": window.URL.createObjectURL(blob), "download": fileName});
-	    $(link).css({"visibility": "hidden", "display": "none"});
-	    $(link).appendTo("html >body");
+		$(link).appendTo($("html >body"))
+		.attr({"href": window.URL.createObjectURL(blob), "download": fileName})
+		.css({"visibility": "hidden", "display": "none"});
 	    link.click();
 	    $(link).remove();
 	};

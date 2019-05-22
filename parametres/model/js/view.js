@@ -6,11 +6,10 @@
  * @param {string} description The description of the Model
  * @param {int} copyParametersFrom The selected model for parameters copy
  * 
- * @return {Promise}
+ * @return {bool} If information is valid, returns true. Otherwise, returns false.
  */
 function validateInformation(id, description, copyParametersFrom)
 {
-	return new Promise(function(resolve, reject){
 		let err = "";
 		
 		if(!isPositiveInteger(id) && id !== "" && id!== null)
@@ -29,49 +28,46 @@ function validateInformation(id, description, copyParametersFrom)
 		}
 
 		// S'il y a erreur, afficher la fenêtre d'erreur
-		if(err != "")
+		if(err == "")
 		{
-			reject(err);
+			return true;
 		}
 		else
 		{
-			resolve();
+			showError("Les informations du modèle ne sont pas valides", err);
+			return false;
 		}
-	});	
 }
 
 /**
  * Prompts user to confirm the saving of the current Model.
- * 
- * @return {Promise}
  */
-function saveConfirm()
+async function saveConfirm()
 {
-	let args = [$("#id").val(), $("#description").val(), $("#copyParametersFrom").val()];
+	let args = [
+		$("#id").val(), 
+		$("#description").val(), 
+		$("#copyParametersFrom").val()
+	];
 	
-	return validateInformation.apply(null, args)
-	.catch(function(error){
-		showError("La sauvegarde du modèle a échouée", error);
-		return Promise.reject();
-	})
-	.then(function(){
-		return askConfirmation("Sauvegarde de modèle", "Voulez-vous vraiment sauvegarder ce modèle?")
-		.then(function(){
+	if(validateInformation.apply(null, args))
+	{
+		if(await askConfirmation("Sauvegarde de modèle", "Voulez-vous vraiment sauvegarder ce modèle?"))
+		{
 			$("#loadingModal").css({"display": "block"});
-			return saveModel.apply(null, args)
-			.catch(function(error){
-				showError("La sauvegarde du modèle a échouée", error);
-				return Promise.reject();
-			})
-			.then(function(id){
+			try{
+				let id = await saveModel.apply(null, args);
 				openModel(id);
-			})
-			.finally(function(){
+			}
+			catch(error)
+			{
+				showError("La sauvegarde du modèle a échouée", error);
+			}
+			finally{
 				$("#loadingModal").css({"display": "none"});
-			});
-		});
-	})
-	.catch(function(){/* Do nothing */});
+			}
+		}
+	}
 }
 
 /**
@@ -117,27 +113,24 @@ function saveModel(id, description, copyParametersFrom)
 
 /**
  * Display a message to validate the fact that the user wants to delete this Model
- * 
- * @return {Promise}
  */
-function deleteConfirm()
+async function deleteConfirm()
 {
-	return askConfirmation("Suppression de modèle", "Voulez-vous vraiment supprimer ce modèle?")
-	.then(function(){
+	if(await askConfirmation("Suppression de modèle", "Voulez-vous vraiment supprimer ce modèle?"))
+	{
 		$("#loadingModal").css({"display": "block"});
-		return deleteModel($("#id").val())
-		.then(function(){
+		try{
+			await deleteModel($("#id").val());
 			goToIndex();
-		})
-		.catch(function(error){
+		}
+		catch(error)
+		{
 			showError("La suppression du modèle a échouée", error);
-			return Promise.reject();
-		})
-		.finally(function(){
+		}
+		finally{
 			$("#loadingModal").css({"display": "none"});
-		});
-	})
-	.catch(function(){/* Do nothing */});
+		}
+	}
 }
 
 /**

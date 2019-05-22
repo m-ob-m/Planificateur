@@ -1,6 +1,20 @@
 "use strict";
 
 $(function(){
+	$("input#filesToImport").change(async function(){
+		$("#loadingModal").css({"display": "block"});
+		try{
+			await importParametersFromExcelFile($(this).prop("files")[0]);
+			openModelTypeParameters($("select#model").val(), $("select#type").val())
+		}
+		catch(error){
+			showError("L'importation des paramètres a échouée.", error)
+		}
+		finally{
+			$("input#filesToImport").val("");
+			$("#loadingModal").css({"display": "none"});
+		}
+	});
 	refreshParameters();
 });
 
@@ -10,40 +24,40 @@ $(function(){
  * @param {int} typeNo The import number of the selected type
  * @param {array} parmeters The parameters as an array
  * 
- * @return {Promise}
+ * @return {bool} If information is valid, returns true. Otherwise, returns false.
  */
 function validateInformation(modelId, typeNo, parameters)
 {
-	return new Promise(function(resolve, reject){
-		let err = "";
-		
-		// Validation des parametres pour chaque parametre
-		$(parameters).each(function(){
-			if(!(new RegExp("^\\S+$")).test(this.key))
-			{
-				err += "La clé du paramètre de la ligne \"" + (this.index + 1) + "\" est vide ou contient des espaces blancs. ";
-			}
-		});
-				
-		if(!isPositiveInteger(modelId) && modelId !== "" && modelId !== null)
+	let err = "";
+	
+	// Validation des parametres pour chaque parametre
+	$(parameters).each(function(){
+		if(!(new RegExp("^\\S+$")).test(this.key))
 		{
-			err += "Le modèle choisi présente un problème. ";
-		}
-		
-		if(!isPositiveInteger(typeNo) && typeNo !== "" && typeNo !== null)
-		{
-			err += "Le type choisi présente un problème. ";
-		}
-		
-		if(err !== "")
-		{
-			reject(err);
-		}
-		else
-		{
-			resolve();
+			err += "La clé du paramètre de la ligne \"" + (this.index + 1) + "\" est vide ou contient des espaces blancs. ";
 		}
 	});
+			
+	if(!isPositiveInteger(modelId) && modelId !== "" && modelId !== null)
+	{
+		err += "Le modèle choisi présente un problème. ";
+	}
+	
+	if(!isPositiveInteger(typeNo) && typeNo !== "" && typeNo !== null)
+	{
+		err += "Le type choisi présente un problème. ";
+	}
+	
+	// S'il y a erreur, afficher la fenêtre d'erreur
+	if(err == "")
+	{
+		return true;
+	}
+	else
+	{
+		showError("Les informations du modèle-type ne sont pas valides", err);
+		return false;
+	}
 } 
 
 /**
@@ -51,7 +65,7 @@ function validateInformation(modelId, typeNo, parameters)
  * 
  * @return {Promise}
  */
-function saveConfirm()
+async function saveConfirm()
 {
 	let model = $("select#model option:selected");
 	let type = $("select#type option:selected");
@@ -60,29 +74,23 @@ function saveConfirm()
 	let modelType = model.text() + " - " + type.text();
 	let message = "Voulez-vous vraiment sauvegarder ces paramètres pour la combinaison modèle-type : \"" + modelType  + "\"?";
 	
-	return validateInformation.apply(null, args)
-	.catch(function(error){
-		showError("La sauvegarde de la combinaison modèle-type a échouée", error);
-		return Promise.reject();
-	})
-	.then(function(){
-		return askConfirmation("Sauvegarde des paramètres de paramètres de combinaison modèle-type", message)
-		.then(function(){
+	if(validateInformation.apply(null, args))
+	{
+		if(await askConfirmation("Sauvegarde des paramètres de paramètres de combinaison modèle-type", message))
+		{
 			$("#loadingModal").css({"display": "block"});
-			return saveParameters.apply(null, args)
-			.catch(function(error){
-				showError("La sauvegarde de la combinaison modèle-type a échouée", error);
-				return Promise.reject();
-			})
-			.then(function(){
+			try{
+				await saveParameters.apply(null, args);
 				openModelTypeParameters(model.val(), type.val());
-			})
-			.finally(function(){
+			}
+			catch(error){
+				showError("La sauvegarde de la combinaison modèle-type a échouée", error);
+			}
+			finally{
 				$("#loadingModal").css({"display": "none"});
-			});
-		});
-	})
-	.catch(function(error){/* Do nothing. */});
+			}
+		}
+	}
 }
 
 /**
@@ -141,19 +149,6 @@ function retrieveParameters(modelId, typeNo)
 	});
 }
 
-function exportParameters()
-{
-	return exportParametersToXlsx($("select#model option:selected").val())
-	.catch(function(error){
-		showError("La sauvegarde de la combinaison modèle-type a échouée", error);
-		return Promise.reject();
-	})
-	.then(function(downloadLink){
-		downloadFile(downloadLink);
-	})
-	.catch(function(error){/* Do nothing. */});
-}
-
 /**
  * Saves parameters to the database
  * @param {jquery} table The parameters table
@@ -171,40 +166,6 @@ function saveParameters(modelId, typeNo, parameters)
 			"contentType": "application/json;charset=utf-8",
 			"url": "/Planificateur/parametres/varmodtype/actions/save.php",
 			"data": JSON.stringify({"modelId": modelId, "typeNo": typeNo, "parameters": parameters}),
-			"dataType": "json",
-			"async": true,
-			"cache": false,
-		})
-		.done(function(response){
-			if(response.status === "success")
-			{
-				resolve(response.success.data);
-			}
-			else
-			{
-				reject(response.failure.message);
-			}
-		})
-		.fail(function(error){
-			reject(error.responseText);
-		});
-	});
-}
-
-/**
- * Exports the parameters of the selected model to an xlsx file.
- * @param {int} modelId The id of the current Model
- * 
- * @return {Promise}
- */
-function exportParametersToXlsx(modelId)
-{	
-	return new Promise(function(resolve, reject){
-		$.ajax({
-			"type": "GET",
-			"contentType": "application/json;charset=utf-8",
-			"url": "/Planificateur/parametres/varmodtypegen/actions/exportToExcel.php",
-			"data": {"modelId": modelId},
 			"dataType": "json",
 			"async": true,
 			"cache": false,
@@ -275,15 +236,15 @@ function newParameter(parameter)
 }
 
 /**
- * Refreshes the parameters list
- * 
- * 
+ * Refreshes the parameters list.
  */
-function refreshParameters()
+async function refreshParameters()
 {
 	$("table#parametersTable >tbody >tr").remove();
-	retrieveParameters($("select#model option:selected").val(), $("select#type option:selected").val())
-	.then(function(parameters){
+	try{
+		let modelId = $("select#model option:selected").val();
+		let typeNo = $("select#type option:selected").val();
+		let parameters = await retrieveParameters(modelId, typeNo);
 		if(parameters.length > 0)
 		{
 			$(parameters).each(function(){
@@ -294,9 +255,102 @@ function refreshParameters()
 		{
 			$("table#parametersTable >tbody").append(newParameter());
 		}
-	})
-	.catch(function(error){
+	}
+	catch(error){
 		showError("La récupération des paramètres de la combinaison modèle-type a échouée", error);
-		return Promise.reject();
+	}
+}
+
+/**
+ * Exports parameters.
+ */
+async function exportParameters()
+{
+	try{
+		let downloadLink = await exportParametersToExcelFile($("select#model >option:selected").val());
+		downloadFile(downloadLink, downloadLink.substring(downloadLink.lastIndexOf('/') + 1));
+	}
+	catch(error){
+		showError("L'exportation des paramètres du modèle sélectionné a échouée", error);
+	}
+}
+
+/**
+ * Imports parameters.
+ * 
+ * @return {Promise}
+ */
+function importParameters()
+{
+	$("input#filesToImport").click();
+}
+
+/**
+ * Exports parameters to an Excel file.
+ * 
+ * @return {Promise}
+ */
+function exportParametersToExcelFile(modelId)
+{
+	return new Promise(function(resolve, reject){
+		$.ajax({
+			"type": "GET",
+			"contentType": "application/json;charset=utf-8",
+			"url": "/Planificateur/parametres/varmodtype/actions/exportToExcel.php",
+			"data": {"modelId": modelId, "generic": null},
+			"dataType": "json",
+			"async": true,
+			"cache": false,
+		})
+		.done(function(response){
+			if(response.status === "success")
+			{
+				resolve(response.success.data);
+			}
+			else
+			{
+				reject(response.failure.message);
+			}
+		})
+		.fail(function(error){
+			reject(error.responseText);
+		});
+	});
+}
+
+/**
+ * Imports parameters from an Excel file.
+ * @param {object} file The file to import.
+ * 
+ * @return {Promise}
+ */
+function importParametersFromExcelFile(file)
+{
+	let formData = new FormData();
+	formData.append("files[]", file);
+	return new Promise(function(resolve, reject){
+		$.ajax({
+			"type": "POST",
+			"contentType": false,
+			"processData": false,
+			"url": "/Planificateur/parametres/varmodtype/actions/importFromExcel.php",
+			"data": formData,
+			"dataType": "json",
+			"async": true,
+			"cache": false,
+		})
+		.done(function(response){
+			if(response.status === "success")
+			{
+				resolve(response.success.data);
+			}
+			else
+			{
+				reject(response.failure.message);
+			}
+		})
+		.fail(function(error){
+			reject(error.responseText);
+		});
 	});
 }

@@ -17,8 +17,7 @@ include_once __DIR__ . '/../sections/job/model/job.php';
 class PlanificateurController 
 {
 	
-	private $_db;	//Connection à la base de donn�es
-	
+	private $_db;	//Connection à la base de données
 	private $_batches;	// 
 	
 	function __construct(){
@@ -127,19 +126,11 @@ class PlanificateurController
 	
 	
 	/**
-	 * \name		batchEvents
-	 * \author    	Mathieu Grenier
-	 * \version		1.0
-	 * \date       	2017-01-31
-	 *
-	 * \brief       Génère les évènements des batchs
-	 * \details    	Génère les évènements des batchs
-	 *
-	 * \return    	String javascript des batchs
+	 * Returns an array ob batches for the javascript interface.
+	 * @return \StdClass[] The array of batches.
 	 */
 	function batchEvents()
 	{
-		
 		$events = array();
 		
 		foreach ($this->_batches as $batch)
@@ -147,7 +138,7 @@ class PlanificateurController
 			$event = new \stdClass();
 			$event->editable = true;
 			
-			$event->color = $this->couleurEtat($batch->status , $batch->end);
+			$event->color = $this->couleurEtat($batch->status , \DateTime::createFromFormat("Y-m-d H:i:s", $batch->end));
 							
 			$event->url = "sections/batch/index.php?id={$batch->id}";
 			$event->id = $batch->id;
@@ -180,20 +171,13 @@ class PlanificateurController
 	
 	
 	/**
-	 * \name		couleurEtat
-	 * \author    	Mathieu Grenier
-	 * \version		1.0
-	 * \date       	2017-01-31
-	 *
-	 * \brief       Génère la couleur du fond selon l'état
-	 * \details    	Génère la couleur du fond selon l'état
-	 *
-	 * \param		$etat Etat du nest
-	 * \param		$date_fin Date de fin du nest
-	 *
-	 * \return    	Code HEX de la couleur
+	 * Determines the color of the event block on the javascript interface.
+	 * @param string $etat The status of the batch.
+	 * @param \DateTime $date_fin The end date of the event.
+	 * 
+	 * @return string The hex code of the color of the event block on the javascript interface.
 	 */
-	public static function couleurEtat($etat, $date_fin)
+	public static function couleurEtat(?string $etat, ?\DateTime $date_fin) : ?string
 	{
 		switch ($etat)
 		{

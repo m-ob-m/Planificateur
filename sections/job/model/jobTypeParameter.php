@@ -26,7 +26,7 @@
          * @author Marc-Olivier Bazin-Maurice
          * @return JobTypeParameter This JObTypeParameter
          */
-        public function __construct(?int $jobTypeId = null, ?string $key = null, ?string $value = null)
+        public function __construct(?int $jobTypeId = null, string $key, ?string $value = null)
         {
             parent::__construct($key);
             $this->setJobTypeId($jobTypeId);
