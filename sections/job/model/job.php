@@ -225,15 +225,7 @@ class Job implements JsonSerializable
 		/* @var \JobType $jobType */
 	    foreach($this->getJobTypes() as $jobType)
 	    {
-<<<<<<< HEAD
 	        $jobType->setJobId($this->getId())->save($db);
-=======
-<<<<<<< HEAD
-	        $jobType->setJobId($this->getId())->save($db);
-=======
-	        $jobType->save($db);
->>>>>>> 28e88f6e4de52cfbfc82f27813810b9de7bd6edf
->>>>>>> 684bf1755856df1f7b8f7809445255b0b7967e19
 	    }
 	    
 	    return $this;

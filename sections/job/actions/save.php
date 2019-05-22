@@ -29,21 +29,13 @@ try
     {
         $db->getConnection()->beginTransaction();
         $job = buildJob($db, $inputJob)->save($db);
-<<<<<<< HEAD
-=======
-<<<<<<< HEAD
->>>>>>> 684bf1755856df1f7b8f7809445255b0b7967e19
+
         $batch = $job->getParentBatch($db, \MYSQLDatabaseLockingReadTypes::FOR_UPDATE);
         if($batch !== null)
         {
             $batch->setMprStatus("N")->updateCarrousel()->save($db);
         }
-<<<<<<< HEAD
-=======
-=======
-        $job->getParentBatch($db, \MYSQLDatabaseLockingReadTypes::FOR_UPDATE)->setMprStatus("N")->updateCarrousel()->save($db);
->>>>>>> 28e88f6e4de52cfbfc82f27813810b9de7bd6edf
->>>>>>> 684bf1755856df1f7b8f7809445255b0b7967e19
+
         $db->getConnection()->commit();
     }
     catch(\Exception $e)
