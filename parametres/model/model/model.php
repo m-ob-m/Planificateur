@@ -68,6 +68,7 @@ class Model implements JsonSerializable
 	    }
 	    
 	    $instance->setDatabaseConnectionLockingReadType($databaseConnectionLockingReadType);
+<<<<<<< HEAD
 	    return $instance;
 	}
 
@@ -103,6 +104,8 @@ class Model implements JsonSerializable
 	    }
 	    
 	    $instance->setDatabaseConnectionLockingReadType($dbCLRT);
+=======
+>>>>>>> 28e88f6e4de52cfbfc82f27813810b9de7bd6edf
 	    return $instance;
 	}
 	
