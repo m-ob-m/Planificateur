@@ -29,11 +29,15 @@ try
     {
         $db->getConnection()->beginTransaction();
         $job = buildJob($db, $inputJob)->save($db);
+<<<<<<< HEAD
         $batch = $job->getParentBatch($db, \MYSQLDatabaseLockingReadTypes::FOR_UPDATE);
         if($batch !== null)
         {
             $batch->setMprStatus("N")->updateCarrousel()->save($db);
         }
+=======
+        $job->getParentBatch($db, \MYSQLDatabaseLockingReadTypes::FOR_UPDATE)->setMprStatus("N")->updateCarrousel()->save($db);
+>>>>>>> 28e88f6e4de52cfbfc82f27813810b9de7bd6edf
         $db->getConnection()->commit();
     }
     catch(\Exception $e)

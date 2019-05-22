@@ -152,7 +152,10 @@ class mprCutrite
 	        $defaultKeyDescriptionindex = $generic->getParametersAsKeyDescriptionPairs();
 			$defaultKeyValueindex = $generic->getParametersAsKeyValuePairs();
 			$specificKeyValueIndex = $jobType->getParametersAsKeyValuePairs();
+<<<<<<< HEAD
 			$variables = "";
+=======
+>>>>>>> 28e88f6e4de52cfbfc82f27813810b9de7bd6edf
 	        foreach ($defaultKeyDescriptionindex as $key => $description)
 	        {
 	            $value = $specificKeyValueIndex[$key] ?? $defaultKeyValueindex[$key];
@@ -162,7 +165,11 @@ class mprCutrite
 	        }
 	        
 	        $this->extractMprBlocks();
+<<<<<<< HEAD
 	        $this->_mpr = preg_replace("/(?<=\[001\r\n).{0}(?=\r\n\r\n)/s", $variables, $this->_header);
+=======
+	        $this->_mpr = str_replace("**var_token**\r\n", $var_token, $this->_header, $count);
+>>>>>>> 28e88f6e4de52cfbfc82f27813810b9de7bd6edf
 		}
 		
 	    $parameters = array_merge($parameters, (new Carrousel())->getSymbolicToolNamesArray());
