@@ -33,17 +33,24 @@ try
             mkdir(dirname($accessDbPath));
         }
         
-        if(!file_exists($accessDbPath))
+        if(file_exists(MMATV9_MDB))
         {
-            copy(MMATV9_MDB, $accessDbPath);
+            if(!file_exists($accessDbPath))
+            {
+                copy(MMATV9_MDB, $accessDbPath);
+            }
+            elseif(time() - filemtime($accessDbPath) >= 60 * 60 || filemtime($accessDbPath) !== filemtime(MMATV9_MDB))
+            {
+                unlink($accessDbPath);
+                copy(MMATV9_MDB, $accessDbPath);
+            }
         }
-        elseif(time() - filemtime($accessDbPath) >= 60 * 60 || filemtime($accessDbPath) !== filemtime(MMATV9_MDB))
+        else
         {
-            unlink($accessDbPath);
-            copy(MMATV9_MDB, $accessDbPath);
+            throw new \Exception("Cut Rite's board library file \"mmatv9.mdb\" doesn't exist.");
         }
         
-        $accessDb =  new PDO("odbc:DRIVER={Microsoft Access Driver (*.mdb)}; DBQ={$accessDbPath}; Uid=; Pwd;");
+        $accessDb =  new \PDO("odbc:DRIVER={Microsoft Access Driver (*.mdb)}; DBQ={$accessDbPath};", "", "", array());
         $stmt = $accessDb->prepare("
             SELECT [b].[BoardsCode] AS [BoardCode]
             FROM [Boards] AS [b]
@@ -59,6 +66,10 @@ try
         natsort($boards);
         
         $accessDb = null;
+    }
+    else 
+    {
+        throw new \Exception("Il n'y a aucun matériel associé à l'identifiant numérique unique \"{$id}\".");
     }
     
     // Retour au javascript

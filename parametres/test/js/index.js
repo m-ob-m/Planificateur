@@ -1,29 +1,28 @@
-$(function(){
+"use strict";
+
+$(async function(){
 	$("input#startDate").val(moment().tz("America/Montreal").subtract(1, "month").format("YYYY-MM-DDTHH:mm:ss"));
 	$("input#endDate").val(moment().tz("America/Montreal").format("YYYY-MM-DDTHH:mm:ss"));
-	refreshTests();
+	await refreshTests();
 });
 
 /**
  * Retrieves all the tests between the two specified dates
- * 
  */
-function refreshTests()
+async function refreshTests()
 {
 	let startDate = moment($("input#startDate").val(), "YYYY-MM-DDTHH:mm:ss").tz("America/Montreal");
 	let endDate = moment($("input#endDate").val(), "YYYY-MM-DDTHH:mm:ss").tz("America/Montreal");
 	
-	return retrieveTestsBetweenDates(startDate, endDate)
-	.then(function(tests){
+	try{
 		$("table.parametersTable >tbody").empty();
-		$(tests).each(function(){
+		$(await retrieveTestsBetweenDates(startDate, endDate)).each(function(){
 			$("table.parametersTable >tbody").append(newTest(this));
 		});
-	})
-	.catch(function(error){
+	}
+	catch(error){
 		showError("La récupération des tests a échouée", error);
-		return Promise.reject(error);
-	})
+	}
 }
 
 /**
@@ -33,7 +32,6 @@ function refreshTests()
  */
 function newTest(test)
 {
-	let moo = $("<td></td>").addClass("firstVisibleColumn").val(test.id);
 	return $("<tr></tr>").addClass("link").click(test.id, function(event){openTest(event.data);}).append(
 		$("<td></td>").addClass("firstVisibleColumn").text(test.id),
 		$("<td></td>").text(test.name),

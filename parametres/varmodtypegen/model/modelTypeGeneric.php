@@ -21,25 +21,21 @@ include_once __DIR__ . '/../../varmodtype/model/modelType.php'; // Classe de com
 include_once __DIR__ . '/../../type/controller/typeController.php'; // Classe de combinaison modèle-type
 
 class ModelTypeGeneric extends \ModelType implements \JsonSerializable
-{   
-    protected $_generic_id;
-    
+{    
 	/**
 	 * Build a new ModelTypeGeneric object.
 	 *
-	 * @param int $modelId The model id of the combination.
-	 * @param int $typeId The type id of the combination.
-	 * @param array $parameters The parameters of the model/type combination 
-	 * @param int $genericId The id of the Generic associated to this Test
+	 * @param \Model $model The model of the combination.
+	 * @param \Type $type The type of the combination.
+	 * @param array $parameters The parameters of the model/type combination
 	 * 
 	 * @throws
 	 * @author Marc-Olivier Bazin-Maurice
 	 * @return ModelTypeGeneric This ModelTypeGeneric (for method chaining)
 	 */
-    public function __construct(?int $modelId = null, ?int $typeNo = null, array $parameters = array(), ?int $genericId = null)
+    public function __construct(?\Model $model= null, ?\Type $type = null, array $parameters = array())
 	{
-	   parent::__construct($modelId, $typeNo, $parameters);
-	    $this->setGenericId($genericId);
+	   parent::__construct($model, $type, $parameters);
 	}
 
 	/**
@@ -53,8 +49,8 @@ class ModelTypeGeneric extends \ModelType implements \JsonSerializable
 	 */
 	public function loadParameters(\FabPlanConnection $db) : \ModelTypeGeneric
 	{
-        $modelId = $this->getModelId();
-        $typeNo = $this->getTypeNo();
+        $modelId = $this->getModel()->getId();
+        $typeNo = $this->getType()->getImportNo();
         
 	    $stmt = $db->getConnection()->prepare("
         	SELECT `gp`.`parameter_key` AS `key`, `dmd`.`paramValue` AS `specificValue`,  
@@ -85,41 +81,6 @@ class ModelTypeGeneric extends \ModelType implements \JsonSerializable
 	    }
 	    
 	    return $this;
-	}
-	
-	/**
-	 * Set the id of the associated generic file
-	 *
-	 * @param int $generic The new id of the Generic
-	 *
-	 * @throws
-	 * @author Marc-Olivier Bazin-Maurice
-	 * @return ModelTypeGeneric This ModelTypeGeneric (for method chaining)
-	 */
-	public function setGenericId(?int $genericId = null) : \ModelTypeGeneric
-	{
-	    if($genericId === null && $this->getTypeNo() !== null)
-	    {
-	        $this->_generic_id = \Type::withImportNo(new \FabPlanConnection(), $this->getTypeNo())->getGenericId();
-	    }
-	    else
-	    {
-	        $this->_generic_id = $genericId;
-	    }
-	    
-	    return $this;
-	}
-	
-	/**
-	 * Get the id of the generic associated with this ModelTypeGeneric
-	 *
-	 * @throws
-	 * @author Marc-Olivier Bazin-Maurice
-	 * @return int The id of the Generic associated with this ModelTypeGeneric
-	 */
-	public function getGenericId() : ?int
-	{
-	    return $this->_generic_id;
 	}
 	
 	/**

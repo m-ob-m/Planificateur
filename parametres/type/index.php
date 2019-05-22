@@ -95,8 +95,7 @@
 						</thead>
 						<tbody>
     						<?php foreach ($types as $type): ?>
-    							<?php $genericId = $type->getGenericId();?>
-    							<?php $genericFilename = \Generic::withId($db, $genericId)->getFileName() ?? null; ?>
+    							<?php $genericFilename = $type->getGeneric()->getFilename(); ?>
     							<tr class="link" onclick="javascript:openType(<?= $type->getId(); ?>);">
     								<td class="firstVisibleColumn"><?= $type->getId(); ?></td>
     								<td><?= $type->getImportNo(); ?></td>

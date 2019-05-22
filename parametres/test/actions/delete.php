@@ -26,7 +26,13 @@ try
     try
     {
         $db->getConnection()->beginTransaction();
-        \Test::withID($db, $id)->getTest($id)->delete($db);
+        $test = \Test::withID($db, $id, \MYSQLDatabaseLockingReadTypes::FOR_UPDATE);
+        if($test === null)
+        {
+            throw new \Exception("Il n'y a aucun test possédant l'identifiant unique \"{$id}\".");
+        }
+        
+        $test->delete($db);
         $db->getConnection()->commit();
     }
     catch(\Exception $e)
