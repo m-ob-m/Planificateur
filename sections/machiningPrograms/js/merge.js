@@ -6,8 +6,6 @@ $(function(){
 
 /**
  * Adds an input file selection field.
- * 
- * @return
  */
 function addInputFileSelectionField()
 {
@@ -50,35 +48,41 @@ function removeInputFileSelectionField()
 /**
  * Initiates the merging process.
  */
-function mergePrograms()
+async function mergePrograms()
 {
 	let args = null;
 	
-	$("#loadingModal").css({"display": "block"});
 	let inputFiles = []
-	let promises = $("div#inputFilesContainer >input:not(:last-child)").toArray().map(function(inputFile){
-		return readFile(inputFile.files[0], "iso88591")
-		.then(function(contents){
-			inputFiles.push(contents);
-		});
-	});
-	
-	Promise.all(promises)
-	.then(function(){
-		args = [inputFiles, $("input#outputFileName").val()];
-	})
-	.then(function(){
-		return validateInformation.apply(null, args);
-	})
-	.then(function(){
-		return merge.apply(null, args);
-	})
-	.catch(function(error){
-		showError("La combinaison des programmes a échouée", error);
-	})
-	.then(function(){
-		$("#loadingModal").css({"display": "none"});
-	});
+	await Promise.all(
+		$("div#inputFilesContainer >input:not(:last-child)").toArray().map(async function(inputFile){
+			return new Promise(async function(resolve, reject){
+				try{
+					let contents = await readFile(inputFile.files[0], "iso88591");
+					inputFiles.push(contents);
+					resolve();
+				}
+				catch(error)
+				{
+					reject(error);
+				}
+			});
+		})
+	)
+
+	args = [inputFiles, $("input#outputFileName").val()];
+	if(validateInformation.apply(null, args))
+	{
+		$("#loadingModal").css({"display": "block"});
+		try{
+			await merge.apply(null, args);
+		}
+		catch(error){
+			showError("La combinaison des programmes a échouée", error);
+		}
+		finally{
+			$("#loadingModal").css({"display": "none"});
+		}
+	}
 }
 
 /**
@@ -123,43 +127,43 @@ function merge(inputFiles, outputFileName)
  * @param {string[]} inputFiles The contents of the input file
  * @param {string} outputFileName The desired name for the output file
  * 
- * @return {Promise}
+ * @return {bool} If information is valid, returns true. Otherwise, returns false.
  */
 function validateInformation(inputFiles, outputFileName)
 {
-	return new Promise(function(resolve, reject){
-		let error = "";
-		
-		if(Array.isArray(inputFiles) && inputFiles.length > 1)
-		{
-			$(inputFiles).each(function(){
-				if(this === "" || this === null || this === undefined)
-				{
-					error += "Un des programmes d'entrée est vide. ";
-				}
-			});
-		}
-		else if(inputFiles.length > 0)
-		{
-			error += "La liste de programmes d'entrée ne contient qu'un seul programme. ";
-		}
-		else
-		{
-			error += "La liste de programmes d'entrée est vide. ";
-		}
-		
-		if(!(new RegExp("^.+\.mpr$", "i").test(outputFileName)))
-		{
-			error += "Le nom du programme de sortie doit posséder l'extension \"mpr\". "
-		}
-		
-		if(error === "")
-		{
-			resolve();
-		}
-		else
-		{
-			reject(error);
-		}
-	});
+	let err = "";
+	
+	if(Array.isArray(inputFiles) && inputFiles.length > 1)
+	{
+		$(inputFiles).each(function(){
+			if(this === "" || this === null || this === undefined)
+			{
+				error += "Un des programmes d'entrée est vide. ";
+			}
+		});
+	}
+	else if(inputFiles.length > 0)
+	{
+		err += "La liste de programmes d'entrée ne contient qu'un seul programme. ";
+	}
+	else
+	{
+		err += "La liste de programmes d'entrée est vide. ";
+	}
+	
+	if(!(new RegExp("^.+\.mpr$", "i").test(outputFileName)))
+	{
+		err += "Le nom du programme de sortie doit posséder l'extension \"mpr\". "
+	}
+	
+	// S'il y a erreur, afficher la fenêtre d'erreur
+	if(err == "")
+	{
+		return true;
+	}
+	else
+	{
+		showError("Les informations fournies ne sont pas valides", err);
+		return false;
+	}
 }

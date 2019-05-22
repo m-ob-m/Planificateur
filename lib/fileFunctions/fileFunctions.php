@@ -17,7 +17,7 @@ namespace FileFunctions{
          */
         public function __construct(string $fileName, int $code = 0, \Exception $previous = null)
         {
-            $message = "Filename \"{$variableName}\" is not valid.";
+            $message = "Filename \"{$fileName}\" is not valid.";
             parent::__construct($message, $code, $previous);
             $this->fileName = $fileName;
         }
@@ -52,9 +52,10 @@ namespace FileFunctions{
         private $filename;
         private $extension;
         private $directory;
-        private $type;
-        private $drive;
-        private $server;
+        private $type; // Absolute, relative or UNC
+        private $fileSystem; // Windows or Unix (\\ or /)
+        private $driveLetter; // Drive letter
+        private $hostName; // Host of UNC path
         
         public const PathDelimiters = array(
             "UNIX" => "/", 
@@ -74,18 +75,19 @@ namespace FileFunctions{
          * Parses a path
          *
          * @param string $path The raw path
-         * @param ?string $pathDelimiter The path delimiter to use. If empty, the string is treates as a filename
-         * @param bool $filenameOnly (optional) If true, the entire string is treated as a filename
-         *
+         * @param string|null $pathDelimiter The path delimiter to use. If empty, the string is treates as a filename
+         * @param bool $isFileName (optional) If true, the whole sring is considered as a filename.
+         * @param bool $allowSlashesInFilename (optional) If false and if $isFileName is true, slashes will be removed from $path.
+         * 
          * @return \FileFunctions\PathSanitizer This PathSanitizer (for method chaining)
          */
-        private function parse(string $path, ?string $pathDelimiter = null, 
-            ?bool $allowSlashesInFilename = false) : \FileFunctions\PathSanitizer
+        private function parse(string $path, ?string $pathDelimiter = null, bool $isFileName = false,
+            bool $allowSlashesInFilename = false) : \FileFunctions\PathSanitizer
         {
             $matches = array();
             
             $regExpPathDelimiters = array();
-            if($pathDelimiter === "")
+            if($isFileName)
             {
                 if(!$allowSlashesInFilename)
                 {
@@ -130,21 +132,40 @@ namespace FileFunctions{
                 preg_match("/\A(?<pathStart>\/|\\\\{2}.+?\\\\|[A-Za-z]:\\\\)(?<remains>.*)\z/", $matches["remains"], $matches);
                 if(!isset($matches["pathStart"]))
                 {
-                    /* Cannot assume path type. */
+                    $this->type = "Relative";
+                    if(preg_match("/\\\\/", $matches["remains"]))
+                    {
+                        $this->fileSystem = "WINDOWS";
+                    }
+                    elseif(preg_match("/\//", $matches["remains"]))
+                    {
+                        $this->fileSystem = "UNIX"; 
+                    }
+                    else
+                    {
+                        /* Cannot assume filesystem. */
+                    }
                 }
                 elseif($matches["pathStart"] === "/")
                 {
-                    $this->type = "UNIX";
+                    $this->type = "Absolute";
+                    $this->fileSystem = "UNIX";
                 }
                 elseif(preg_match("/\\\\{2}.+?\\\\/", $matches["pathStart"]))
                 {
                     $this->type = "UNC";
-                    $this->server = mb_substr($matches["pathStart"], 2, mb_strlen($matches["pathStart"]) - 3, "utf-8");
+                    $this->fileSystem = "WINDOWS";
+                    $this->hostName = mb_substr($matches["pathStart"], 2, mb_strlen($matches["pathStart"]) - 3, "utf-8");
                 }
                 elseif(preg_match("/[A-Za-z]:\\\\/", $matches["pathStart"]))
                 {
-                    $this->type = "WINDOWS";
-                    $this->drive = mb_substr($matches["pathStart"], 0, 1, "utf-8");
+                    $this->type = "Absolute";
+                    $this->fileSystem = "WINDOWS";
+                    $this->driveLetter = mb_substr($matches["pathStart"], 0, 1, "utf-8");
+                }
+                else
+                {
+                    /* Cannot assume type. */
                 }
                 
                 $matches["remains"] = $matches["remains"] ?? null;
@@ -231,114 +252,175 @@ namespace FileFunctions{
          * 
          * @param string $path A path
          * @param ?array $options (optional) An array of options. If null, all simplification options are enabled (default)
+         *      $options = [
+         *          "fileNameMode" => (bool) When activated, the whole string is considered as a filename. Default value is false.
+         *          "allowSlashesInFilename" => (bool) If inputPathDelimiter is "", allows slashes in the filename. 
+         *                                      Default value is false.
+         *           "transliterate" => (bool) Transliterates the input string (removes diacritics) before creating the output path. 
+         *                              Default value is true.
+         *           "fullyPortable" => (bool) Truncates any character that is not alphanumeric, an underscore or an hyphen. 
+         *                              Spaces are converted into underscores. Default value is true.
+         *           "simplify" => (bool) Simplifies references to the current (.) or the parent directory (..) in the path. 
+         *                         Default value is true.
+         *           "inputPathDelimiter" => (string | array[string]) The path delimiter of the input path. 
+         *                                   If set to null, then forward and backward slashes are considered as path delimiters.
+         *                                   If it is set to "", then the input path will be considered as a filename.
+         *                                   If it is set to a non-empty string, this string is consideres as a path delimiter.
+         *                                   If it is set to an array, then every element in the array is a path delimiter.
+         *           "outputPathDelimiter" => (string) The output path delimiter,
+         *           "outputPathType" => (string) Absolute, relative or UNC.
+         *           "outputPathFileSystem" => (string) WINDOWS or UNIX.
+         *           "outputDriveLetter" => (string) The drive letter to use for Windows type output paths.
+         *           "outputHostName" => (string) The hostname (or IP address) to use for UNC paths. 
+         *      ]
+         * 
+         * @throws \Exception If "inputPathDelimiter" is set to "", "allowSlashesInFilename" is set to false and the input path
+         *                    contains slashes.
          * 
          * @return string A sanitized version of the path
          */
         public static function sanitize(string $path, ?array $options = null) : string
         {
-            if($options === null)
-            {
-                $options = array(
-                    "allowSlashesInFilename" => false,
-                    "transliterate" => true,
-                    "fullyPortable" => true,
-                    "simplify" => true,
-                    "inputPathDelimiter" => null,
-                    "outputPathDelimiter" => null,
-                    "outputPathType" => null
-                );
-            }
+            $options["fileNameMode"] = $options["fileNameMode"] ?? false;
+            $options["allowSlashesInFilename"] = $options["allowSlashesInFilename"] ?? false;
+            $options["transliterate"] = $options["transliterate"] ?? true;
+            $options["fullyPortable"] = $options["fullyPortable"] ?? true;
+            $options["simplify"] = $options["simplify"] ?? true;
+            $options["inputPathDelimiter"] = $options["inputPathDelimiter"] ?? null;
+            $options["outputPathDelimiter"] = $options["outputPathDelimiter"] ?? null;
+            $options["outputPathType"] = $options["outputPathType"] ?? null;
+            $options["outputPathFileSystem"] = $options["outputPathFileSystem"] ?? null;
+            $options["outputDriveLetter"] = $options["outputDriveLetter"] ?? null;
+            $options["outputHostName"] = $options["outputHostName"] ?? null;
             
-            $pathSanitizer = (new self())
-                ->parse($path, $options["inputPathDelimiter"] ?? null, $options["allowSlashesInFilename"] ?? false);
+            $pathSanitizer = (new self())->parse(
+                $path, 
+                $options["inputPathDelimiter"], 
+                $options["fileNameMode"], 
+                $options["allowSlashesInFilename"]
+            );
             
-            if($options["transliterate"] ?? false)
+            if($options["transliterate"])
             {
                 $pathSanitizer->transliterate();
             }
             
-            if($options["fullyPortable"] ?? false)
+            if($options["fullyPortable"])
             {
                 $pathSanitizer->toFullyPortable();
             }
             
-            if($options["simplify"] ?? false)
+            if($options["simplify"])
             {
                 $pathSanitizer->simplify();
             }
             
-            return $pathSanitizer->encode($options["outputPathDelimiter"] ?? null, $options["outputPathType"] ?? null);
+            return $pathSanitizer->encode(
+                $options["outputPathDelimiter"], 
+                $options["outputPathType"], 
+                $options["outputPathFileSystem"], 
+                $options["outputDriveLetter"],
+                $options["outputHostName"]
+            );
         }
         
         /**
          * Return the encoded path
          * 
          * @param string $pathDelimiter The delimiter to use in the path (if empty, it is determined automatically)
-         * @param string $pathType The path can either be UNIX, WINDOWS or UNC style.
-         *
+         * @param string $type It can either be absolute, relative, UNC or filename. Any other value defaults to relative.
+         * @param string $fileSystem The filesystem can either be WINDOWS or UNIX. Any other value defaults to UNIX.
+         * @param string $driveLetter The drive letter to use for an absolute Windows path. Null means the same as for the input path.
+         * @param string $hostName The host name to use for a UNC path. Null means the same as for the input path.
+         * 
+         * @throws \Exception If not enough information is provided to return the expected path.
          * @return string The path
          */
-        public function encode(?string $pathDelimiter = null, ?string $pathType = null) : string
+        public function encode(?string $pathDelimiter = null, ?string $type = null, ?string $fileSystem = null, 
+            ?string $driveLetter = null, ?string $hostName = null) : string
         {
             $path = "";
             
-            if($pathDelimiter !== null && $pathDelimiter !== "")
-            {    
-                /* Do nothing. */
-            }
-            elseif($this->type !== null)
+            if(strlen($hostName) <= 0)
             {
-                switch ($this->type)
+                $hostName = $this->hostName;
+            }
+
+            if(!preg_match("/\AAbsolute\z|\ARelative\z|\AUNC\z/", $type))
+            {
+                $type = $this->type;
+            }
+
+            if(!preg_match("/\AWINDOWS\z|\AUNIX\z/", $fileSystem))
+            {
+                $fileSystem = $this->fileSystem;
+            }
+
+            if(!preg_match("/\A[A-Za-z]\z/", $driveLetter))
+            {
+                $driveLetter = $this->driveLetter;
+            }
+
+            if($pathDelimiter === null || $pathDelimiter === "")
+            {    
+                if($this->fileSystem === "UNIX")
                 {
-                    case "UNIX":
-                        $pathDelimiter = "/";
-                        break;
-                    case "WINDOWS":
-                        $pathDelimiter = "\\";
-                        break;
-                    case "UNC":
-                        $pathDelimiter = "\\";
-                        break;
-                    default:
-                        $pathDelimiter = "/";
-                        break;
+                    $pathDelimiter = "/";
+                }
+                elseif($this->fileSystem === "WINDOWS")
+                {
+                    $pathDelimiter = "\\";
+                }
+                elseif(count($this->directory) > 0)
+                {
+                    throw new \Exception("A directory path was requested without providing a valid output path delimiter.");
+                }
+                else
+                {
+                    /* No path delimiter provided but none required. */
                 }
             }
+            
+            if($type === "Absolute")
+            {
+                if($fileSystem === "WINDOWS")
+                {
+                    if(preg_match("/\A[A-Za-z]\z/", $driveLetter))
+                    {
+                        $path .= "{$driveLetter}:\\";
+                    }
+                    else
+                    {
+                        throw new \Exception("An absolute Windows path was requested without providing a valid drive letter.");
+                    }
+                }
+                elseif($fileSystem === "UNIX")
+                {
+                    $path .= "/";
+                }
+                else
+                {
+                    throw new \Exception("An absolute path was requested without providing a valid file system name.");
+                }
+            }
+            elseif($type === "UNC")
+            {
+                if(strlen($hostName > 0))
+                {
+                    $path .= "\\\\{$hostName}\\";
+                }
+                else
+                {
+                    throw new \Exception("A UNC path was requested but no valid hostname was provided.");
+                }
+            }
+            elseif($type === "Relative")
+            {
+                $path .= "{$pathDelimiter}";
+            }
             else
             {
-                $pathDelimiter = "/";
-            }
-            
-            if($pathType !== null && $pathType !== "")
-            {
-                /* Do nothing. */
-            }
-            elseif($this->type !== null)
-            {
-                $pathType = $this->type;
-            }
-            else
-            {
-                $pathType = "UNIX";
-            }
-            
-            switch ($pathType)
-            {
-                case "UNIX":
-                    $path .= $pathDelimiter;
-                    break;
-                case "WINDOWS":
-                    $path .= ($this->drive === null ? "" : "{$this->drive}:\\");
-                    break;
-                case "UNC":
-                    $path = ($this->server === null ? "" : "\\\\{$this->server}\\");
-                    break;
-                case "filename":
-                    $path .= "";
-                    break;
-                default:
-                    $path .= $pathDelimiter;
-                    break;
+                /* No path delimiter was provided but none is required. */
             }
             
             foreach($this->directory as $pathPart)

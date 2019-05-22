@@ -29,17 +29,17 @@
     /*
      * Chemin d'enregistrement des fichiers tests
      */
-    define('_TESTDIRECTORY',"C:\\PROGRAMMES_V200\\__TEST\\");
+    define('_TESTDIRECTORY', "C:\\PROGRAMMES_V200\\__TEST\\");
     
     /*
      * Chemin d'enregistrement des fichiers de programmes unitaires
      */
-    define('_UNITARYPROGRAMSDIRECTORY',"C:\\PROGRAMMES_V200\\__Programmes_unitaires\\");
+    define('_UNITARYPROGRAMSDIRECTORY', "C:\\PROGRAMMES_V200\\__Programmes_unitaires\\");
     
     /*
      * Chemin des programmes génériques
      */
-    define('_GENERICPROGRAMSDIRECTORY',"Planificateur\\lib\\");
+    define('_GENERICPROGRAMSDIRECTORY', "Planificateur\\lib\\");
     
     /*
      * Chemin du fichier d'origine de la base de données de panneaux

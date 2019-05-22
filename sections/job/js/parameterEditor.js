@@ -4,7 +4,6 @@
  * Opens the parameters editor.
  * @this {jquery} The JobType block to edit
  * @param {null | function} [callbackOnAccept = null] The callback to call when modifications are accepted
- * @return 
  */
 function openParameterEditor(callbackOnAccept = null)
 {
@@ -23,9 +22,6 @@ function openParameterEditor(callbackOnAccept = null)
 
 /**
  * Closes the parameters editor.
- * @this 
- * @param 
- * @return 
  */
 function closeParameterEditor()
 {
@@ -35,25 +31,24 @@ function closeParameterEditor()
 /**
  * Reloads the parameters editor with a specied Modeltype combination or with the block currently beign modified.
  * @this {jquery} The JobType block to edit
- * @param 
+ * @param {int} modelId The unique identifier of the model used to initialize the parameters editor. 
+ * @param {int} typeNo The import number of the type used to initialize the parameters editor. 
  * @return 
  */
-function reloadParameterEditor(modelId = null, typeNo = null)
-{
-	let reloadParametersIsRequired = (modelId !== null && typeNo !== null) ? true : false;
-	
-	if(reloadParametersIsRequired)
+async function reloadParameterEditor(modelId = null, typeNo = null)
+{	
+	if(modelId !== null && typeNo !== null)
 	{
 		if(modelId !== 2)
 		{
-			retrieveModelTypeGenericParameters(modelId, typeNo)
-			.catch(function(error){
-				showError("La récupération des paramètres du modèle-type a échouée.", error);
-			})
-			.then(function(parameters){
+			try{
+				let parameters = await retrieveModelTypeGenericParameters(modelId, typeNo)
 				updateParameterEditor(parameters);
 				switchEditionMode(0);
-			})
+			}
+			catch(error){
+				showError("La récupération des paramètres du modèle-type a échouée.", error);
+			}
 		}
 		else
 		{
@@ -107,9 +102,7 @@ function hideParameterEditor()
 
 /**
  * Updates the parameters editor with fresh parameters.
- * @this 
  * @param {array} [parameters = []] The new set of parameters
- * @return {Promise} 
  */
 function updateParameterEditor(parameters = [])
 {
@@ -162,7 +155,6 @@ function updateParameterEditor(parameters = [])
 
 /**
  * Retrieves the parameters for a ModelTypeGeneric combination
- * @this
  * @param {int} modelId The id of the selected model
  * @param {int} typeNo The import number of the selected model
  * @return {Promise}
@@ -190,9 +182,7 @@ function retrieveModelTypeGenericParameters(modelId, typeNo)
 
 /**
  * Selects the edition mode.
- * @this 
- * @param {int} [mode = 0] 0 = "program parameters edition", 1 = "program file edition". 
- * @return 
+ * @param {int} [mode = 0] 0 = "program parameters edition", 1 = "program file edition".
  */
 function switchEditionMode(mode = 0)
 {
@@ -216,9 +206,8 @@ function switchEditionMode(mode = 0)
  * Accepts the edited parameters.
  * @this {jquery} The JobType block to edit
  * @param {null | function} callback A callback function
- * @return 
  */
-function acceptEdit(callback)
+async function acceptEdit(callback)
 {
 	this.data("model", {"id": $("select#modelId").val(), "description": $("select#modelId >option:selected").text()});
 	this.data("type", {"importNo": $("select#typeNo").val(), "description": $("select#typeNo >option:selected").text()});
@@ -237,7 +226,7 @@ function acceptEdit(callback)
 	// A user defined callback function may be called with the current JobType block as a parameter.
 	if(callback && {}.toString.call(callback) === '[object Function]')
 	{
-		callback.apply(this);
+		await callback.apply(this);
 	}
 	
 	closeParameterEditor();
@@ -261,7 +250,6 @@ function saveParametersToBlock()
 			"quickEdit": parseInt($(this).find(">td:nth-child(5) >input").val())
 		});
 		block.data("jobTypeParameters")[key] = $(this).find(">td:nth-child(2) >textarea").val();
-		updateJobTypeBlockIdentifier.apply(block);
 	});
 }
 

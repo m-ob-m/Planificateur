@@ -2,9 +2,8 @@
 
 /**
  * Restores possibly unsaved information from the session's storage (can be used untill the data is erased or overwritten).
- * @return {Promise}
  */
-function restoreSessionStorage()
+async function restoreSessionStorage()
 {
 	$("#batchName").val(window.sessionStorage.getItem("name"));
 	$("#fullDay").val(window.sessionStorage.getItem("fullDay"));
@@ -13,12 +12,9 @@ function restoreSessionStorage()
 	$("#status").val(window.sessionStorage.getItem("status"));
 	$("#comments").val(window.sessionStorage.getItem("comments"));
 	$("#material").val(window.sessionStorage.getItem("material"));
-	return updatePannelsList()
-	.then(function(){
-		$("#boardSize").val(window.sessionStorage.getItem("boardSize"));
-		return fillJobsList(JSON.parse(window.sessionStorage.getItem("jobIds")), false);
-	})
-	.catch(function(){/* Do nothing. */});
+	await updatePannelsList();
+	$("#boardSize").val(window.sessionStorage.getItem("boardSize"));
+	await fillJobsList(JSON.parse(window.sessionStorage.getItem("jobIds")), false);
 }
 
 /**

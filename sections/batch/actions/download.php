@@ -125,7 +125,7 @@ function createZipArchiveForBatch(\Batch $batch, int $action) : string
     $zipName = \FileFunctions\PathSanitizer::sanitize(
         "{$batch->getName()}.zip",
         array(
-            "inputPathDelimiter" => "",
+            "fileNameMode" => true,
             "allowSlashesInFilename" => false,
             "transliterate" => true,
             "fullyPortable" => true
@@ -186,7 +186,7 @@ function createCsvForBatch(\Batch $batch) : string
     $csvName = \FileFunctions\PathSanitizer::sanitize(
         "{$batch->getName()}.txt", 
         array(
-            "inputPathDelimiter" => "",
+            "fileNameMode" => true,
             "allowSlashesInFilename" => false,
             "transliterate" => true,
             "fullyPortable" => true
@@ -213,7 +213,7 @@ function createMprForJobType(\JobType $jobType) : string
     $mprName = \FileFunctions\PathSanitizer::sanitize(
         "{$jobType->getModel()->getId()}_{$jobType->getType()->getImportNo()}_{$jobType->getId()}.mpr",
         array(
-            "inputPathDelimiter" => "", 
+            "fileNameMode" => true,
             "allowSlashesInFilename" => false, 
             "transliterate" => true, 
             "fullyPortable" => true

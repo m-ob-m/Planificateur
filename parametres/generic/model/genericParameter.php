@@ -58,8 +58,7 @@ class GenericParameter extends \Parameter implements \JsonSerializable
         // Récupérer le générique
         $stmt = $db->getConnection()->prepare(
             "SELECT `gp`.* FROM `fabplan`.`generic_parameters` AS `gp` 
-            WHERE `gp`.`generic_id` = :generic_id AND `gp`.`parameter_key` = :parameter_key " . 
-            (new \MYSQLDatabaseLockingReadTypes($dbCLRT))->toLockingReadString() . ";"
+            WHERE `gp`.`generic_id` = :generic_id AND `gp`.`parameter_key` = :parameter_key;"
         );
         $stmt->bindValue(":generic_id", $id, PDO::PARAM_INT);
         $stmt->bindValue(":parameter_key", $parameterKey, PDO::PARAM_STR);
@@ -130,7 +129,7 @@ class GenericParameter extends \Parameter implements \JsonSerializable
         $stmt->bindValue(':quickEdit', $this->getQuickEdit(), PDO::PARAM_INT);
         $stmt->execute();
         
-        $this->setId($db->getConnection()->lastInsertId());
+        $this->setId(intval($db->getConnection()->lastInsertId()));
         
         return $this;
     }

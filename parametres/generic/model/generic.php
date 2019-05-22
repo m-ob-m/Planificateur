@@ -168,7 +168,7 @@ class Generic implements \JsonSerializable
         $stmt->bindValue(':description', $this->_description, PDO::PARAM_STR);
         $stmt->bindValue(":heightParameter", $this->_heightParameter, PDO::PARAM_STR);
         $stmt->execute();
-        $this->_id = $db->getConnection()->lastInsertId();
+        $this->_id = intval($db->getConnection()->lastInsertId());
         
         if($overwriteParameters)
         {
@@ -393,6 +393,18 @@ class Generic implements \JsonSerializable
     }
     
     /**
+     * Gets the array of \GenericParameter of this object.
+     *
+     * @throws
+     * @author Marc-Olivier Bazin-Maurice
+     * @return array The array of \GenericParameter of this object.
+     */
+    public function getParameters() : array
+    {
+        return $this->_genericParameters;
+    }
+    
+    /**
      * Set the name of the file associated with this Generic
      *
      * @param string $filename The name of the file
@@ -464,6 +476,21 @@ class Generic implements \JsonSerializable
     public function setTimestamp(?string $timestamp) : Generic
     {
         $this->_timestamp = $timestamp;
+        return $this;
+    }
+    
+    /**
+     * Sets the array of \GenericParameter of this Generic
+     *
+     * @param array $parameters An array of \GenericParameters
+     *
+     * @throws
+     * @author Marc-Olivier Bazin-Maurice
+     * @return \Generic This \Generic (for method chaining)
+     */
+    public function setParameters(array $parameters) : \Generic
+    {
+        $this->_parameters = $parameters;
         return $this;
     }
     
@@ -573,7 +600,7 @@ class Generic implements \JsonSerializable
      * @author Marc-Olivier Bazin-Maurice
      * @return int The database connection locking read type applied to this object.
      */
-    private function getDatabaseConnectionLockingReadType() : int
+    public function getDatabaseConnectionLockingReadType() : int
     {
         return $this->__database_connection_locking_read_type;
     }

@@ -31,8 +31,8 @@ try
         $jobTypePorte = \JobTypePorte::withID($db, $jobTypePorteId);
         $jobType = \JobType::withID($db, $jobTypePorte->getJobTypeId());
         $job = \Job::withID($db, $jobType->getJobId());
-        $model = \Model::withID($db, $jobType->getModelId());
-        $type = \Type::withImportNo($db, $jobType->getTypeNo());
+        $model = \Model::withID($db, $jobType->getModel()->getId());
+        $type = \Type::withImportNo($db, $jobType->getType()->getImportNo());
         $generic = $type->getGeneric();
         $db->getConnection()->commit();
     }

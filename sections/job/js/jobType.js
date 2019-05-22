@@ -7,30 +7,29 @@
  */
 function newJobType(jobType)
 {
-	let modelDescription = ((jobType.model === null) ? "Modèle inconnu" : jobType.model.description);
-	let typeDescription = ((jobType.type === null) ? "Type inconnu" : jobType.type.description);
 	let jobTypeContainer = $("<div></div>");
-	
 	jobTypeContainer.addClass("blockContainer").data(jobType).append(newJobTypeTable(jobTypeContainer));
-	jobTypeContainer.find(">table >thead >tr >th >span.jobTypeIdentifier").text(modelDescription + " - " + typeDescription);
 	$(jobType.parts).each(function(){addPart.apply(jobTypeContainer, [this]);});
-	reloadQuickEditParametersTable.apply(jobTypeContainer);
+	refreshJobTypeBlock.apply(jobTypeContainer);
 	
 	return jobTypeContainer;
 }
 
 /**
- * Updates the identification string for a given block.
- * @this {jquery} block The block to update.
+ * Refreshes information displaye for the selected block. 
+ * @this {jquery} The JobType block.
  */
-function updateJobTypeBlockIdentifier()
+function refreshJobTypeBlock()
 {
-	let description = $(this).data().model.description + " - " + $(this).data().type.description;
-	$(this).find(">table >thead >tr >th >span.jobTypeIdentifier").text(description);
+	let modelDescription = ((this.data("model") === null) ? "Modèle inconnu" : this.data("model").description);
+	let typeDescription = ((this.data("type") === null) ? "Type inconnu" : this.data("type").description);
+	this.find(">table >thead >tr >th >span.jobTypeIdentifier").text(modelDescription + " - " + typeDescription);
+	reloadQuickEditParametersTable.apply(this);
 }
 
 /**
- * Reloads the quick edit parameters table.
+ * Reloads parameters from a block's internal data into the quick edit table of the said block. 
+ * @this {jquery} The JobType block.
  */
 function reloadQuickEditParametersTable()
 {
@@ -40,8 +39,13 @@ function reloadQuickEditParametersTable()
 		if(this.quickEdit === 1)
 		{
 			let key = this.key;
-			let specificValue = block.data("jobTypeParameters")[key];
-			let value = (typeof block.data("jobTypeParameters")[key] !== "undefined") ? specificValue : this.value;
+			let value = block.data("jobTypeParameters")[key];
+			if(typeof value === "undefined" || value === "" || value === null)
+			{
+				value = this.value;
+				block.data("jobTypeParameters")[key] = this.value;
+			}
+			
 			addQuickEditParameter.apply(block, [key, value]);
 		}
 	});
@@ -91,13 +95,10 @@ function newJobTypeTable(block)
  */
 function newQuickEditParametersTable()
 {
-	return $("<table></table>")
-	.addClass("parametersTable noExternalBorder hoverEffectDisabled")
-	.css({"width": "100%"}).append(
+	return $("<table></table>").addClass("parametersTable noExternalBorder hoverEffectDisabled").css({"width": "100%"}).append(
 		$("<thead></thead>").append(
 			$("<tr></tr>").append(
-				$("<th></th>").addClass("titreBleu firstVisibleColumn lastVisibleColumn").attr("colspan", 2)
-				.html("Paramètres")
+				$("<th></th>").addClass("titreBleu firstVisibleColumn lastVisibleColumn").attr("colspan", 2).html("Paramètres")
 			),
 			$("<tr></tr>").append(
 				$("<th></th>").addClass("titreBleu firstVisibleColumn").css({"width": "50%"}).html("Clé"),
@@ -190,30 +191,21 @@ function insertBlock(block, position = -1)
 /**
  * Removes a JobType from the list.
  * @this {jquery} The JobType to remove.
- * @return {Promise}
  */
-function removeJobType()
+async function removeJobType()
 {
 	let block = this;
-	return new Promise(function(resolve, reject){
-		askConfirmation("Retirement de bloc", "Voulez-vous vraiment retirer ce bloc?")
-		.catch(function(){/* Do nothing. */})
-		.then(function(){
-			if(block.siblings().length > 0)
-			{
-				removeBlock.apply(block);
-			}
-			else
-			{
-				emptyPartsTable.apply(block);
-			}
-		})
-		.then(function(){resolve();})
-		.catch(function(error){
-			showError("Le retirement du bloc a échoué", error);
-			reject();
-		});
-	});
+	if(await askConfirmation("Retirement de bloc", "Voulez-vous vraiment retirer ce bloc?"))
+	{
+		if(block.siblings().length > 0)
+		{
+			removeBlock.apply(block);
+		}
+		else
+		{
+			emptyPartsTable.apply(block);
+		}
+	}
 }
 
 /**
@@ -224,7 +216,7 @@ function removeJobType()
 function modifyJobType()
 {
 	/* Display the block modification window. */
-	openParameterEditor.apply(this, [reloadQuickEditParametersTable]);
+	openParameterEditor.apply(this, [refreshJobTypeBlock]);
 }
 
 /**
@@ -235,34 +227,39 @@ function modifyJobType()
 function newPart(part)
 {	
 	let id = (typeof part !== "undefined" && typeof part.id !== "undefined") ? part.id : null;
-	let qty = (typeof part !== "undefined" && typeof part.quantityToProduce !== "undefined") ? part.quantityToProduce : null;
+	let qty = (typeof part !== "undefined" && typeof part.quantity !== "undefined") ? part.quantity : null;
 	let length = (typeof part !== "undefined" && typeof part.length !== "undefined") ? part.length : null;
 	let width = (typeof part !== "undefined" && typeof part.width !== "undefined") ? part.width : null;
 	let grain = (typeof part !== "undefined" && typeof part.grain !== "undefined") ? part.grain : null;
 	let row = $("<tr></tr>").css({"height": "23px"}).append(
 		$("<td></td>").css({"line-height": "0px"}).addClass("firstVisibleColumn"),
 		$("<td></td>").css({"line-height": "0px", "display": "none"}).append(
-			$("<input>").val((id !== undefined && id !== null && id !== "") ? id : 1)
+			$("<input>")
+			.val((id !== undefined && id !== null && id !== "") ? id : null)
 		),
 		$("<td></td>").css({"line-height": "0px"}).append(
-			$("<input>").val((qty !== undefined && qty !== null && qty !== "") ? qty : 1)
+			$("<input>")
+			.val((qty !== undefined && qty !== null && qty !== "") ? qty : 1)
 			.change(function(){dataHasChanged(true);})
 		),
 		$("<td></td>").css({"line-height": "0px"}).append(
-			$("<input>").val((length !== undefined && length !== null && length !== "") ? length : 0)
+			$("<input>")
+			.val((length !== undefined && length !== null && length !== "") ? length : 0)
 			.change(function(){dataHasChanged(true);})
 		),
 		$("<td></td>").css({"line-height": "0px"}).append(
-				$("<input>").val((width !== undefined && width !== null && width !== "") ? width : 0)
+				$("<input>")
+				.val((width !== undefined && width !== null && width !== "") ? width : 0)
 				.change(function(){dataHasChanged(true);})
 		),
 		$("<td></td>").css({"line-height": "0px"}).addClass("lastVisibleColumn").append(
-			$("<select></select>").append(
+			$("<select></select>")
+			.append(
 				$("<option></option>").text("Aucun").val("N"),
 				$("<option></option>").text("Horizontal").val("X"),
 				$("<option></option>").text("Vertical").val("Y")
 			)
-			.val(new RegExp("/^N$|^X$|^Y$/i").test(grain) ? grain : "N")
+			.val(new RegExp("^N$|^X$|^Y$", "i").test(grain) ? grain : "N")
 			.change(function(){dataHasChanged(true);})
 		)
 	);
@@ -300,7 +297,7 @@ function emptyPartsTable()
 
 /**
  * Opens the part modification modal window.
- * @this The Part's row
+ * @this {jquery} The Part's row
  */
 function modifyPart()
 {
@@ -318,34 +315,26 @@ function modifyPart()
 		let newBlock = $(this);
 		$("div#blocksList")
 		.append(
-			$("<div></div>").css({"cursor": "pointer"}).click(function(){movePartBetweenBlocks.apply(partRow, [newBlock]);})
-			.append($("<span></span>").text(newBlock.find(">table >thead >tr >th >span").text()))
+			$("<div></div>").css({"cursor": "pointer"}).click(function(){
+				movePartBetweenBlocks.apply(partRow, [newBlock]);
+			}).append(
+				$("<span></span>").text(newBlock.find(">table >thead >tr >th >span").text())
+			)
 		);
 	});
 	
 	/* Déplacer l'élément vers un nouveau bloc. */
 	$("div#blocksList").append(
 		$("<div></div>").css({"cursor": "pointer"}).click(function(){
-			let newBlockData = JSON.parse(JSON.stringify(originalBlock.data()));
-			newBlockData.id = null;
-			newBlockData.parts = [];
-			let newBlock = newJobType(newBlockData); 
+			let newBlock = newJobType(originalBlock.data({"id": null,"parts": []}).data()); 
 			$("div#blocksContainer").append(newBlock); 
 			movePartBetweenBlocks.apply(partRow, [newBlock]);
-		}).append($("<span></span>").text("Nouveau bloc"))
+		}).append(
+			$("<span></span>").text("Nouveau bloc")
+		)
 	);
 	
 	$("div.modal#moveBetweenBlocksModal").show();
-}
-
-/**
- * Finds the parent block of an element.
- * @this {jquery} An element
- * @return {jquery} The node of the block to which this element belongs.
- */
-function findBlock()
-{
-	return this.parents("div.blockContainer");
 }
 
 /**
@@ -354,9 +343,7 @@ function findBlock()
  */
 function removePart()
 {
-	let block = findBlock.apply(this);
 	this.remove();
-	updateJobTypePartsMetaData.apply(block);
 	dataHasChanged(true);
 }
 
@@ -398,10 +385,14 @@ function newQuickEditParameter(key, value)
 {
 	let block = this;
 	return $("<tr></tr>").css({"height": "23px"}).append(
-		$("<td></td>").addClass("firstVisibleColumn").css({"line-height": "0px"}).append($("<input>")
-		.prop({"disabled": true}).val(key)),
+		$("<td></td>")
+		.addClass("firstVisibleColumn").css({"line-height": "0px"})
+		.append(
+			$("<input>").prop({"disabled": true}).val(key)
+		),
 		$("<td></td>").addClass("lastVisibleColumn").css({"line-height": "0px"}).append(
-			$("<input>").val(value).change(function(){
+			$("<input>").val(value)
+			.change(function(){
 				block.data("jobTypeParameters")[key] = $(this).val();
 				dataHasChanged(true);
 			})
@@ -418,10 +409,7 @@ function newQuickEditParameter(key, value)
 function movePartBetweenBlocks(destinationBlock)
 {
 	this.detach();
-	let sourceBlock = findBlock.apply(this);
 	destinationBlock.find(">table >tbody >tr >td:last-child >table >tbody").append(this);
-	updateJobTypePartsMetaData.apply(sourceBlock);
-	updateJobTypePartsMetaData.apply(destinationBlock);
 	dataHasChanged(true);
 	return this;
 }
@@ -453,7 +441,7 @@ function updateJobTypePartsMetaData()
 		block.data("parts").push({
 			"done": "N",
 			"grain": $(this).find(">td:nth-child(6) >select").val(),
-			"id": $(this).find(">td:nth-child(2) >input").val(),
+			"id": $(this).find(">td:nth-child(2) >input").val() !== "" ? $(this).find(">td:nth-child(2) >input").val() : null,
 			"jobTypeId": block.id,
 			"length": $(this).find(">td:nth-child(4) >input").val(),
 			"producedQuantity": "0",
@@ -469,8 +457,8 @@ function updateJobTypePartsMetaData()
  * Gets or sets the state of the dataHasChanged boolean.
  * @param {bool | null} The new status to apply to the dataHasChanged boolean. If null, the current status of the boolean is 
  * 					  returned.
- * @return {null | bool} If the status of the dataHasChanged boolean is being set, null is returned. Otherwise, the current 
- * 						 state of the boolean is returned.
+ * @return {null | bool} If the status of the dataHasChanged boolean is being set, null is returned. Otherwise, the current state 
+ * 						 of the boolean is returned.
  */
 function dataHasChanged(status = null)
 {

@@ -39,7 +39,64 @@ class ModelType implements \JsonSerializable
 	}
 
 	/**
-	 * Load test type parameters from the database  for the specified model/type combination.
+	 * Saves the model/type parameters to the database for the specified model/type combination.
+	 *
+	 * @param \FabPlanConnection $db The database where the parameters must be written.
+	 *
+	 * @throws
+	 * @author Marc-Olivier Bazin-Maurice
+	 * @return \ModelType This \ModelType (for method chaining)
+	 */
+	public function save(\FabPlanConnection $db)
+	{
+		$model = $this->getModel();
+		$modelDatabaseTimestamp = \DateTime::createFromFormat("Y-m-d H:i:s", $model->getTimestampFromDatabase($db));
+		$modelLocalTimestamp = \DateTime::createFromFormat("Y-m-d H:i:s", $model->getTimestamp());
+
+		$type = $this->getType();
+		$typeDatabaseTimestamp = \DateTime::createFromFormat("Y-m-d H:i:s", $type->getTimestampFromDatabase($db));
+		$typeLocalTimestamp = \DateTime::createFromFormat("Y-m-d H:i:s", $type->getTimestamp());
+		
+		if($this->getModel()->getDatabaseConnectionLockingReadType() !== \MYSQLDatabaseLockingReadTypes::FOR_UPDATE)
+		{
+			throw new \Exception("Model {$model->getDescription()} is not locked for update.");
+		}
+		
+		if($this->getType()->getDatabaseConnectionLockingReadType() !== \MYSQLDatabaseLockingReadTypes::FOR_UPDATE)
+		{
+			throw new \Exception("Type {$type->getDescription()} is not locked for update.");
+		}
+
+		if($modelDatabaseTimestamp > $modelLocalTimestamp)
+		{
+			throw new \Exception(
+				"Model {$model->getDescription()} is outdated. The last modification date of the database entry is
+				\"{$modelDatabaseTimestamp->format("Y-m-d H:i:s")}\" whereas the last modification date of the local copy is
+				\"{$modelLocalTimestamp->format("Y-m-d H:i:s")}\"."
+			);
+		}
+		
+		if($typeDatabaseTimestamp > $typeLocalTimestamp)
+		{
+			throw new \Exception(
+				"Type {$type->getDescription()} is outdated. The last modification date of the database entry is
+				\"{$typeDatabaseTimestamp->format("Y-m-d H:i:s")}\" whereas the last modification date of the local copy is
+				\"{$typeLocalTimestamp->format("Y-m-d H:i:s")}\"."
+			);
+		}
+
+		$this->emptyInDatabase($db);
+		/* @var $parameter \ModelTypeParameter */
+		foreach($this->getParameters() as $parameter)
+		{
+			$parameter->save($db);
+		}
+		
+	    return $this;
+	}
+
+	/**
+	 * Load model/type parameters from the database  for the specified model/type combination.
 	 *
 	 * @param \FabPlanConnection $db The database containing parameters to fetch.
 	 *
@@ -70,6 +127,28 @@ class ModelType implements \JsonSerializable
 	            new \ModelTypeParameter($row['key'], $row['value'], $modelId, $typeNo)
 	        );
 	    }
+	    
+	    return $this;
+	}
+
+	/**
+	 * Deletes model/type parameters from the database for the specified model/type combination.
+	 *
+	 * @param \FabPlanConnection $db The database containing parameters to delete.
+	 *
+	 * @throws
+	 * @author Marc-Olivier Bazin-Maurice
+	 * @return \ModelType This \ModelType (for method chaining)
+	 */
+	private function emptyInDatabase(\FabPlanConnection $db) : \ModelType
+	{
+	    $stmt = $db->getConnection()->prepare(
+            "DELETE `fabplan`.`door_model_data` FROM `fabplan`.`door_model_data` 
+			WHERE `fabplan`.`door_model_data`.`fkDoorModel` = :modelId AND `fabplan`.`door_model_data`.`fkDoorType` = :typeNo;"
+        );
+	    $stmt->bindValue(':modelId', $this->getModel()->getId(), \PDO::PARAM_INT);
+	    $stmt->bindValue(':typeNo', $this->getType()->getImportNo(), \PDO::PARAM_INT);
+	    $stmt->execute();
 	    
 	    return $this;
 	}
