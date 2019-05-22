@@ -157,7 +157,7 @@ class Materiel  implements JsonSerializable
 	    $stmt->bindValue(":isMDF", $this->getEstMDF(), PDO::PARAM_STR);
 	    $stmt->execute();
 	    
-	    $this->setId($db->getConnection()->lastInsertId());
+	    $this->setId(intval($db->getConnection()->lastInsertId()));
 	    
 	    return $this;
 	}
@@ -507,7 +507,7 @@ class Materiel  implements JsonSerializable
 	 * @author Marc-Olivier Bazin-Maurice
 	 * @return int The database connection locking read type applied to this object.
 	 */
-	private function getDatabaseConnectionLockingReadType() : int
+	public function getDatabaseConnectionLockingReadType() : int
 	{
 	    return $this->__database_connection_locking_read_type;
 	}

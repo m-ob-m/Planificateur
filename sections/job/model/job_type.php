@@ -133,15 +133,15 @@ class JobType extends \ModelTypeGeneric implements \JsonSerializable
     }
     
     /**
-     * Save the JobTypePorte object in the database
+     * Save the JobType object in the database
      *
      * @param \FabPlanConnection $db The database in which the record must be saved
      *
      * @throws
      * @author Marc-Olivier Bazin-Maurice
-     * @return JobTypePorte This JobtypePorte (for method chaining)
+     * @return \JobType This JobType (for method chaining)
      */
-    public function save(\FabPlanConnection $db) : JobType
+    public function save(\FabPlanConnection $db) : \JobType
     {
         if($this->getId() === null || self::withID($db, $this->getId()) === null)
         {
@@ -165,7 +165,7 @@ class JobType extends \ModelTypeGeneric implements \JsonSerializable
             }
             else
             {
-                $this->update($db);
+                $this->emptyInDatabase($db)->update($db);
             }
         }
         
@@ -178,13 +178,13 @@ class JobType extends \ModelTypeGeneric implements \JsonSerializable
     /**
      * Empties the JobType object in the database
      *
-     * @param FabPlanConnection $db The database in which the record is located
+     * @param \FabPlanConnection $db The database in which the record is located
      *
      * @throws
      * @author Marc-Olivier Bazin-Maurice
-     * @return JobType This JobType (for method chaining)
+     * @return \JobType This JobType (for method chaining)
      */
-    public function emptyInDatabase(FabPlanConnection $db) : JobType
+    private function emptyInDatabase(FabPlanConnection $db) : \JobType
     {
         if($this->getId() !== null)
         {
@@ -192,7 +192,7 @@ class JobType extends \ModelTypeGeneric implements \JsonSerializable
                     DELETE FROM `fabplan`.`job_type_params`
                     WHERE `job_type_id` = :id;
                 ");
-            $stmt->bindValue(':id', $this->getId(), PDO::PARAM_INT);
+            $stmt->bindValue(':id', $this->getId(), \PDO::PARAM_INT);
             $stmt->execute();
             
             $stmt = $db->getConnection()->prepare("
@@ -227,7 +227,7 @@ class JobType extends \ModelTypeGeneric implements \JsonSerializable
         $stmt->bindValue(':typeNo', $this->getType()->getImportNo(), PDO::PARAM_INT);
         $stmt->bindValue(':mprFile', $this->getMprFile(), PDO::PARAM_STR);
         $success = $stmt->execute();
-        $this->setId($db->getConnection()->lastInsertId());
+        $this->setId(intval($db->getConnection()->lastInsertId()));
         
         /* @var \JobTypeParameter $parameter */
         foreach($this->_parameters as $parameter)
@@ -335,7 +335,7 @@ class JobType extends \ModelTypeGeneric implements \JsonSerializable
     
     public function loadParameters(\FabplanConnection $db) : \ModelTypeGeneric
     {
-        if($this->getModelId() <> 2)
+        if($this->getModel()->getId() <> 2)
         {
             parent::loadParameters($db);
         }
@@ -440,13 +440,13 @@ class JobType extends \ModelTypeGeneric implements \JsonSerializable
     /**
      * Set the array of parts of this JobType.
      *
-     * @param JobTypePorte[] $parts The array of JobTypePorte of this jobType.
+     * @param \JobTypePorte[] $parts The array of JobTypePorte of this jobType.
      *
      * @throws
      * @author Marc-Olivier Bazin-Maurice
-     * @return JobType This JobType (for method chaining)
+     * @return \JobType This JobType (for method chaining)
      */
-    public function setParts(array $parts = array()) : JobType
+    public function setParts(array $parts = array()) : \JobType
     {
         $this->_parts = $parts;
         return $this;
@@ -505,9 +505,9 @@ class JobType extends \ModelTypeGeneric implements \JsonSerializable
      *
      * @throws
      * @author Marc-Olivier Bazin-Maurice
-     * @return JobTypePorte[] The array of JobTypePorte of this JobType
+     * @return \JobTypePorte[] The array of JobTypePorte of this JobType
      */
-    public function getParts() :array
+    public function getParts() : array
     {
         return $this->_parts;
     }
@@ -531,7 +531,7 @@ class JobType extends \ModelTypeGeneric implements \JsonSerializable
      * @author Marc-Olivier Bazin-Maurice
      * @return int The database connection locking read type applied to this object.
      */
-    private function getDatabaseConnectionLockingReadType() : int
+    public function getDatabaseConnectionLockingReadType() : int
     {
         return $this->__database_connection_locking_read_type;
     }

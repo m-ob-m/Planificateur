@@ -43,8 +43,9 @@
     		    /* @var $part JobTypePorte */
                 foreach($jobType->getParts() as $part)  
                 {
-                    $generic = $jobType->getType()->getGeneric();
-                    $externalProfile = $jobType->getParametersAsKeyValuePairs()["T_Ext"];
+					$generic = $jobType->getType()->getGeneric();
+					$defaultExternalProfile = $jobType->getType()->getGeneric()->getParametersAsKeyValuePairs()["T_Ext"];
+                    $externalProfile = $jobType->getParametersAsKeyValuePairs()["T_Ext"] ?? $defaultExternalProfile;
                     $modelId = $jobType->getModel()->getId();
                     $typeNo = $jobType->getType()->getImportNo();
                     $this->_csv .=  "{$modelId}_{$typeNo}_{$jobType->getId()};" . 

@@ -25,7 +25,7 @@
     {
         $db->getConnection()->beginTransaction();
         $generics = (new \GenericController())->getGenerics();
-        $type = isset($_GET["id"]) ? \Type::withID($db, $_GET["id"]) : new \Type();
+        $type = isset($_GET["id"]) ? \Type::withID($db, intval($_GET["id"])) : new \Type();
         $db->getConnection()->commit();
     }
     catch(\Exception $e)

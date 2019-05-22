@@ -112,7 +112,13 @@ class Carrousel implements JsonSerializable
 	public function addTool($tool, int $position = -1) 
 	{
 	    $toolNumber = $this->getToolNumber($tool);
-	    
+		
+		if($toolNumber == 0)
+		{
+			// 0 is not a valid tool.
+			return;
+		}
+		
 	    if($position === -1)
 	    {
 	        $newPosition = array_search("-", $this->_outils, TRUE);

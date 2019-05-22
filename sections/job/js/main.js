@@ -4,15 +4,14 @@
  * Redirects to the page of the specified batch
  * @param {int} batchId The id of the batch
  */
-function goToBatch(batchId)
+async function goToBatch(batchId)
 {
 	if(dataHasChanged() === true)
 	{
-		askConfirmation("Quitter cette job?", "Les modifications non sauvegardés seront perdues.")
-		.then(function(){
+		if(await askConfirmation("Quitter cette job?", "Les modifications non sauvegardés seront perdues."))
+		{
 			window.location.assign("/Planificateur/sections/batch/index.php?id=" + batchId);
-		})
-		.catch(function(){/* Do nothing. */});
+		}
 	}
 	else
 	{

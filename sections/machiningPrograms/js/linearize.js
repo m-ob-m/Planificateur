@@ -3,27 +3,33 @@
 /**
  * Initiates the simplification process.
  */
-function simplifyProgram()
+async function simplifyProgram()
 {
 	let args = null;
 	
 	$("#loadingModal").css({"display": "block"});
-	readFile($("input#inputFile")[0].files[0], "iso88591")
-	.then(function(inputFile){
-		args = [inputFile, $("input#outputFileName").val()];
-	})
-	.then(function(){
-		return validateInformation.apply(null, args);
-	})
-	.then(function(){
-		return linearize.apply(null, args);
-	})
-	.catch(function(error){
+	try{
+		let inputFilePath = $("input#inputFile")[0].files[0];
+		if(inputFilePath !== "" && inputFilePath !== null && inputFilePath !== undefined)
+		{
+			let inputFile = await readFile(inputFilePath, "iso88591");
+			args = [inputFile, $("input#outputFileName").val()];
+			if(validateInformation.apply(null, args))
+			{
+				await linearize.apply(null, args);
+			}
+		}
+		else
+		{
+			showError("La simplification du programme a échouée", "Aucun fichier n'a été sélectionné.");
+		}
+	}
+	catch(error){
 		showError("La simplification du programme a échouée", error);
-	})
-	.then(function(){
+	}
+	finally{
 		$("#loadingModal").css({"display": "none"});
-	});
+	}
 }
 
 /**
@@ -68,31 +74,31 @@ function linearize(inputFile, outputFileName)
  * @param {string} inputFile The contents of the input file
  * @param {string} outputFileName The desired name for the output file
  * 
- * @return {Promise}
+ * @return {bool} If information is valid, returns true. Otherwise, returns false.
  */
 function validateInformation(inputFile, outputFileName)
 {
-	return new Promise(function(resolve, reject){
-		let error = "";
-		if(inputFile === "" || inputFile === null || inputFile === undefined)
-		{
-			error += "Le programme d'entrée est vide. ";
-		}
-		
-		if(!(new RegExp("^.+\.mpr$", "i").test(outputFileName)))
-		{
-			error += "Le nom du programme de sortie doit posséder l'extension \"mpr\". "
-		}
-		
-		if(error === "")
-		{
-			resolve();
-		}
-		else
-		{
-			reject(error);
-		}
-	});
+	let err = "";
+	if(inputFile === "" || inputFile === null || inputFile === undefined)
+	{
+		err += "Le programme d'entrée est vide. ";
+	}
+	
+	if(!(new RegExp("^.+\.mpr$", "i").test(outputFileName)))
+	{
+		err += "Le nom du programme de sortie doit posséder l'extension \"mpr\". "
+	}
+	
+	// S'il y a erreur, afficher la fenêtre d'erreur
+	if(err == "")
+	{
+		return true;
+	}
+	else
+	{
+		showError("Les informations fournies ne sont pas valides", err);
+		return false;
+	}
 }
 
 /**

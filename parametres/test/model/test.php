@@ -107,7 +107,16 @@ class Test extends ModelTypeGeneric implements JsonSerializable
 	    return $instance;
 	}
 
-	static function fromModelTypeGeneric(\ModelTypeGeneric $modelTypeGeneric) : \Test
+	/**
+	 * Test constructor using ModelTypeGeneric
+	 *
+	 * @param \ModelTypeGeneric $modelTypeGeneric The ModelTypeGeneric to use as a base to create the Test
+	 *
+	 * @throws
+	 * @author Marc-Olivier Bazin-Maurice
+	 * @return \Test The Test object
+	 */ 
+	static function fromModelTypeGeneric(\ModelTypeGeneric $modelTypeGeneric) : \ModelType
 	{
 	    $model = $modelTypeGeneric->getModel();
 	    $type = $modelTypeGeneric->getType();
@@ -188,7 +197,7 @@ class Test extends ModelTypeGeneric implements JsonSerializable
 	    $stmt->bindValue(':type_no', $this->getType()->getImportNo(), PDO::PARAM_INT);
 	    $stmt->bindValue(':fichier_mpr', $this->getFichierMpr(), PDO::PARAM_STR);
 	    $stmt->execute();
-	    $this->setId($db->getConnection()->lastInsertId());
+	    $this->setId(intval($db->getConnection()->lastInsertId()));
         
 	    $this->deleteParametersFromDatabase($db);
 	    
@@ -322,7 +331,7 @@ class Test extends ModelTypeGeneric implements JsonSerializable
 	        $this->addParameter(new \TestParameter($this->getId(), $row['key'], $value));
 	    }
 	    
-	    return $this->setDatabaseConnectionLockingReadType($databaseConnectionLockingReadType);
+	    return $this;
 	}
 	
 	/**
@@ -487,7 +496,7 @@ class Test extends ModelTypeGeneric implements JsonSerializable
 	 * @author Marc-Olivier Bazin-Maurice
 	 * @return int The database connection locking read type applied to this object.
 	 */
-	private function getDatabaseConnectionLockingReadType() : int
+	public function getDatabaseConnectionLockingReadType() : int
 	{
 	    return $this->__database_connection_locking_read_type;
 	}

@@ -209,11 +209,11 @@
         return \FileFunctions\PathSanitizer::sanitize(
             "{$type->getDescription()}_{$model->getDescription()}.mpr", 
             array(
+                "fileNameMode" => true,
                 "allowSlashesInFilename" => false,
                 "transliterate" => true,
                 "fullyPortable" => true,
                 "simplify" => false,
-                "inputPathDelimiter" => "" /* This is a filename. */
             )
         );
     }

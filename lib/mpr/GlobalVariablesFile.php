@@ -15,7 +15,7 @@
         class MprGlobalParametersFile implements \JsonSerializable
         {
             public const SOURCE_PATH = WWGLOB_VAR;
-            public const DESTINATION_PATH = __DIR__ . "\\temp\\wwwglob.var";
+            private $destinationPath;
             private $parameters;
             
             /**
@@ -28,6 +28,20 @@
             public function __construct()
             {
                 $this->parameters = array();
+            }
+
+            public function __destruct()
+            {
+                if(file_exists($this->destinationPath) && is_file($this->destinationPath))
+                {
+                    try{
+                        unlink($this->destinationPath);
+                    }
+                    catch(\Exception $e)
+                    {
+                        /* File will be deleted later. */
+                    }
+                }
             }
             
             /**
@@ -75,21 +89,11 @@
              */ 
             private function obtainWorkingCopy() : \MprGlobalParameters\MprGlobalParametersFile
             {
-                /* Create the location for the working copy of the global variables file if it doesn't exist. */
-                $sourceDirectoryPath = dirname(self::SOURCE_PATH);
-                $destinationDirectoryPath = dirname(self::DESTINATION_PATH);
-                if(!file_exists($destinationDirectoryPath))
-                {
-                    mkdir($destinationDirectoryPath, 0777);
-                }
-                
                 /* Acquire a working copy of the global variables file */
-                if(!copy(self::SOURCE_PATH, self::DESTINATION_PATH))
+                $this->destinationPath = tempnam(__DIR__ . "/temp/", null);
+                if(!copy(self::SOURCE_PATH, $this->destinationPath))
                 {
-                    if(!file_exists(self::DESTINATION_PATH))
-                    {
-                        throw new \Exception("The system failed to obtain a copy of the global variables file.");
-                    }
+                    throw new \Exception("The system failed to obtain a copy of the global variables file.");
                 }
                 
                 return $this;
@@ -104,12 +108,12 @@
              */ 
             private function read() : ?string
             {
-                $fileHandle = fopen(self::DESTINATION_PATH, "r");
+                $fileHandle = fopen($this->destinationPath, "r");
                 if(!$fileHandle)
                 {
                     throw new \Exception("The system failed to read the global variables file.");
                 }
-                $fileContents = fread($fileHandle, filesize(self::DESTINATION_PATH));
+                $fileContents = fread($fileHandle, filesize($this->destinationPath));
                 fclose($fileHandle);
                 
                 return $fileContents;

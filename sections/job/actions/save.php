@@ -29,6 +29,11 @@ try
     {
         $db->getConnection()->beginTransaction();
         $job = buildJob($db, $inputJob)->save($db);
+        $batch = $job->getParentBatch($db, \MYSQLDatabaseLockingReadTypes::FOR_UPDATE);
+        if($batch !== null)
+        {
+            $batch->setMprStatus("N")->updateCarrousel()->save($db);
+        }
         $db->getConnection()->commit();
     }
     catch(\Exception $e)
@@ -116,7 +121,7 @@ function buildJob(\FabPlanConnection $db, \stdClass $inputJob) : \Job
             }
             else
             {
-                $mprfile = $inputJobType->mprFile;
+                $mprFile = $inputJobType->mprFile;
             }
             
             $jobType = new \JobType($inputJobType->id, $inputJob->id, $model, $type,

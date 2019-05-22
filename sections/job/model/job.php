@@ -145,7 +145,7 @@ class Job implements JsonSerializable
 	    
 	    while($row = $stmt->fetch())	// Récupération des paramètres
 	    {
-	        array_push($instance->_jobTypes, Jobtype::withID($db, $row["id"]));
+	        array_push($instance->_jobTypes, \Jobtype::withID($db, $row["id"]));
 	    }
 	    
 	    $instance->setDatabaseConnectionLockingReadType($databaseConnectionLockingReadType);
@@ -169,7 +169,6 @@ class Job implements JsonSerializable
 	    $stmt->bindValue(':id', $this->getId(), PDO::PARAM_INT);
 	    $stmt->execute();
 	    
-	    $this->emptyInDatabase($db);
 	    if($stmt->fetch(PDO::FETCH_ASSOC) == null)
 	    {
 	        $this->insert($db);
@@ -192,7 +191,7 @@ class Job implements JsonSerializable
 	        }
 	        else
 	        {
-	            $this->update($db);
+	            $this->emptyInDatabase($db)->update($db);
 	        }
 	    }
 	    
@@ -221,11 +220,12 @@ class Job implements JsonSerializable
 	    $stmt->bindValue(':deliveryDate', $this->getDeliveryDate(), PDO::PARAM_STR);
 	    $stmt->bindValue(':status', $this->getStatus(), PDO::PARAM_STR);
 	    $stmt->execute();
-	    $this->setId($db->getConnection()->lastInsertId());
-	    
-	    foreach($this->_jobTypes as $jobType)
+	    $this->setId(intval($db->getConnection()->lastInsertId()));
+		
+		/* @var \JobType $jobType */
+	    foreach($this->getJobTypes() as $jobType)
 	    {
-	        $jobtype->save($db);
+	        $jobType->setJobId($this->getId())->save($db);
 	    }
 	    
 	    return $this;
@@ -324,7 +324,7 @@ class Job implements JsonSerializable
 	 * @author Marc-Olivier Bazin-Maurice
 	 * @return JobType This JobType (for method chaining)
 	 */
-	public function emptyInDatabase(\FabPlanConnection $db) : \Job
+	private function emptyInDatabase(\FabPlanConnection $db) : \Job
 	{
 	    $stmt = $db->getConnection()->prepare("
             SELECT `jt`.`id_job_type` AS `jobTypeId` FROM `fabplan`.`job_type` AS `jt` 
@@ -384,7 +384,8 @@ class Job implements JsonSerializable
 	 */
 	public function setId(?int $id = null) : \Job
 	{
-	    $this->_id = $id;
+		$this->_id = $id;
+		
 	    return $this;
 	}
 	
@@ -554,7 +555,7 @@ class Job implements JsonSerializable
 	 * @author Marc-Olivier Bazin-Maurice
 	 * @return int The database connection locking read type applied to this object.
 	 */
-	private function getDatabaseConnectionLockingReadType() : int
+	public function getDatabaseConnectionLockingReadType() : int
 	{
 	    return $this->__database_connection_locking_read_type;
 	}
