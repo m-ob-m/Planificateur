@@ -1,40 +1,34 @@
 "use strict";
 
-$(function()
+$(async function()
 	{
-		refreshParameters()
-		.catch(function(){/* Do nothing. */});
+		await refreshParameters()
 	}
 );
 
 
 /**
  * Refreshes the parameters list
- * 
- * @return {Promise}
  */
-function refreshParameters()
+async function refreshParameters()
 {
 	let id = parseInt($("select#generic option:selected").val());
 	
-	$('#loadingModal').css({"display": "block"});
-	return retrieveParameters(id)
-	.then(function(parameters){
+	try{
 		$("table#parametersTable >tbody >tr").remove();
+		let parameters = await retrieveParameters(id);
 		$(parameters).each(function(){
 			$("table#parametersTable >tbody").append(newParameter(this));
 		});
-		
+
 		if(parameters.length < 1)
 		{
 			$("table#parametersTable >tbody").append(newParameter());
 		}
-		$('#loadingModal').css({"display": "none"});
-	})
-	.catch(function(error){
+	}
+	catch(error){
 		showError("Le rafraîchissement des paramètres a échoué", error);
-		return Promise.reject();
-	})
+	}
 }
 
 /**
@@ -76,89 +70,80 @@ function retrieveParameters(id)
  * @param {int} id The id of the desired Generic
  * @param {array} parameters The parameters as an array
  * 
- * @return {Promise}
+ * @return {bool} If information is valid, returns true. Otherwise, returns false.
  */
 function validateInformation(id, parameters)
 {
-	return new Promise(function(resolve, reject){
-		let err = "";
+	let err = "";
+	
+	// Validation des parametres pour chaque parametre
+	$(parameters).each(function(index){
 		
-		// Validation des parametres pour chaque parametre
-		$(parameters).each(function(index){
-			
-			if(!(new RegExp("^\\S+$")).test(this.key))
-			{
-				err += "La clé du paramètre de la ligne \"" + (this.index + 1) + "\" est vide ou contient des espaces blancs. ";
-				return;
-			}
-			
-			if(!this.value.trim())
-			{
-				err += "La valeur du paramètre ayant la clé \"" + this.key + "\" est vide. ";
-			}
-			
-			if(!this.description.trim())
-			{
-				err += "La description du paramètre ayant la clé \"" + this.key + "\" est vide. ";
-			}
-			
-			if(this.quickEdit !== 0 && this.quickEdit !== 1)
-			{
-				err += "Le paramètre de l'édition rapide peut seulement prendre les valeurs \"0\" ou \"1\". ";
-			}
-		});
-				
-		if(!isPositiveInteger(id) && id !== "" && id !== null)
+		if(!(new RegExp("^\\S+$")).test(this.key))
 		{
-			err += "L'identificateur unique doit être un entier positif. ";
+			err += "La clé du paramètre de la ligne \"" + (this.index + 1) + "\" est vide ou contient des espaces blancs. ";
+			return;
 		}
 		
-		// S'il y a erreur, afficher la fenêtre d'erreur
-		if(err !== "")
+		if(!this.value.trim())
 		{
-			reject(err);
+			err += "La valeur du paramètre ayant la clé \"" + this.key + "\" est vide. ";
 		}
-		else
+		
+		if(!this.description.trim())
 		{
-			resolve();
+			err += "La description du paramètre ayant la clé \"" + this.key + "\" est vide. ";
+		}
+		
+		if(this.quickEdit !== 0 && this.quickEdit !== 1)
+		{
+			err += "Le paramètre de l'édition rapide peut seulement prendre les valeurs \"0\" ou \"1\". ";
 		}
 	});
+			
+	if(!isPositiveInteger(id) && id !== "" && id !== null)
+	{
+		err += "L'identificateur unique doit être un entier positif. ";
+	}
+	
+	// S'il y a erreur, afficher la fenêtre d'erreur
+	if(err == "")
+	{
+		return true;
+	}
+	else
+	{
+		showError("Les informations du modèle ne sont pas valides", err);
+		return false;
+	}
 }
 
 /**
  * Prompts user to confirm the saving of the current Generic Parameters.
- * 
- * @return {Promise}
  */
-function saveConfirm()
+async function saveConfirm()
 {
 	let generic = $("select#generic option:selected");
 	let args = [generic.val(), getParametersArray()];
 	let confirmationMessage = "Voulez-vous vraiment sauvegarder ces paramètres pour le générique : \"" + generic.text()  + "\"?";
 	
-	return validateInformation.apply(null, args)
-	.catch(function(error){
-		showError("La sauvegarde des paramètres du générique a échouée", error);
-		return Promise.reject();
-	})
-	.then(function(){
-		return askConfirmation("Sauvegarde de paramètres de générique", confirmationMessage)
-		.then(function(){
+	if(validateInformation.apply(null, args))
+	{
+		if(await askConfirmation("Sauvegarde de paramètres de générique", confirmationMessage))
+		{
 			$('#loadingModal').css({"display": "block"});
-			return saveParameters.apply(null, args)
-			.catch(function(error){
+			try{
+				await saveParameters.apply(null, args);
+				openGenericParameters(generic.val());
+			}
+			catch(error){
 				showError("La sauvegarde des paramètres du générique a échouée", error);
-				return Promise.reject();
-			})
-			.then(function(){
-				openGenericParameters(id);
-			})
-			.finally(function(){
+			}
+			finally{
 				$('#loadingModal').css({"display": "none"});
-			});
-		});
-	})
-	.catch(function(){/* Do nothing. */});
+			}
+		}
+	}
 }
 
 /**

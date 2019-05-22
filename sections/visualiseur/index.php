@@ -12,6 +12,7 @@
     include_once __DIR__ . "/../batch/controller/batchController.php";
     include_once __DIR__ . "/model/collectionPanneaux.php";
     
+    $error = null;
     $batch = null;
     $db = new \FabPlanConnection();
     try
@@ -23,7 +24,6 @@
     catch(\Exception $e)
     {
         $db->getConnection()->rollback();
-        throw $e;
     }
     finally
     {
@@ -47,7 +47,16 @@
         fclose($cttFile);
     }
     
-    $collection = (new \CollectionPanneaux($batch, $pc2FileContents, $cttFileContents));
+    $collection = null;
+    try
+    {
+        $collection = (new \CollectionPanneaux($batch, $pc2FileContents, $cttFileContents));
+    }
+    catch(\Exception $e)
+    {
+        /* Do nothing. */
+    }
+    
     
     $now = time();
     
@@ -109,7 +118,7 @@
 	<body style="background-image: none; background-color: #FFFFFF;">
 		<div style="display: flex; flex-flow: row;">
 			<div style="flex: 1 1 auto;">
-			<?php if(!empty($collection->getPanneaux())): ?>
+			<?php if($collection !== null && !empty($collection->getPanneaux())): ?>
             	<?php foreach($collection->getPanneaux() as $index => $panneau): ?>
         			<div class="pannelContainer" style="page-break-after: always;">
                     	<!-- Entete de navigation (on veut l'avoir sur chaque page lors de l'impression) -->
@@ -188,7 +197,7 @@
     	</div>
     	
     	<!--  Fenêtre modale pour messages d'erreur -->
-		<div id="errMsgModal" class="modal" onclick='$(this).css({"display": "none"});'>
+		<div id="errMsgModal" class="modal" onclick='$(this).css({"display": "none"})'>
 			<div id="errMsg" class="modal-content" style='color:#FF0000;'></div>
 		</div>
     	

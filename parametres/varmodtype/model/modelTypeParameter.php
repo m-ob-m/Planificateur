@@ -170,22 +170,15 @@ class ModelTypeParameter extends \Parameter
      */
     public function delete(\FabPlanConnection $db) : \ModelTypeParameter
     {
-        if($this->getDatabaseConnectionLockingReadType() !== \MYSQLDatabaseLockingReadTypes::FOR_UPDATE)
-        {
-            throw new \Exception("The provided " . get_class($this) . " is not locked for update.");
-        }
-        else
-        {
-            $stmt = $db->getConnection()->prepare("
-                DELETE FROM `fabplan`.`door_model_data`
-                WHERE `door_model_data`.`fkDoorModel` = :modelId AND `door_model_data`.`fkDoorType` = :typeNo 
-                    AND `door_model_data`.`paramKey` = :key;
-            ");
-            $stmt->bindValue(':key', $this->getKey(), PDO::PARAM_STR);
-            $stmt->bindValue(':modelId', $this->getModelId(), PDO::PARAM_INT);
-            $stmt->bindValue(':typeNo', $this->getTypeNo(), PDO::PARAM_INT);
-            $stmt->execute();
-        }
+        $stmt = $db->getConnection()->prepare("
+            DELETE FROM `fabplan`.`door_model_data`
+            WHERE `door_model_data`.`fkDoorModel` = :modelId AND `door_model_data`.`fkDoorType` = :typeNo 
+                AND `door_model_data`.`paramKey` = :key;
+        ");
+        $stmt->bindValue(':key', $this->getKey(), PDO::PARAM_STR);
+        $stmt->bindValue(':modelId', $this->getModelId(), PDO::PARAM_INT);
+        $stmt->bindValue(':typeNo', $this->getTypeNo(), PDO::PARAM_INT);
+        $stmt->execute();
         
         return $this;
     }

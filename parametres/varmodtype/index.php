@@ -78,6 +78,11 @@
     								Exporter</a>
     							</li>
     							<li>
+    								<a href="javascript: void(0);" onclick="importParameters();" class="imageButton">
+    									<img src="/Planificateur/images/export32.png">
+    								Importer</a>
+    							</li>
+    							<li>
     								<a href="javascript: void(0);" onclick="saveConfirm();" class="imageButton">
     									<img src="/Planificateur/images/save.png">
     								Sauvegarder</a>
@@ -96,6 +101,10 @@
 		    <!-- Parameters -->
 			<div id="features-wrapper">
 				<div class="container">
+					<form id="fileImportationForm" class="parametersForm" action="javascript: void(0);" style="display: none;">
+						<input type="file" id="filesToImport" name="fileToImport[]" accept=".xlsx">
+					</form>
+					
 					<!-- Sélection du modèle/type dont on veut éditer les paramètres par défaut -->
         			<form id="modelTypeSelectionForm" class="parametersForm" action="javascript: void(0);" 
         				onSubmit="refreshParameters();">
@@ -104,7 +113,7 @@
             					<label for="type">Type :
                 					<select id="type" name="type" onchange="$('#modelTypeSelectionForm').submit();">
                         				<?php foreach($types as $type):?>
-                        					<?php $selected =  (($selectedTypeNo == $type->getImportNo()) ? "selected" : ""); ?>
+                        					<?php $selected = ($selectedTypeNo == $type->getImportNo()) ? "selected" : ""; ?>
                         					<option value=<?= $type->getImportNo(); ?> <?= $selected; ?>>
                         						<?= $type->getDescription(); ?>
                         					</option>

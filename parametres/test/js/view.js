@@ -1,83 +1,68 @@
 "use strict";
 
-$(function(){
-	refreshParameters()
-	.catch(function(){/* Do nothing. */});
+$(async function(){
+	await refreshParameters();
+	$("input#mprFileDialog").change(async function(){
+		readMpr($(this).prop('files')[0]);
+		$(this).val("");
+	})
 });
 
 /**
  * Display a message to validate the fact that the user wants to delete this Test
- * 
- * @return {Promise}
  */
-function deleteConfirm()
+async function deleteConfirm()
 {
-	return askConfirmation("Suppression de test", "Voulez-vous vraiment supprimer ce test?")
-	.then(function(){
+	if(await askConfirmation("Suppression de test", "Voulez-vous vraiment supprimer ce test?"))
+	{
 		$("#loadingModal").css({"display": "block"});
-		return deleteTest($("#id").val())
-		.catch(function(error){
-			showError("La suppression du test a échouée", error);
-			return Promise.reject();
-		})
-		.then(function(){
+		try{
+			await deleteTest($("#id").val());
 			goToIndex();
-		})
-		.finally(function(){
+		}
+		catch(error){
+			showError("La suppression du test a échouée", error);
+		}
+		finally{
 			$("#loadingModal").css({"display": "none"});
-		});
-	})
-	.catch(function(){/* Do nothing. */});
+		}
+	}
 }
 
 /**
  * Prompts user to confirm the saving of the current Test.
- * 
- * @return {Promise}
  */
-function saveConfirm()
+async function saveConfirm()
 {	
 	let parameters = getModifiedParametersArray();
 	let mpr = ($("#parametersEditionTextArea").length > 0) ? $("#parametersEditionTextArea").val() : null;  
 	let testId = ($("#id").val() && 0 !== $("#id").val().length) ? $("#id").val() : null;
 	let args = [testId, $("#name").val(), $("#model").val(), $("#type").val(), mpr, parameters];
 	
-	return validateInformation.apply(null, args)
-	.then(function(){
-		return askConfirmation("Sauvegarde de test", "Voulez-vous vraiment sauvegarder ce test?")
-		.then(function(){
+	if(validateInformation.apply(null, args))
+	{
+		if(await askConfirmation("Sauvegarde de test", "Voulez-vous vraiment sauvegarder ce test?"))
+		{
 			$("#loadingModal").css({"display": "block"});
-			return saveTest.apply(null, args)
-			.catch(function(error){
-				return Promise.reject({"title": "La sauvegarde du test a échouée", "message": error});
-			})
-			.then(function(id){
+			try{
+				let id = await saveTest.apply(null, args);
 				$("input#id").val(id);
-				return createMachiningProgram(id)
-				.catch(function(error){
-					return Promise.reject({"title": "La généation du programme d'usinage du test a échouée", "message": error});
-				});
-			})
-			.catch(function(error){
-				if((typeof error === "object") && (error !== null))
-				{
-					showError(error.title, error.message);
+				try{
+					await createMachiningProgram(id);
+					openTest(id);
 				}
-				else
-				{
-					showError("La sauvegarde du test a échouée", error);
+				catch(error){
+					showError("La généation du programme d'usinage du test a échouée", error);
 				}
-				return Promise.reject();
-			})
-			.then(function(id){
-				openTest(id);
-			})
-			.finally(function(){
+			}
+			catch(error){
+				showError("La sauvegarde du test a échouée", error);
+			}
+			finally{
 				$("#loadingModal").css({"display": "none"});
-			});
-		});
-	})
-	.catch(function(){/* Do nothing. */});
+			}
+		}
+	}
 }
 
 /**
@@ -110,61 +95,62 @@ function getModifiedParametersArray()
  * @param {string} typeNo The import number of the type associated to this Test
  * @param {string} mpr The contents of the mpr file associated to this Test.
  * @param {object array} parameters The parameters of this Test
+ * 
+ * @return {bool} If information is valid, returns true. Otherwise, returns false.
  */
 function validateInformation(id, name, modelId, typeNo, mpr, parameters)
 {
-	return new Promise(function(resolve, reject){
-		let err = "";
-			
-		// Validation des parametres
-		if(parameters.length > 0)
-		{
-			$(parameters).each(function(index){
-					if(!(new RegExp("^\\S+$")).test(this.key))
-					{
-						err += "La clé du paramètre de la ligne \"" + this.index + 1 + "\" " +
-							"est vide ou contient des espaces blancs.";
-						return;
-					}
-					
-					if(!this.value.trim())
-					{
-						err += "Le paramètre de la clé " + this.key + " n'a pas de valeur.";
-					}
+	let err = "";
+		
+	// Validation des parametres
+	if(parameters.length > 0)
+	{
+		$(parameters).each(function(index){
+				if(!(new RegExp("^\\S+$")).test(this.key))
+				{
+					err += "La clé du paramètre de la ligne \"" + this.index + 1 + "\" " +
+						"est vide ou contient des espaces blancs.";
+					return;
 				}
-			);
-		}
-			
-		if(!isPositiveInteger(id) && id !== "" && id !== null)
-		{
-			err += "L'identificateur unique doit être un entier positif.";
-		}
+				
+				if(!this.value.trim())
+				{
+					err += "Le paramètre de la clé " + this.key + " n'a pas de valeur.";
+				}
+			}
+		);
+	}
 		
-		if(!(new RegExp("^[A-Za-z0-9_]+$")).test(name))
-		{
-			err += "Le nom du test ne peut pas être vide et ne doit contenir que des caractères alphanumériques et des \"_\".";
-		}
-		
-		if(!isPositiveInteger(modelId))
-		{
-			err += "Le modèle sélectionné présente une erreur.";
-		}
-		
-		if(!isPositiveInteger(typeNo))
-		{
-			err += "Le type sélectionné présente une erreur.";
-		}
+	if(!isPositiveInteger(id) && id !== "" && id !== null)
+	{
+		err += "L'identificateur unique doit être un entier positif.";
+	}
 	
-		if(err != "")
-		{
-			showError("La sauvegarde du test a échouée", err);
-			reject(err);
-		}
-		else
-		{
-			resolve();
-		}
-	});
+	if(!(new RegExp("^[A-Za-z0-9_]+$")).test(name))
+	{
+		err += "Le nom du test ne peut pas être vide et ne doit contenir que des caractères alphanumériques et des \"_\".";
+	}
+	
+	if(!isPositiveInteger(modelId))
+	{
+		err += "Le modèle sélectionné présente une erreur.";
+	}
+	
+	if(!isPositiveInteger(typeNo))
+	{
+		err += "Le type sélectionné présente une erreur.";
+	}
+
+	// S'il y a erreur, afficher la fenêtre d'erreur
+	if(err == "")
+	{
+		return true;
+	}
+	else
+	{
+		showError("Les informations du modèle ne sont pas valides", err);
+		return false;
+	}
 } 
 
 /**
@@ -251,10 +237,8 @@ function newParameter(parameter, isNew)
 
 /**
  * Refreshes the parameters.
- * 
- * @return {Promise}
  */
-function refreshParameters()
+async function refreshParameters()
 {
 	/* Read the test's id. */
 	let testId = ($("#id").val() && 0 !== $("#id").val().length) ? parseInt($("#id").val()) : null;
@@ -264,68 +248,60 @@ function refreshParameters()
 	$("#parametersEditorContainer").empty();
 	if(modelId === 2)
 	{
-		return refreshParametersCustom(testId)
-		.catch(function(error){
+		try{
+			await refreshParametersCustom(testId);
+		}
+		catch(error){
 			showError("La récupération des paramètres a échouée", error);
-		});
+		}
 	}
 	else
 	{
-		return refreshParametersStandard(testId, modelId, typeNo)
-		.catch(function(error){
+		try{
+			await refreshParametersStandard(testId, modelId, typeNo);
+		}
+		catch(error){
 			showError("La récupération des paramètres a échouée", error);
-		});
+		}
 	}
 }
 
 /**
  * Refreshes the parameters editor using the custom program style.
  * @param {int} id The unique identifier of this Test
- * 
- * @return {Promise}
  */
-function refreshParametersCustom(id)
+async function refreshParametersCustom(id)
 {
-	return new Promise(function(resolve, reject){
-		$("html").css({"height": "100%"});
-		$("body").css({"height": "100%"});
-		$("#page-wrapper").css({"display": "flex", "flex-flow": "column", "height": "100%"});
-		$("#header-wrapper").css({"flex": "0 1 auto"});
-		$("#features-wrapper").css({"flex": "1 1 auto", "display": "flex", "flex-flow": "column"});
-		$("#parametersFormContainer").css({"flex": "0 1 auto"});
-		
-		$("#parametersEditorContainer")
-		.css({"flex": "1 1 auto", "display": "flex", "flex-flow": "column"})
-		.append(makeCustomTextArea().attr({"id": "parametersEditionTextArea"}));
-		
-		if(id === null)
-		{
-			$("textArea#parametersEditionTextArea").val("");
-			$("div#mprFileDialogContainer").show();
+	$("html").css({"height": "100%"});
+	$("body").css({"height": "100%"});
+	$("#page-wrapper").css({"display": "flex", "flex-flow": "column", "height": "100%"});
+	$("#header-wrapper").css({"flex": "0 1 auto"});
+	$("#features-wrapper").css({"flex": "1 1 auto", "display": "flex", "flex-flow": "column"});
+	$("#parametersFormContainer").css({"flex": "0 1 auto"});
+	
+	$("#parametersEditorContainer")
+	.css({"flex": "1 1 auto", "display": "flex", "flex-flow": "column"})
+	.append(makeCustomTextArea().attr({"id": "parametersEditionTextArea"}));
+	
+	if(id === null)
+	{
+		$("textArea#parametersEditionTextArea").val("");
+		$("div#mprFileDialogContainer").show();
+	}
+	
+	let mpr = "";
+	if(id !== null && id !== "")
+	{
+		try{
+			mpr = await retrieveCustomMpr(id);
 		}
-		
-		return new Promise(function(resolve, reject){
-			if(id !== null && id !== "")
-			{
-				retrieveCustomMpr(id)
-				.then(function(mpr){
-					resolve(mpr);
-				});
-			}
-			else
-			{
-				resolve("");
-			}
-		})
-		.catch(function(error){
-			reject(error);
-		})
-		.then(function(mpr){
-			$("textArea#parametersEditionTextArea").val(mpr);
-			$("div#mprFileDialogContainer").show();
-			resolve();
-		});
-	});
+		catch(error){
+			showError("La récupération du contenu du fichier mpr associé à ce test a échouée", error);
+		}
+	}
+
+	$("textArea#parametersEditionTextArea").val(mpr);
+	$("div#mprFileDialogContainer").show();
 }
 
 /**
@@ -333,33 +309,28 @@ function refreshParametersCustom(id)
  * @param {int} id The unique identifier of this Test
  * @param {int} modelId The unique identifier of the model
  * @param {int} typeNo The type's import number
- * 
- * @return {Promise}
  */
-function refreshParametersStandard(testId, modelId, typeNo)
+async function refreshParametersStandard(testId, modelId, typeNo)
 {
-	return new Promise(function(resolve, reject){
-		$("html").css({"height": "auto"});
-		$("body").css({"height": "auto"});
-		$("#page-wrapper").css({"display": "block", "height": "auto"});
-		$("#header-wrapper").css({"flex": "none"});
-		$("#features-wrapper").css({"flex": "none", "display": "block"});
-		$("#parametersFormContainer").css({"flex": "none"});
-		
-		$("#parametersEditorContainer")
-		.css({"flex": "none", "display": "block"})
-		.append(makeStandardParametersTable().attr({"id": "parametersTable"}));
-		
-		return retrieveParameters(testId, modelId, typeNo)
-		.catch(function(error){
-			reject(error);
-		})
-		.then(function(parameters){
-			fillStandardParametersTable(parameters, testId === null);
-			$("div#mprFileDialogContainer").hide();
-			resolve();
-		});
-	});
+	$("html").css({"height": "auto"});
+	$("body").css({"height": "auto"});
+	$("#page-wrapper").css({"display": "block", "height": "auto"});
+	$("#header-wrapper").css({"flex": "none"});
+	$("#features-wrapper").css({"flex": "none", "display": "block"});
+	$("#parametersFormContainer").css({"flex": "none"});
+	
+	$("#parametersEditorContainer")
+	.css({"flex": "none", "display": "block"})
+	.append(makeStandardParametersTable().attr({"id": "parametersTable"}));
+	
+	try{ 
+		let parameters = await retrieveParameters(testId, modelId, typeNo);
+		fillStandardParametersTable(parameters, testId === null);
+		$("div#mprFileDialogContainer").hide();
+	}
+	catch(error){
+		showError("La récupération des paramètres de ce test a échouée", error);
+	}
 }
 
 /**
@@ -415,7 +386,7 @@ function makeStandardParametersTable()
 function fillStandardParametersTable(parameters, isCreating = false)
 {
 	$("table#parametersTable >tbody >tr").remove();
-	if(parameters !== undefined && parameters.length > 0)
+	if(parameters.length > 0)
 	{
 		$(parameters).each(function(){
 			$("table#parametersTable >tbody").append(newParameter(this, isCreating));
@@ -439,18 +410,16 @@ function makeCustomTextArea()
 /**
  * Reads the content of an mpr file and displays it.
  * @param {string} filepath The path to the mpr file
- * 
- * @return {Promise}
  */
-function readMpr(filepath)
+async function readMpr(filepath)
 {
-	return readFile(filepath, "iso88591")
-	.then(function(mpr){
+	try{
+		let mpr = await readFile(filepath, "iso88591");
 		$("textarea#parametersEditionTextArea").val(mpr);
-	})
-	.catch(function(error){
+	}
+	catch(error){
 		showError("La lecture du fichier a échouée", error);
-	});
+	}
 }
 
 /**

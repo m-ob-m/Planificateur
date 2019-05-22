@@ -152,6 +152,11 @@ $batchId = $_GET["batchId"] ?? null;
 									onchange="readMpr.apply($(this).prop('files')[0], $('#parametersEditionTextArea'));">
 							</td>
 						</tr>
+						<tr>
+							<td class="firstVisibleColumn lastVisibleColumn" colspan=2>
+								<!-- This td is only here to ensure that the last row of this table is visible. -->
+							</td>
+						</tr>
 					</tbody>
 				</table>
 				<div id="customFileTableBody" style="display: none;">

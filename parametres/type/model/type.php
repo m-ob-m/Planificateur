@@ -177,7 +177,7 @@ class Type implements \JsonSerializable
         $stmt->bindValue(':description', $this->getDescription(), PDO::PARAM_STR);
         $stmt->bindValue(":generic_id", $this->getGeneric()->getId(), PDO::PARAM_INT);
         $stmt->execute();
-        $this->_id = $db->getConnection()->lastInsertId();
+        $this->_id = intval($db->getConnection()->lastInsertId());
         
         return $this;
 	}
@@ -455,7 +455,7 @@ class Type implements \JsonSerializable
 	 * @author Marc-Olivier Bazin-Maurice
 	 * @return int The database connection locking read type applied to this object.
 	 */
-	private function getDatabaseConnectionLockingReadType() : int
+	public function getDatabaseConnectionLockingReadType() : int
 	{
 	    return $this->__database_connection_locking_read_type;
 	}
