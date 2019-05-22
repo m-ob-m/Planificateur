@@ -47,7 +47,8 @@ try
     try
     {
         $db->getConnection()->beginTransaction();
-        $generic = \Generic::withID($db, $genericId)->setGenericParameters($parametersArray)->save($db, true);
+        $generic = \Generic::withID($db, $genericId, \MYSQLDatabaseLockingReadTypes::FOR_UPDATE);
+        $generic->setGenericParameters($parametersArray)->save($db, true);
         $db->getConnection()->commit();
     }
     catch(\Exception $e)
@@ -79,7 +80,7 @@ finally
  *
  * @param array The array of parameters submitted by the user.
  *
- * @throws Exception if there is a problem with the data
+ * @throws \Exception if there is a problem with the data
  * @author Marc-Olivier Bazin-Maurice
  * @return
  */ 
@@ -90,15 +91,15 @@ function findErrorsInParametersArray(array $parameters) : void
     {
         if($parameter->getKey() === "" || $parameter->getKey() === null)
         {
-            throw new Exception("An empty key was found.");
+            throw new \Exception("An empty key was found.");
         }
         elseif(!preg_match("/^[a-zA-Z_]\w{0,7}$/", $parameter->getKey()))
         {
-            throw new Exception("The key \"{$parameter->getKey()}\" is not valid.");
+            throw new \Exception("The key \"{$parameter->getKey()}\" is not valid.");
         }
         elseif(array_search($parameter->getKey(), $keyRegistry, true) !== false)
         {
-            throw new Exception("A duplicate of key \"{$parameter->getKey()}\" was found.");
+            throw new \Exception("A duplicate of key \"{$parameter->getKey()}\" was found.");
         }
         else
         {

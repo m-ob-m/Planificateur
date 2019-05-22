@@ -41,11 +41,13 @@ class ModelTypeGenericController
 	 *
 	 * @throws 
 	 * @author Marc-Olivier Bazin-Maurice
-	 * @return ModelTypeGeneric The ModelTypeGeneric object with $modelId as model id and $typeNo as type import number
+	 * @return \ModelTypeGeneric The ModelTypeGeneric object with $modelId as model id and $typeNo as type import number
 	 */ 
-    public function getModelTypeGeneric(int $modelId, int $typeNo) : ModelTypeGeneric
+    public function getModelTypeGeneric(int $modelId, int $typeNo) : \ModelTypeGeneric
     {
-        return (new ModelTypeGeneric($modelId, $typeNo))->loadParameters($this->_db);
+        $model = \Model::withID($this->_db, $modelId);
+        $type = \Type::withImportNo($this->_db, $typeNo);
+        return (new \ModelTypeGeneric($model, $type))->loadParameters($this->_db);
     }
     
     public function connexion()

@@ -37,16 +37,12 @@ class FabPlanConnection
 	
 	
 	/**
-	 * \name		getConnection
-	 * \author    	Mathieu Grenier
-	 * \version		1.0
-	 * \date       	2017-01-16
-	 *
-	 * \brief       Retourne la connection PDO à la base de donn�es
-	 *
-	 * \return    	Connection PDO à la base de donn�es
+	 * Retourne la connexion \PDO à la base de données.
+	 * 
+	 * @return \PDO
 	 */
-	public function getConnection(){
+	public function getConnection() : \PDO
+	{
 		return $this->_pdo;
 	}
 }

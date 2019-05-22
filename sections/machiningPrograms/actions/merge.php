@@ -15,7 +15,7 @@
     // Structure de retour vers javascript
     $responseArray = array("status" => null, "success" => array("data" => null), "failure" => array("message" => null));
     
-    set_time_limit(3 * 60);
+    set_time_limit(30 * 60);
     $filesToDelete = array();
     try
     {
@@ -30,7 +30,7 @@
         
         // Vérification des paramètres
         $inputFiles = $data->inputFiles ?? null;
-        $outputFileName = \FileFunctions\PathSanitizer::sanitize($data->outputFileName ?? null, array("inputPathDelimiter" => ""));
+        $outputFileName = \FileFunctions\PathSanitizer::sanitize($data->outputFileName ?? null, array("fileNameMode" => true,));
         $variables = $data->variables ?? array();
         
         if(!is_array($inputFiles) || empty($inputFiles))

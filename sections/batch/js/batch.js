@@ -1,3 +1,5 @@
+"use strict";
+
 /**
  * Retrieves the status of a batch
  * 

@@ -4,7 +4,7 @@
 	Free for personal and commercial use under the CCA 3.0 license (html5up.net/license)
 */
 
-(function($) {
+(function($){
 
 	skel.breakpoints({
 		xlarge: '(max-width: 1680px)',
@@ -12,71 +12,53 @@
 		medium: '(max-width: 980px)',
 		small: '(max-width: 736px)'
 	});
-	
-	$body = $('body');
-	$window = $(window);
 
 	// Disable animations/transitions until the page has loaded.
-	$body.addClass('is-loading');
+	$("body").addClass('is-loading');
 	
-	$window.on('load', function() {
-		$body.removeClass('is-loading');
+	$(window).on('load', function(){
+		$("body").removeClass('is-loading');
 	});
 		
 	$(function() {
 		// Fix: Placeholder polyfill.
-			$('form').placeholder();
+		$('form').placeholder();
 
 		// Prioritize "important" elements on medium.
-			skel.on('+medium -medium', function() {
-				$.prioritize(
-					'.important\\28 medium\\29',
-					skel.breakpoint('medium').active
-				);
-			});
+		skel.on('+medium -medium', function() {
+			$.prioritize('.important\\28 medium\\29', skel.breakpoint('medium').active);
+		});
 
 		// Dropdowns.
-			$('#nav > ul').dropotron({
-				mode: 'fade',
-				noOpenerFade: true,
-				speed: 300
-			});
+		$("#nav > ul").dropotron({
+			"mode": "fade",
+			"noOpenerFade": true,
+			"speed": 300,
+			"expandMode" : "click"
+		});
 
-		// Off-Canvas Navigation.
+		// Navigation Toggle.
+		$("body").append(
+			$("<div></div>").attr({"id": "navToggle"}).append($("<a></a>").addClass("toggle").attr({"href": "#navPanel"}))
+		);
 
-			// Navigation Toggle.
-				$(
-					'<div id="navToggle">' +
-						'<a href="#navPanel" class="toggle"></a>' +
-					'</div>'
-				)
-					.appendTo($body);
+		// Navigation Panel.
+		$("<div></div>").attr({"id": "navPanel"}).append($("<nav></nav>").html($('#nav').navList())).appendTo($("body")).panel({
+			"delay": 500,
+			"hideOnClick": true,
+			"hideOnSwipe": true,
+			"resetScroll": true,
+			"resetForms": true,
+			"side": "left",
+			"target": $("body"),
+			"visibleClass": "navPanel-visible"
+		});
 
-			// Navigation Panel.
-				$(
-					'<div id="navPanel">' +
-						'<nav>' +
-							$('#nav').navList() +
-						'</nav>' +
-					'</div>'
-				)
-					.appendTo($body)
-					.panel({
-						delay: 500,
-						hideOnClick: true,
-						hideOnSwipe: true,
-						resetScroll: true,
-						resetForms: true,
-						side: 'left',
-						target: $body,
-						visibleClass: 'navPanel-visible'
-					});
-
-			// Fix: Remove navPanel transitions on WP<10 (poor/buggy performance).
-				if (skel.vars.os == 'wp' && skel.vars.osVersion < 10)
-					$('#navToggle, #navPanel, #page-wrapper')
-						.css('transition', 'none');
-
+		// Fix: Remove navPanel transitions on WP<10 (poor/buggy performance).
+		if (skel.vars.os == 'wp' && skel.vars.osVersion < 10)
+		{
+			$('#navToggle, #navPanel, #page-wrapper').css('transition', 'none');
+		}
 	});
 
 })(jQuery);

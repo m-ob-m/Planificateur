@@ -11,13 +11,12 @@ include_once __DIR__ . "/../../parameter/parameter.php";
  * \details 	Modele de paramètre de programme générique
  */
 
-class GenericParameter extends Parameter implements JsonSerializable
+class GenericParameter extends \Parameter implements \JsonSerializable
 {
     private $_id;
     private $_description;
     private $_generic_id;
     private $_quick_edit;
-    private $__database_connection_locking_read_type = \MYSQLDatabaseLockingReadTypes::NONE;
     
     /**
      * GenericParameter constructor
@@ -54,15 +53,14 @@ class GenericParameter extends Parameter implements JsonSerializable
      * @author Marc-Olivier Bazin-Maurice
      * @return GenericParameter The GenericParameter object retrieved from the database
      */
-    static function withGenericID(FabplanConnection $db, int $genericId, string $parameterKey, int $dbCLRT = 0) : GenericParameter
+    static function withGenericID(\FabplanConnection $db, int $id, string $parameterKey) : \GenericParameter
     {
         // Récupérer le générique
         $stmt = $db->getConnection()->prepare(
             "SELECT `gp`.* FROM `fabplan`.`generic_parameters` AS `gp` 
-            WHERE `gp`.`generic_id` = :generic_id AND `gp`.`parameter_key` = :parameter_key " . 
-            (new \MYSQLDatabaseLockingReadTypes($dbCLRT))->toLockingReadString() . ";"
+            WHERE `gp`.`generic_id` = :generic_id AND `gp`.`parameter_key` = :parameter_key;"
         );
-        $stmt->bindValue(":generic_id", $genericId, PDO::PARAM_INT);
+        $stmt->bindValue(":generic_id", $id, PDO::PARAM_INT);
         $stmt->bindValue(":parameter_key", $parameterKey, PDO::PARAM_STR);
         $stmt->execute();
         
@@ -76,7 +74,6 @@ class GenericParameter extends Parameter implements JsonSerializable
             return null;
         }
         
-        $this->setDatabaseConnectionLockingReadType($dbCLRT);
         return $instance;
     }
     
@@ -105,14 +102,7 @@ class GenericParameter extends Parameter implements JsonSerializable
         }
         else
         {
-            if($this->getDatabaseConnectionReadingLockType() !== \MYSQLDatabaseLockingReadTypes::FOR_UPDATE)
-            {
-                throw new \Exception("The provided " . get_class($this) . " is not locked for update.");
-            }
-            else
-            {
-                $this->update($db);
-            }
+            $this->update($db);
         }
         
         return $this;
@@ -139,7 +129,7 @@ class GenericParameter extends Parameter implements JsonSerializable
         $stmt->bindValue(':quickEdit', $this->getQuickEdit(), PDO::PARAM_INT);
         $stmt->execute();
         
-        $this->setId($db->getConnection()->lastInsertId());
+        $this->setId(intval($db->getConnection()->lastInsertId()));
         
         return $this;
     }
@@ -338,32 +328,6 @@ class GenericParameter extends Parameter implements JsonSerializable
     public function jsonSerialize()
     {
         return get_object_vars($this);
-    }
-    
-    /**
-     * Gets the database connection locking read type applied to this object.
-     *
-     * @throws
-     * @author Marc-Olivier Bazin-Maurice
-     * @return int The database connection locking read type applied to this object.
-     */
-    private function getDatabaseConnectionLockingReadType() : int
-    {
-        return $this->__database_connection_locking_read_type;
-    }
-    
-    /**
-     * Sets the database connection locking read type applied to this object.
-     * @param int $databaseConnectionLockingReadType The new database connection locking read type applied to this object.
-     *
-     * @throws
-     * @author Marc-Olivier Bazin-Maurice
-     * @return \JobType This JobType.
-     */
-    private function setDatabaseConnectionLockingReadType(int $databaseConnectionLockingReadType) : \JobType
-    {
-        $this->__database_connection_locking_read_type = $databaseConnectionLockingReadType;
-        return $this;
     }
 }
 

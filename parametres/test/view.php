@@ -28,7 +28,9 @@
         $db->getConnection()->beginTransaction();
         $types = (new \TypeController())->getTypes();
         $models = (new \ModelController())->getModels();
-        $test = isset($_GET["id"]) ? \Test::withID($_GET["id"]) : new \Test(null, "", 7000, 0);
+        $defaultModel = $models[0];
+        $defaultType = $types[0];
+        $test = isset($_GET["id"]) ? \Test::withID($db, $_GET["id"]) : new \Test(null, "", $defaultModel, $defaultType);
         $db->getConnection()->commit();
     }
     catch(\Exception $e)
@@ -102,13 +104,16 @@
 			<div id="features-wrapper">
 				<div id="parametersFormContainer" class="container">
 					<!-- Sélection du modèle/type dont on veut éditer les paramètres par défaut -->
-					<form id="parametersForm" class="parametersForm" action="javascript: void(0);" onsubmit="refreshParameters();">
+					<form id="parametersForm" class="parametersForm" action="javascript: void(0);" 
+						onsubmit="refreshParameters();">
 						<div class="formContainer">
         					<div class="hFormElement">
             					<label for="type">Type : 
                 					<select id="type" <?= $disabled; ?> onchange="$('#parametersForm').submit();">
                 						<?php foreach($types as $type):?>
-                        					<?php $selected =  (($test->getTypeNo() == $type->getImportNo()) ? "selected" : ""); ?>
+                							<?php $typeNo = $type->getImportNo(); ?>
+                							<?php $testTypeImportNo = $test->getType()->getImportNo(); ?>
+                        					<?php $selected =  (($testTypeImportNo == $typeNo) ? "selected" : ""); ?>
                         					<option value=<?= $type->getImportNo(); ?> <?= $selected; ?>>
                         						<?= $type->getDescription(); ?>
                         					</option>
@@ -121,7 +126,9 @@
                         			<select id="model" <?= $disabled; ?> onchange="$('#parametersForm').submit();">
                 					<?php foreach($models as $model):?>
                 						<?php if($model->getId() >= 2): ?>
-                        					<?php $selected =  (($test->getModelId() == $model->getId()) ? "selected" : ""); ?>
+                							<?php $modelId = $model->getId(); ?>
+                							<?php $testModelId = $test->getModel()->getId(); ?>
+                        					<?php $selected =  (($testModelId == $modelId) ? "selected" : ""); ?>
                         					<option value=<?= $model->getId(); ?> <?= $selected; ?>>
                         						<?= $model->getDescription(); ?>
                         					</option>
@@ -139,8 +146,7 @@
                     		<br>
                     		<div id="mprFileDialogContainer" class="hFormElement">
                 				<label for="mprFileDialog">Sélectionner un fichier : 
-                    				<input type="file" id="mprFileDialog" name="mprFileDialog" value="" 
-                    					onchange="readMpr($(this).prop('files')[0]);">
+                    				<input type="file" id="mprFileDialog" name="mprFileDialog" value="">
                     			</label>
                     		</div>
                     		<div class="hFormElement" style="display:none;">

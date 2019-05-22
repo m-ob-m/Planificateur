@@ -1,3 +1,5 @@
+"use strict";
+
 /**
  * Clears the session storage and returns to the main window.
  */

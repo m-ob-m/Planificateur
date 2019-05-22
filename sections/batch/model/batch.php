@@ -84,7 +84,7 @@ class Batch implements JsonSerializable
 	 * @author Marc-Olivier Bazin-Maurice
 	 * @return Batch The Batch associated to the specified ID in the specified database
 	 */
-	public static function withID(FabPlanConnection $db, ?int $id, int $databaseConnectionLockingReadType = 0) : ?\Batch
+	public static function withID(\FabPlanConnection $db, ?int $id, int $databaseConnectionLockingReadType = 0) : ?\Batch
 	{
 	    // Récupérer le test
 	    $stmt = $db->getConnection()->prepare(
@@ -125,7 +125,7 @@ class Batch implements JsonSerializable
 	        $instance->addJob(Job::withID($db, $row["jobId"]));
 	    }
 	    
-	    $this->setDatabaseConnectionLockingReadType($databaseConnectionLockingReadType);
+	    $instance->setDatabaseConnectionLockingReadType($databaseConnectionLockingReadType);
 	    return $instance;
 	}
 	
@@ -481,14 +481,22 @@ class Batch implements JsonSerializable
 	
 	/**
 	 * Adds a job to this Batch
-	 * @param Job $job The Job to add to this Batch
+	 * @param \Job $job The Job to add to this Batch
 	 *
 	 * @throws
 	 * @author Marc-Olivier Bazin-Maurice
-	 * @return Batch This Batch
+	 * @return \Batch This Batch
 	 */
-	public function addJob(Job $job) : Batch
+	public function addJob(\Job $job) : \Batch
 	{
+	    foreach($this->getJobs() as $includedJob)
+	    {
+	        if($job->getId() === $includedJob->getId())
+	        {
+	            return $this;
+	        }
+	    }
+	    
 	    array_push($this->_jobs, $job);
 	    return $this;
 	}
@@ -507,7 +515,7 @@ class Batch implements JsonSerializable
 	    {
             if($job->getId === $id)
             {
-                unset($jobs[$index]);
+                unset($this->jobs[$index]);
             }
 	    }
 	    return $this;
@@ -530,13 +538,13 @@ class Batch implements JsonSerializable
 	    }
 	    else
 	    {
-	        $dbTimestamp = \DateTime::createFromFormat("Y-m-d H:i:s", $this->getTimestampFromDatabase($db), "America/Montreal");
-	        $localTimestamp = \DateTime::createFromFormat("Y-m-d H:i:s", $this->getTimestamp(), "America/Montreal");
-	        if($this->getDatabaseConnectionReadingLockType() !== \MYSQLDatabaseLockingReadTypes::FOR_UPDATE)
+	        $dbTimestamp = \DateTime::createFromFormat("Y-m-d H:i:s", $this->getTimestampFromDatabase($db));
+	        $localTimestamp = \DateTime::createFromFormat("Y-m-d H:i:s", $this->getTimestamp());
+	        if($this->getDatabaseConnectionLockingReadType() !== \MYSQLDatabaseLockingReadTypes::FOR_UPDATE)
 	        {
 	            throw new \Exception("The provided " . get_class($this) . " is not locked for update.");
 	        }
-	        elseif($databaseTimestamp > $localTimestamp)
+	        elseif($dbTimestamp > $localTimestamp)
 	        {
 	            throw new \Exception(
 	                "The provided " . get_class($this) . " is outdated. The last modification date of the database entry is
@@ -583,7 +591,7 @@ class Batch implements JsonSerializable
 	    $stmt->bindValue(':mprStatus', $this->getMprStatus(), PDO::PARAM_STR);
 	    $stmt->bindValue(':carrousel', $this->getCarrousel()->toCsv(), PDO::PARAM_STR);
 	    $stmt->execute();
-	    $this->setId($db->getConnection()->lastInsertId());
+	    $this->setId(intval($db->getConnection()->lastInsertId()));
 	    
 	    //Mettre à jour les liens entre les jobs et la batch
 	    $this->unlinkAllJobs($db);
@@ -598,13 +606,13 @@ class Batch implements JsonSerializable
 	/**
 	 * Update the Batch object in the database
 	 *
-	 * @param FabPlanConnection $db The database in which the record must be updated
+	 * @param \FabPlanConnection $db The database in which the record must be updated
 	 *
 	 * @throws
 	 * @author Marc-Olivier Bazin-Maurice
-	 * @return Batch This Batch (for method chaining)
+	 * @return \Batch This Batch (for method chaining)
 	 */
-	private function update(FabPlanConnection $db) : Batch
+	private function update(\FabPlanConnection $db) : \Batch
 	{
 	    // Mise à jour d'un Batch
 	    $stmt = $db->getConnection()->prepare("
@@ -648,14 +656,21 @@ class Batch implements JsonSerializable
 	 */
 	public function delete(FabPlanConnection $db) : Batch
 	{
-	    foreach($this->getJobs() as $job)
+	    if($this->getDatabaseConnectionLockingReadType() !== \MYSQLDatabaseLockingReadTypes::FOR_UPDATE)
 	    {
-	        $this->unlinkJob($job, $db);
+	        throw new \Exception("The provided " . get_class($this) . " is not locked for update.");
 	    }
-	    
-	    $stmt = $db->getConnection()->prepare("DELETE FROM `fabplan`.`batch` WHERE `id_batch` = :id;");
-	    $stmt->bindValue(':id', $this->getId(), PDO::PARAM_INT);
-	    $stmt->execute();
+	    else
+	    {
+    	    foreach($this->getJobs() as $job)
+    	    {
+    	        $this->unlinkJob($job, $db);
+    	    }
+    	    
+    	    $stmt = $db->getConnection()->prepare("DELETE FROM `fabplan`.`batch` WHERE `id_batch` = :id;");
+    	    $stmt->bindValue(':id', $this->getId(), PDO::PARAM_INT);
+    	    $stmt->execute();
+	    }
 	    
 	    return $this;
 	}
@@ -815,7 +830,7 @@ class Batch implements JsonSerializable
         	            $NpasTh = \MprExpression\Evaluator::evaluate($parameters["NpasTh"] ?? 0, null, $parameters);
         	            for($i = 1; $i <= $NpasTh; $i++)
         	            {
-        	                $tool = \MprExpression\Evaluator::evaluate($parameters["T_Th" . $i] ?? 0, $parameters);
+        	                $tool = \MprExpression\Evaluator::evaluate($parameters["T_Th" . $i] ?? 0, null, $parameters);
         	                if(!$this->_carrousel->toolExists($tool))
         	                {
         	                    $this->_carrousel->addTool($tool);
@@ -869,7 +884,7 @@ class Batch implements JsonSerializable
 	 * @author Marc-Olivier Bazin-Maurice
 	 * @return int The database connection locking read type applied to this object.
 	 */
-	private function getDatabaseConnectionLockingReadType() : int
+	public function getDatabaseConnectionLockingReadType() : int
 	{
 	    return $this->__database_connection_locking_read_type;
 	}
@@ -882,7 +897,7 @@ class Batch implements JsonSerializable
 	 * @author Marc-Olivier Bazin-Maurice
 	 * @return \JobType This JobType.
 	 */
-	private function setDatabaseConnectionLockingReadType(int $databaseConnectionLockingReadType) : \JobType
+	private function setDatabaseConnectionLockingReadType(int $databaseConnectionLockingReadType) : \Batch
 	{
 	    $this->__database_connection_locking_read_type = $databaseConnectionLockingReadType;
 	    return $this;

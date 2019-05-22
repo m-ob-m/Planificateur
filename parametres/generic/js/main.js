@@ -1,3 +1,5 @@
+"use strict";
+
 /**
  * Opens view window for this Generic.
  * @param {int} id The id of the generic to view (null means new generic).
