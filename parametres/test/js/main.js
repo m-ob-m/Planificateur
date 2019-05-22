@@ -1,3 +1,5 @@
+"use strict";
+
 /**
  * Redirects to the view page for the specified test or the test creation page when no testId is specified.
  * @param {int} testId The id of the specified test

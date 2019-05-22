@@ -187,12 +187,12 @@ namespace MprExpression
          * @return string The solution of the expression $expressionToEvaluate (all variables on which this expression depend 
          *                must be provided in $parametersArray, otherwise an exception will occur).
          */ 
-        public static function evaluate(?string $mprExpression, string $name = null, array $parametersArray = array(), 
+        public static function evaluate(?string $mprExpression, ?string $name = null, array $parametersArray = array(), 
             array $callStack = array()) : string
         {
             try
             {
-                $instance = new self;
+                $instance = new self();
                 $expressionArray = $instance->decode($mprExpression, $parametersArray, $callStack);
                 $phpExpression = $instance->buildExpressionString($expressionArray["expression"]);
                 
@@ -230,7 +230,7 @@ namespace MprExpression
             catch(\Exception $e)
             {
                 //This is an unexpected Exception.
-                $message = "Cannot evaluate expression \"{$name} = {$expressionToEvaluate}\": {$e->getMessage()}";
+                $message = "Cannot evaluate expression \"{$name} = {$mprExpression}\": {$e->getMessage()}";
                 throw new \Exception($message);
             }
         }
@@ -445,32 +445,16 @@ namespace MprExpression
         {
             while(!isset($pointer["expression"]))
             {
-                if(isset($pointer["function"]))
+                if(isset($pointer["function"]) && $pointer["function"]["name"] !== "if")
                 {
-                    if($pointer["function"]["name"] !== "if")
-                    {
-                        throw new \Exception("Unbalanced parenthesis.");
-                    }
-                    else
-                    {
-                        $pointer = &$this->getParent($pointer);
-                    }
+                    throw new \Exception("The opening parenthesis of function \"{$pointer["function"]["name"]}\" is never closed.");
                 }
-                elseif(isset($pointer["operator"]))
+                elseif(isset($pointer["operator"]) && $pointer["operator"]["identity"] === "()")
                 {
-                    if($pointer["operator"]["identity"] === "()")
-                    {
-                        throw new \Exception("Unbalanced parenthesis.");
-                    }
-                    else
-                    {
-                        $pointer = &$this->getParent($pointer);
-                    }
+                    throw new \Exception("An unbalanced parenthesis was found.");
                 }
-                else
-                {
-                    $pointer = &$this->getParent($pointer);
-                }
+                
+                $pointer = &$this->getParent($pointer);
             }
             
             return $pointer;
@@ -488,21 +472,16 @@ namespace MprExpression
         private function & findIf(array &$pointer) : array
         {
             do{
-                if(isset($pointer["function"]))
+                if(isset($pointer["function"]) && $pointer["function"]["name"] === "if")
                 {
-                    if($pointer["function"]["name"] === "if")
-                    {
-                        return $pointer;
-                    }
+                    return $pointer;
                 }
                 elseif(isset($pointer["expression"]))
                 {
                     throw new \Exception("\"If\" not found.");
                 }
-                else 
-                {
-                    $pointer = &$this->getParent($pointer);
-                }
+                
+                $pointer = &$this->getParent($pointer);
             } while(1);
         }
         
@@ -887,17 +866,9 @@ namespace MprExpression
                     throw new \Exception("A \")\" with no associated \"(\" was found.");
                 }
                 
-                if(isset($pointer["function"]))
+                if(isset($pointer["function"]) || isset($pointer["operator"]) && $pointer["operator"]["identity"] === "()")
                 {
                     $exitLoop = true;
-                }
-                
-                if(isset($pointer["operator"]))
-                {
-                    if($pointer["operator"]["identity"] === "()")
-                    {
-                        $exitLoop = true;
-                    }
                 }
                 
                 $pointer = &$this->getParent($pointer);

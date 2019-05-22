@@ -26,7 +26,7 @@ class JobController
      *
      * @throws
      * @author Marc-Olivier Bazin-Maurice
-     * @return JobController This JobController
+     * @return \JobController This JobController
      */
     function __construct()
     {
@@ -44,7 +44,7 @@ class JobController
      */
     function getJob(int $id) : ?Job
     {
-        return Job::withID($this->getDBConnection(), $id);
+        return \Job::withID($this->getDBConnection(), $id);
     }
     
     /**
@@ -62,12 +62,12 @@ class JobController
             SELECT `j`.`id_job` AS `id` FROM `fabplan`.`job` AS `j` 
             WHERE `j`.`numero` = :name;
         ");
-        $stmt->bindValue(":name", $name, PDO::PARAM_STR);
+        $stmt->bindValue(":name", $name, \PDO::PARAM_STR);
         $stmt->execute();
         
         if($row = $stmt->fetch())
         {
-            return Job::withID($this->getDBConnection(), $row["id"]);
+            return \Job::withID($this->getDBConnection(), $row["id"]);
         }
         else
         {
@@ -84,7 +84,7 @@ class JobController
      *
      * @throws
      * @author Marc-Olivier Bazin-Maurice
-     * @return Job array The array of Job objects requested
+     * @return \Job array The array of Job objects requested
      */
     function getJobs(int $offset = 0, int $quantity = 0, bool $ascending = true) : array
     {
@@ -100,12 +100,12 @@ class JobController
         $stmt->execute();
         
         $jobs = array();
-        while($row = $stmt->fetch(PDO::FETCH_ASSOC))
+        while($row = $stmt->fetch(\PDO::FETCH_ASSOC))
         {
-            array_push($jobs, Job::withID($this->getDBConnection(), $row["id"]));
+            array_push($jobs, \Job::withID($this->getDBConnection(), $row["id"]));
         }
         
-        return $batches;
+        return $jobs;
     }
     
     /**
@@ -113,9 +113,9 @@ class JobController
      *
      * @throws
      * @author Marc-Olivier Bazin-Maurice
-     * @return FabplanConnection The connection to the database
+     * @return \FabplanConnection The connection to the database
      */
-    function getDBConnection() : FabPlanConnection
+    function getDBConnection() : \FabPlanConnection
     {
         return $this->_db;
     }
@@ -129,7 +129,7 @@ class JobController
      */
     function connect()
     {
-        $this->_db = new FabPlanConnection();
+        $this->_db = new \FabPlanConnection();
         return $this;
     }
 }

@@ -22,28 +22,27 @@ try
     // Vérification des paramètres
     $id = (isset($input->id) ? $input->id : null);
     
-    if($id <> null)
+    $db = new \FabPlanConnection();
+    try
     {
-        $db = new \FabPlanConnection();
-        try
+        $db->getConnection()->beginTransaction();
+        $model = \Model::withID($db, $id, \MYSQLDatabaseLockingReadTypes::FOR_UPDATE);
+        if($model === null)
         {
-            $db->getConnection()->beginTransaction();
-            \Model::withID($id)->delete($db);
-            $db->getConnection()->commit();
+            throw new \Exception("Il n'y a aucun modèle possédant l'identifiant unique \"{$id}\".");
         }
-        catch(\Exception $e)
-        {
-            $db->getConnection()->rollback();
-            throw $e;
-        }
-        finally
-        {
-            $db = null;
-        }
+        
+        $model->delete($db);
+        $db->getConnection()->commit();
     }
-    else
+    catch(\Exception $e)
     {
-        throw new Exception("Cannot delete a model that has a null id.");
+        $db->getConnection()->rollback();
+        throw $e;
+    }
+    finally
+    {
+        $db = null;
     }
     
     // Retour au javascript

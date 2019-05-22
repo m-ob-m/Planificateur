@@ -15,6 +15,8 @@ include_once __DIR__ . '/../../type/controller/typeController.php'; //Contrôleu
 include_once __DIR__ . '/../controller/modelTypeController.php'; // Contrôleur de Modèle-Type
 include_once __DIR__ . '/../../../lib/config.php';	// Fichier de configuration
 include_once __DIR__ . '/../../../lib/connect.php';	// Classe de connection à la base de données
+include_once __DIR__ . '/../../../lib/numberFunctions\numberFunctions.php';	/* Classe de fonctions sur les nombres et 
+                                                       les chaînes de caractères représentant des nombres */
 
 // Structure de retour vers javascript
 $responseArray = array("status" => null, "success" => array("data" => null), "failure" => array("message" => null));
@@ -25,7 +27,7 @@ try
     $modelId = $_GET["modelId"] ?? null;
     $typeNo = $_GET["typeNo"] ?? null;
     
-    if(is_scalar($modelId) && ctype_digit((string)$modelId) && (int)$modelId > 0)
+    if(is_positive_integer_or_equivalent_string($modelId))
     {
         $modelId = (int)$modelId;
     }
@@ -34,7 +36,7 @@ try
         throw new \Exception("L'identifiant unique de modèle fourni \"{$modelId}\" n'est pas valide.");
     }
     
-    if(is_scalar($typeNo) && ctype_digit((string)$typeNo) && (int)$typeNo >= 0)
+    if(is_positive_integer_or_equivalent_string($typeNo))
     {
         $typeNo = (int)$typeNo;
     }
@@ -44,9 +46,7 @@ try
     }
     
     // Get the information
-    $db->getConnection()->beginTransaction();
     $parameters = createModelTypeParametersView($modelId, $typeNo);
-    $db->getConnection()->commit();
     
     // Retour au javascript
     $responseArray["status"] = "success";
@@ -78,9 +78,7 @@ function createModelTypeParametersView(int $modelId, int $typeNo) : array
     try
     {
         $db->getConnection()->beginTransaction();
-        $modelType = (new \ModelType())->setModelId($modelId)->setTypeNo($typeNo)->loadParameters($this->_db);
-        $type = \Type::withImportNo($db, $typeNo);
-        $generic = \Generic::withID($db, $type->getGenericId());
+        $modelType = (new \ModelTypeController())->getModelType($modelId, $typeNo);
         $db->getConnection()->commit();
     }
     catch(\Exception $e)
@@ -95,7 +93,7 @@ function createModelTypeParametersView(int $modelId, int $typeNo) : array
     
     $parameters = array();
     /* @var $genericParameter \GenericParameter */
-    foreach($generic->getGenericParameters() as $genericParameter)
+    foreach($modelType->getType()->getGeneric()->getGenericParameters() as $genericParameter)
     {
         $key = $genericParameter->getKey();
         $value = null;

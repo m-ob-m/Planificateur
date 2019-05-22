@@ -1,3 +1,5 @@
+"use strict";
+
 /**
  * Opens view window for this Material.
  * @param {int} id The id of the material to view (null means new material).

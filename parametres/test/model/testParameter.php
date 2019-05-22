@@ -39,15 +39,15 @@ class TestParameter  extends Parameter implements JsonSerializable
 	/**
 	 * Constructor that retrieves an instance from the database
 	 *
-	 * @param FabPlanConnection $db The database from which the record must be retrieved
+	 * @param \FabPlanConnection $db The database from which the record must be retrieved
 	 * @param int $testId The id of the Test to which  this TestParameter belongs
 	 * @param string $key The key of the current TestParameter
 	 *
 	 * @throws
 	 * @author Marc-Olivier Bazin-Maurice
-	 * @return TestParameter This TestParameter
+	 * @return \TestParameter This TestParameter
 	 */
-	static function withID(FabplanConnection $db, int $testId, string $key) :TestParameter
+	static function withID(\FabplanConnection $db, int $testId, string $key) : ?\TestParameter
 	{  
 	    $stmt = $db->getConnection()->prepare("
             SELECT `tp`.* FROM `test_parameters` AS `tp`
@@ -75,9 +75,9 @@ class TestParameter  extends Parameter implements JsonSerializable
 	 * @author Marc-Olivier Bazin-Maurice
 	 * @return TestParameter This TestParameter (for method chaining)
 	 */
-	public function save(FabPlanConnection $db) : TestParameter
+	public function save(FabPlanConnection $db) : \TestParameter
 	{ 
-	    if($this->withID($db, $this->getId(), $this->getKey()) == null)
+	    if($this->withID($db, $this->getTestId(), $this->getKey()) === null)
 	    {
 	        $this->insert($db);
 	    }
