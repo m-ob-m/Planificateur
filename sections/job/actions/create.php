@@ -117,11 +117,7 @@
                 $jobType = (new \JobType())->setModel($model)->setType($type);
 
                 /* Set parameters. */
-<<<<<<< HEAD
                 $parameters = $jobType->loadParameters($db)->getSpecificParametersAsKeyValuePairs();
-=======
-                $parameters = $jobType->loadParameters($db)->getParametersAsKeyValuePairs();
->>>>>>> 684bf1755856df1f7b8f7809445255b0b7967e19
                 if(!in_array($type->getImportNo(), array(10, 11, 12, 13), true))
                 {
                     $externalProfile = $inputJobType->externalProfile;
@@ -132,19 +128,11 @@
                     elseif(preg_match("/\A[A-Z]\*\z/", $externalProfile))
                     {
                         /* External profiles consisting of an alphabetic character followed by an asterisk are replaced by  */
-<<<<<<< HEAD
                         $parameters["T_Ext"] = preg_replace("/\A([A-Z])\*\z/", "_PROF_\\1\\1", $externalProfile);
                     }
                     elseif(preg_match("/\A[A-Z]\z/", $externalProfile))
                     {
                         $parameters["T_Ext"] = preg_replace("/\A([A-Z])\z/", "_PROF_\\1", $externalProfile);
-=======
-                        $parameters["T_Ext"] = preg_replace("/\A([A-Z])\*\z/", "_PROF_\1\1", $externalProfile);
-                    }
-                    elseif(preg_match("/\A[A-Z]\z/", $externalProfile))
-                    {
-                        $parameters["T_Ext"] = preg_replace("/\A([A-Z])\z/", "_PROF_\1", $externalProfile);
->>>>>>> 684bf1755856df1f7b8f7809445255b0b7967e19
                     }
                     else
                     {
@@ -183,11 +171,7 @@
                             "Part {$partIndex} of jobType {$jobTypeIndex} of job {$jobName} has no specified quantity."
                         );
                     }
-<<<<<<< HEAD
                     elseif(!isset($part->grain))
-=======
-                    elseif(!isset($part->quantity))
->>>>>>> 684bf1755856df1f7b8f7809445255b0b7967e19
                     {
                         throw new \Exception(
                             "Part {$partIndex} of jobType {$jobTypeIndex} of job {$jobName} has no specified grain direction."

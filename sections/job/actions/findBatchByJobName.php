@@ -66,15 +66,7 @@
         }
         finally
         {
-<<<<<<< HEAD
             $db = null;
-=======
-<<<<<<< HEAD
-            $db = null;
-=======
-            throw new \Exception("There is no Job with the name \"{$name}\".");
->>>>>>> 28e88f6e4de52cfbfc82f27813810b9de7bd6edf
->>>>>>> 684bf1755856df1f7b8f7809445255b0b7967e19
         }
         
         // Retour au javascript

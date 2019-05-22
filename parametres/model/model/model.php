@@ -68,44 +68,6 @@ class Model implements JsonSerializable
 	    }
 	    
 	    $instance->setDatabaseConnectionLockingReadType($databaseConnectionLockingReadType);
-<<<<<<< HEAD
-	    return $instance;
-	}
-
-	/**
-	 * Model constructor using description of existing record
-	 *
-	 * @param \FabPlanConnection $db The database in which the record exists
-	 * @param string $description The description of the record in the database
-	 * @param int $dbCLRT The database connection locking read type to use
-	 *
-	 * @throws
-	 * @author Marc-Olivier Bazin-Maurice
-	 * @return \Model The Model associated to the specified description in the specified database
-	 */
-	public static function withDescription(\FabPlanConnection $db, string $description, int $dbCLRT = 0) : ?\Model
-	{
-	    // Récupérer le Model
-	    $stmt = $db->getConnection()->prepare(
-            "SELECT `dm`.* FROM `fabplan`.`door_model` AS `dm` 
-            WHERE `dm`.`description_model` = :description " . 
-	        (new \MYSQLDatabaseLockingReadTypes($dbCLRT))->toLockingReadString() . ";"
-        );
-	    $stmt->bindValue(':description', $description, PDO::PARAM_STR);
-	    $stmt->execute();
-	    
-	    if ($row = $stmt->fetch())	// Récupération de l'instance de Model
-	    {
-	        $instance = new self($row["id_door_model"], $row["description_model"], $row["timestamp"]);
-	    }
-	    else
-	    {
-	        return null;
-	    }
-	    
-	    $instance->setDatabaseConnectionLockingReadType($dbCLRT);
-=======
->>>>>>> 28e88f6e4de52cfbfc82f27813810b9de7bd6edf
 	    return $instance;
 	}
 
