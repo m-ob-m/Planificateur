@@ -6,7 +6,7 @@
  */
 function openModel(id = null)
 {
-	let view_URL = ["/Planificateur/parametres/model/view.php"];
+	let view_URL = [ROOT_URL + "/parametres/model/view.php"];
 	if(id !== null && id !== "")
 	{
 		view_URL.push("?id=", id);

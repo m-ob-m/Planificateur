@@ -57,7 +57,7 @@ class GenericParameter extends \Parameter implements \JsonSerializable
     {
         // Récupérer le générique
         $stmt = $db->getConnection()->prepare(
-            "SELECT `gp`.* FROM `fabplan`.`generic_parameters` AS `gp` 
+            "SELECT `gp`.* FROM `generic_parameters` AS `gp` 
             WHERE `gp`.`generic_id` = :generic_id AND `gp`.`parameter_key` = :parameter_key;"
         );
         $stmt->bindValue(":generic_id", $id, PDO::PARAM_INT);
@@ -89,7 +89,7 @@ class GenericParameter extends \Parameter implements \JsonSerializable
     public function save(\FabPlanConnection $db) : \GenericParameter
     {
         $stmt = $db->getConnection()->prepare("
-            SELECT `gp`.* FROM `fabplan`.`generic_parameters` AS `gp` 
+            SELECT `gp`.* FROM `generic_parameters` AS `gp` 
             WHERE `gp`.`generic_id` = :genericId AND `gp`.`parameter_key` = :parameterKey;
         ");
         $stmt->bindValue(":genericId", $this->getGenericId(), PDO::PARAM_INT);

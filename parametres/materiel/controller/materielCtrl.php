@@ -55,7 +55,7 @@ class MaterielController
 	{
 	    $stmt = $this->getDBConnection()->getConnection()->prepare("
             SELECT `m`.`id_materiel`
-            FROM `fabplan`.`materiel` AS `m`
+            FROM `materiel` AS `m`
             ORDER BY `m`.`id_materiel` " . (($ascending === true) ? "ASC" : "DESC") . " " . 
 	        (($quantity === 0) ? "" : " LIMIT :quantity OFFSET :offset") . " " . 
 	        "FOR SHARE;"

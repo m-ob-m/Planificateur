@@ -68,7 +68,7 @@ class Materiel  implements JsonSerializable
 	{	    
 	    // Récupérer le test
 	    $stmt = $db->getConnection()->prepare(
-            "SELECT `m`.* FROM `fabplan`.`materiel` AS `m` WHERE `m`.`id_materiel` = :id " . 
+            "SELECT `m`.* FROM `materiel` AS `m` WHERE `m`.`id_materiel` = :id " . 
             (new \MYSQLDatabaseLockingReadTypes($databaseConnectionLockingReadType))->toLockingReadString() . ";"
         );
 	    $stmt->bindValue(':id', $id, PDO::PARAM_INT);
@@ -145,7 +145,7 @@ class Materiel  implements JsonSerializable
 	{
 	    // Création d'un Materiel
 	    $stmt = $db->getConnection()->prepare("
-            INSERT INTO `fabplan`.`materiel`(`codeSIA`, `codeCutRite`, `description`, `epaisseur`, `essence`, `grain`, `est_mdf`)
+            INSERT INTO `materiel`(`codeSIA`, `codeCutRite`, `description`, `epaisseur`, `essence`, `grain`, `est_mdf`)
             VALUES (:siaCode, :cutRiteCode, :description, :thickness, :woodType, :hasGrain, :isMDF);
         ");
 	    $stmt->bindValue(":siaCode", $this->getCodeSIA(), PDO::PARAM_STR);
@@ -175,7 +175,7 @@ class Materiel  implements JsonSerializable
 	{
 	    // Mise à jour d'un Materiel
 	    $stmt = $db->getConnection()->prepare("
-            UPDATE `fabplan`.`materiel` AS `m`
+            UPDATE `materiel` AS `m`
             SET `codeSIA` = :siaCode, `codeCutRite` = :cutRiteCode, `description` = :description, `epaisseur` = :thickness,
                 `essence` = :woodType, `grain` = :hasGrain, `est_mdf` = :isMDF
             WHERE `id_materiel` = :id;
@@ -230,7 +230,7 @@ class Materiel  implements JsonSerializable
 	public function getTimestampFromDatabase(\FabPlanConnection $db) : ?string
 	{
 	    $stmt= $db->getConnection()->prepare("
-            SELECT `m`.`estampille` AS `timestamp` FROM `fabplan`.`materiel` AS `m` WHERE `m`.`id_materiel` = :id;
+            SELECT `m`.`estampille` AS `timestamp` FROM `materiel` AS `m` WHERE `m`.`id_materiel` = :id;
         ");
 	    $stmt->bindValue(':id', $this->getId(), PDO::PARAM_INT);
 	    $stmt->execute();

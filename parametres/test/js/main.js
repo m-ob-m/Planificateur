@@ -6,7 +6,7 @@
  */
 function openTest(testId = null)
 {
-	let view_URL = ["/Planificateur/parametres/test/view.php"];
+	let view_URL = [ROOT_URL + "/parametres/test/view.php"];
 	if(testId !== null && testId !== "")
 	{
 		view_URL.push("?id=", testId);

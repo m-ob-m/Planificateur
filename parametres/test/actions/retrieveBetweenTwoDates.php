@@ -32,10 +32,10 @@ try
     $stmt = $db->getConnection()->prepare("
         SELECT `t`.`id` AS `id`, `t`.`name` AS `name`, `dm`.`description_model` AS `modelName`, 
             `dt`.`description` AS `typeName`, `g`.`Filename` AS `genericFilename`, `t`.`estampille` AS `timestamp` 
-        FROM `fabplan`.`test` AS `t` 
-        LEFT OUTER JOIN `fabplan`.`door_model` AS `dm` ON `dm`.`id_door_model` = `t`.`door_model_id`
-        LEFT OUTER JOIN `fabplan`.`door_types` AS `dt` ON `dt`.`importNo` = `t`.`type_no`
-        LEFT OUTER JOIN `fabplan`.`generics` AS `g` ON `g`.`id` = `dt`.`generic_id`
+        FROM `test` AS `t` 
+        LEFT OUTER JOIN `door_model` AS `dm` ON `dm`.`id_door_model` = `t`.`door_model_id`
+        LEFT OUTER JOIN `door_types` AS `dt` ON `dt`.`importNo` = `t`.`type_no`
+        LEFT OUTER JOIN `generics` AS `g` ON `g`.`id` = `dt`.`generic_id`
         WHERE `t`.`estampille` >= :startDate AND `t`.`estampille` <= :endDate
         ORDER BY `t`.`estampille` DESC
         FOR SHARE;

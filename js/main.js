@@ -1,5 +1,7 @@
 "use strict";
 
+let ROOT_URL = "/" + document.currentScript.src.match(/(?<=^|\/|\\)[^\\\/]*(?=$|\/|\\)/g)[3];
+
 /**
  * Update all unitary programs
  * @param {int} modelId The model id for which programs must be updated, null means all
@@ -30,7 +32,7 @@ function updatePrograms()
 		$.ajax({
 			"type": "POST",
 			"contentType": "application/json;charset=utf-8",
-			"url": "/Planificateur/parametres/varmodtype/actions/MAJModeleUnitaire.php",
+			"url": ROOT_URL + "/parametres/varmodtype/actions/MAJModeleUnitaire.php",
 			"data": JSON.stringify({}),
 			"dataType": "json",
 			"async": true,

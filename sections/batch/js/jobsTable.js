@@ -75,7 +75,7 @@ function newJob(job)
 	let row = $("<tr></tr>").css({"cursor": "pointer"})
 	.on("click", ":not(>td:first-child)", {"jobId": job.id, "batchId": window.sessionStorage.getItem("id")}, openJobEvent);
 	let deleteTool = $("<div></div>").css({"display": "inline-block", "width": "100%"})
-	.append(imageButton("/Planificateur/images/cancel16.png", "", removeJob, [row]));
+	.append(imageButton(ROOT_URL + "/images/cancel16.png", "", removeJob, [row]));
 	let toolsContainer = $("<div></div>").css({"height": "min-content"}).append(deleteTool);	
 	let toolsCell = $("<td></td>").addClass("firstVisibleColumn").append(toolsContainer);
 	let idCell = $("<td></td>").addClass("jobIdCell").prop("hidden", true).text(job.id);

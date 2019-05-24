@@ -41,10 +41,10 @@
 		<title>Fabridor - Liste des programmes génériques</title>
 		<meta charset="utf-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1" />
-		<link rel="stylesheet" href="/Planificateur/assets/css/responsive.css" />
-		<link rel="stylesheet" href="/Planificateur/assets/css/fabridor.css" />
-		<link rel="stylesheet" href="/Planificateur/assets/css/imageButton.css" />
-		<link rel="stylesheet" href="/Planificateur/assets/css/parametersTable.css" />
+		<link rel="stylesheet" href="../../assets/css/responsive.css" />
+		<link rel="stylesheet" href="../../assets/css/fabridor.css" />
+		<link rel="stylesheet" href="../../assets/css/imageButton.css" />
+		<link rel="stylesheet" href="../../assets/css/parametersTable.css" />
 	</head>
 	<body class="homepage">
 		<div id="page-wrapper">
@@ -54,7 +54,7 @@
 					<!-- Logo -->
 					<div id="logo">
 						<h1>
-							<a href="index.php"><img src="/Planificateur/images/fabridor.jpg"></a>
+							<a href="index.php"><img src="../../images/fabridor.jpg"></a>
 						</h1>
 						<span>Liste des génériques</span>
 					</div>
@@ -65,12 +65,12 @@
     						<ul>
     							<li>
     								<a href="javascript: void(0);" onclick="openGeneric();" class="imageButton">
-    									<img src="/Planificateur/images/add.png">
+    									<img src="../../images/add.png">
     								Ajouter</a>
     							</li>
     							<li>
-    								<a href="/Planificateur/index.php" class="imageButton">
-    									<img src="/Planificateur/images/exit.png">
+    								<a href="../../index.php" class="imageButton">
+    									<img src="../../images/exit.png">
     								Sortir</a>
     							</li>	
     						</ul>
@@ -126,11 +126,12 @@
 			</div>
 		</div>
 	    <!-- Scripts -->
-		<script src="/Planificateur/assets/js/jquery.min.js"></script>
-		<script src="/Planificateur/assets/js/jquery.dropotron.min.js"></script>
-		<script src="/Planificateur/assets/js/skel.min.js"></script>
-		<script src="/Planificateur/assets/js/util.js"></script>
-		<script src="/Planificateur/assets/js/main.js"></script>
+		<script src="../../assets/js/jquery.min.js"></script>
+		<script src="../../assets/js/jquery.dropotron.min.js"></script>
+		<script src="../../assets/js/skel.min.js"></script>
+		<script src="../../assets/js/util.js"></script>
+		<script src="../../assets/js/main.js"></script>
+		<script src="../../js/main.js"></script>
 		<script src="js/main.js"></script>
 	</body>
 </html>

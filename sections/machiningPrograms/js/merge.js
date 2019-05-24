@@ -99,7 +99,7 @@ function merge(inputFiles, outputFileName)
 		$.ajax({
 			"type": "POST",
 			"contentType": "application/json;charset=utf-8",
-			"url": "/Planificateur/sections/machiningPrograms/actions/merge.php",
+			"url": ROOT_URL + "/sections/machiningPrograms/actions/merge.php",
 			"data": JSON.stringify({"inputFiles": inputFiles, "outputFileName": outputFileName}),
 			"dataType": "json",
 			"async": true,

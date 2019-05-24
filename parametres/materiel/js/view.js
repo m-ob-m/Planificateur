@@ -137,7 +137,7 @@ function deleteMaterial(id)
 		$.ajax({
 			"type": "POST",
 			"contentType": "application/json;charset=utf-8",
-			"url": "/Planificateur/parametres/materiel/actions/delete.php",
+			"url": ROOT_URL + "/parametres/materiel/actions/delete.php",
 			"data": JSON.stringify({"id": id}),
 			"dataType": "json",
 			"async": true,
@@ -178,7 +178,7 @@ function saveMaterial(id, description, siaCode, cutRiteCode, thickness, woodType
 		$.ajax({
 			"type": "POST",
 			"contentType": "application/json;charset=utf-8",
-			"url": "/Planificateur/parametres/materiel/actions/save.php",
+			"url": ROOT_URL + "/parametres/materiel/actions/save.php",
 			"data": JSON.stringify({
 				"id": ((id === "") ? null : id), 
 				"description": description, 

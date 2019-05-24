@@ -82,7 +82,7 @@ try
     // Retour au javascript
     $responseArray["status"] = "success";
     $responseArray["success"]["data"]["name"] = $programName;
-    $responseArray["success"]["data"]["url"] = "/Planificateur/sections/visualiseur/temp/{$programName}";
+    $responseArray["success"]["data"]["url"] = $programName;
 }
 catch(Exception $e)
 {

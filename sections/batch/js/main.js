@@ -6,7 +6,7 @@
 function goToIndex()
 {
 	window.sessionStorage.clear();
-	window.location.assign("/Planificateur/index.php");
+	window.location.assign(ROOT_URL + "/index.php");
 }
 
 /**

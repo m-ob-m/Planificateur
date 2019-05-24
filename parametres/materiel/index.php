@@ -41,10 +41,10 @@
 	<head>
 		<title>Fabridor - Liste des matériaux</title>
 		<meta name="viewport" content="width=device-width, initial-scale=1"/>
-		<link rel="stylesheet" href="/Planificateur/assets/css/responsive.css"/>
-		<link rel="stylesheet" href="/Planificateur/assets/css/fabridor.css"/>
-		<link rel="stylesheet" href="/Planificateur/assets/css/parametersTable.css"/>
-		<link rel="stylesheet" href="/Planificateur/assets/css/imageButton.css">
+		<link rel="stylesheet" href="../../assets/css/responsive.css"/>
+		<link rel="stylesheet" href="../../assets/css/fabridor.css"/>
+		<link rel="stylesheet" href="../../assets/css/parametersTable.css"/>
+		<link rel="stylesheet" href="../../assets/css/imageButton.css">
 	</head>
 	<body class="homepage">
 		<div id="page-wrapper">
@@ -54,14 +54,14 @@
 					<!-- Logo -->
 					<div id="logo">
 						<h1>
-							<a href="/Planificateur/index.php">
-								<img src="/Planificateur/images/fabridor.jpg">
+							<a href="../../index.php">
+								<img src="../../images/fabridor.jpg">
 							</a>
 						</h1>
 						<span>Liste des matériaux</span>
 					</div>
 					
-					<div style="display:inline-block;float:right;">
+					<div style="float:right;">
     					<nav id="nav">
     						<ul>
     							<li>
@@ -70,7 +70,7 @@
     								Ajouter</a>
     							</li>
     							<li>
-    								<a href="/Planificateur/index.php" class="imageButton">
+    								<a href="../../index.php" class="imageButton">
     									<img src="../../images/exit.png">
     								Sortir</a>
     							</li>
@@ -139,11 +139,12 @@
 		</div>	
 
 		<!-- Scripts -->
-		<script src="/Planificateur/assets/js/jquery.min.js"></script>
-		<script src="/Planificateur/assets/js/jquery.dropotron.min.js"></script>
-		<script src="/Planificateur/assets/js/skel.min.js"></script>
-		<script src="/Planificateur/assets/js/util.js"></script>
-		<script src="/Planificateur/assets/js/main.js"></script>
+		<script src="../../assets/js/jquery.min.js"></script>
+		<script src="../../assets/js/jquery.dropotron.min.js"></script>
+		<script src="../../assets/js/skel.min.js"></script>
+		<script src="../../assets/js/util.js"></script>
+		<script src="../../assets/js/main.js"></script>
+		<script src="../../js/main.js"></script>
 		<script src="js/main.js"></script>
 
 	</body>

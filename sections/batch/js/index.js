@@ -386,7 +386,7 @@ function getExpectedMomentFormat()
  */
 function viewPrograms(batchId)
 {
-	window.open("/Planificateur/sections/visualiseur/index.php?id=" + batchId, "_blank");
+	window.open(ROOT_URL + "/sections/visualiseur/index.php?id=" + batchId, "_blank");
 }
 
 /**
@@ -397,5 +397,5 @@ function openJobEvent(event)
 {
 	updateSessionStorage();
 	let batchId = (event.data.batchId !== null) ? event.data.batchId : -1;
-	window.location.assign("/Planificateur/sections/job/index.php?jobId=" + event.data.jobId + "&batchId=" + batchId);
+	window.location.assign(ROOT_URL + "/sections/job/index.php?jobId=" + event.data.jobId + "&batchId=" + batchId);
 }

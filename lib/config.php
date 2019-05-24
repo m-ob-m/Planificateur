@@ -14,7 +14,7 @@
     define('DB_HOST', "127.0.0.1");
     define('DB_USER', "root");
     define('DB_PASS', "Cuisine123");
-    define('DB_NAME', "FabPlan");
+    define('DB_NAME', "fabplan2");
     
     /*
      * Paramètre des chemins d'accès aux répertoires de CutRite

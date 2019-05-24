@@ -13,15 +13,16 @@ function retrieveParameters(testId, modelId, typeNo)
 	let url;
 	let data;
 	let isNew;
+
 	if(testId === null)
 	{
-		url = "/Planificateur/parametres/varmodtypegen/actions/getParameters.php";
+		url = ROOT_URL + "/parametres/varmodtypegen/actions/getParameters.php";
 		data = {"modelId": modelId, "typeNo": typeNo};
 		isNew = true;
 	}
 	else
 	{
-		url = "/Planificateur/parametres/test/actions/getParameters.php";
+		url = ROOT_URL + "/parametres/test/actions/getParameters.php";
 		data = {"testId": testId};
 		isNew = false;
 	}
@@ -64,7 +65,7 @@ function retrieveCustomMpr(testId)
 		$.ajax({
 			"type": "GET",
 			"contentType": "application/json;charset=utf-8",
-			"url": "/Planificateur/parametres/test/actions/getCustomMpr.php",
+			"url": ROOT_URL + "/parametres/test/actions/getCustomMpr.php",
 			"data": {"id": testId},
 			"dataType": "json",
 			"async": true,
@@ -96,7 +97,7 @@ function deleteTest(id)
 {
 	return new Promise(function(resolve, reject){
 		$.ajax({
-			"url": "/Planificateur/parametres/test/actions/delete.php",
+			"url": ROOT_URL + "/parametres/test/actions/delete.php",
 			"contentType": "application/json;charset=utf-8",
 			"type": "POST",
 			"data": JSON.stringify({"id": id}),
@@ -137,7 +138,7 @@ function saveTest(testId, testName, modelId, typeNo, mpr, parameters)
 		$.ajax({
 			"type": "POST",
 			"contentType": "application/json;charset=utf-8",
-			"url": "/Planificateur/parametres/test/actions/save.php",
+			"url": ROOT_URL + "/parametres/test/actions/save.php",
 			"data": JSON.stringify({
 				"testId": testId, 
 				"testName": testName, 
@@ -178,7 +179,7 @@ function createMachiningProgram(testId)
 		$.ajax({
 			"type": "POST",
 			"contentType": "application/json;charset=utf-8",
-			"url": "/Planificateur/parametres/test/actions/download.php",
+			"url": ROOT_URL + "/parametres/test/actions/download.php",
 			"data": JSON.stringify({"testId": testId}),
 			"dataType": "json",
 			"async": true,
@@ -213,7 +214,7 @@ function retrieveTestsBetweenDates(startDate, endDate)
 		$.ajax({
 			"type": "GET",
 			"contentType": "application/json;charset=utf-8",
-			"url": "/Planificateur/parametres/test/actions/retrieveBetweenTwoDates.php",
+			"url": ROOT_URL + "/parametres/test/actions/retrieveBetweenTwoDates.php",
 			"data": {
 				"startDate": startDate.format("YYYY-MM-DD HH:mm:ss"), 
 				"endDate": endDate.format("YYYY-MM-DD HH:mm:ss")

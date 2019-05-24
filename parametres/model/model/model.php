@@ -51,7 +51,7 @@ class Model implements JsonSerializable
 	{
 	    // Récupérer le Model
 	    $stmt = $db->getConnection()->prepare(
-            "SELECT `dm`.* FROM `fabplan`.`door_model` AS `dm` 
+            "SELECT `dm`.* FROM `door_model` AS `dm` 
             WHERE `dm`.`id_door_model` = :id " . 
 	        (new \MYSQLDatabaseLockingReadTypes($databaseConnectionLockingReadType))->toLockingReadString() . ";"
         );
@@ -86,7 +86,7 @@ class Model implements JsonSerializable
 	{
 	    // Récupérer le Model
 	    $stmt = $db->getConnection()->prepare(
-            "SELECT `dm`.* FROM `fabplan`.`door_model` AS `dm` 
+            "SELECT `dm`.* FROM `door_model` AS `dm` 
             WHERE `dm`.`description_model` = :description " . 
 	        (new \MYSQLDatabaseLockingReadTypes($dbCLRT))->toLockingReadString() . ";"
         );
@@ -162,7 +162,7 @@ class Model implements JsonSerializable
 	{
 	    // Création d'un Model
 	    $stmt = $db->getConnection()->prepare("
-            INSERT INTO `fabplan`.`door_model`(`id_door_model`, `description_model`)
+            INSERT INTO `door_model`(`id_door_model`, `description_model`)
             VALUES (:id, :description);
         ");
 	    $stmt->bindValue(":id", $this->getId(), PDO::PARAM_INT);
@@ -186,7 +186,7 @@ class Model implements JsonSerializable
 	{
 	    // Mise à jour d'un Model
 	    $stmt = $db->getConnection()->prepare("
-            UPDATE `fabplan`.`door_model` SET `description_model` = :description WHERE `id_door_model` = :id;
+            UPDATE `door_model` SET `description_model` = :description WHERE `id_door_model` = :id;
         ");
 	    $stmt->bindValue(':id', $this->getId(), PDO::PARAM_INT);
 	    $stmt->bindValue(":description", $this->getDescription(), PDO::PARAM_STR);
@@ -211,11 +211,11 @@ class Model implements JsonSerializable
 	    }
 	    else
 	    {
-    	    $stmt = $db->getConnection()->prepare("DELETE FROM `fabplan`.`door_model_data` WHERE `fkDoorModel` = :modelId;");
+    	    $stmt = $db->getConnection()->prepare("DELETE FROM `door_model_data` WHERE `fkDoorModel` = :modelId;");
     	    $stmt->bindValue(':modelId', $this->getId(), PDO::PARAM_INT);
     	    $stmt->execute();
     	    
-    	    $stmt = $db->getConnection()->prepare("DELETE FROM `fabplan`.`door_model` WHERE `id_door_model` = :id;");
+    	    $stmt = $db->getConnection()->prepare("DELETE FROM `door_model` WHERE `id_door_model` = :id;");
     	    $stmt->bindValue(':id', $this->getId(), PDO::PARAM_INT);
     	    $stmt->execute();
 	    }
@@ -235,7 +235,7 @@ class Model implements JsonSerializable
 	public function getTimestampFromDatabase(\FabPlanConnection $db) : ?string
 	{
 	    $stmt= $db->getConnection()->prepare("
-            SELECT `dm`.`timestamp` FROM `fabplan`.`door_model` AS `dm` WHERE `dm`.`id_door_model` = :id;
+            SELECT `dm`.`timestamp` FROM `door_model` AS `dm` WHERE `dm`.`id_door_model` = :id;
         ");
 	    $stmt->bindValue(':id', $this->getId(), PDO::PARAM_INT);
 	    $stmt->execute();
@@ -300,7 +300,7 @@ class Model implements JsonSerializable
 	{
 	    $stmt = $db->getConnection()->prepare(
             "SELECT `dmd`.`fkDoorType` AS `typeNo`, `dmd`.`paramKey` AS `parameterKey`, `dmd`.`paramValue` AS `parameterValue`
-            FROM `fabplan`.`door_model_data` AS `dmd`
+            FROM `door_model_data` AS `dmd`
             WHERE `dmd`.`fkDoorModel` = :modelId " . 
 	        (new \MYSQLDatabaseLockingReadTypes($dbCLRT))->toLockingReadString() . ";"
         );

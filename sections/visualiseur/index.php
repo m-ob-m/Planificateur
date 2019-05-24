@@ -110,10 +110,10 @@
 		<title><?= $batch->getName(); ?></title>
 		<meta charset="utf-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1" />
-		<link rel="stylesheet" href="/Planificateur/assets/css/responsive.css" />
-		<link rel="stylesheet" href="/Planificateur/assets/css/fabridor.css" />
-		<link rel="stylesheet" href="/Planificateur/assets/css/parametersTable.css"/>
-		<link rel="stylesheet" href="/Planificateur/assets/css/imageButton.css">
+		<link rel="stylesheet" href="../../assets/css/responsive.css" />
+		<link rel="stylesheet" href="../../assets/css/fabridor.css" />
+		<link rel="stylesheet" href="../../assets/css/parametersTable.css"/>
+		<link rel="stylesheet" href="../../assets/css/imageButton.css">
 	</head>
 	<body style="background-image: none; background-color: #FFFFFF;">
 		<div style="display: flex; flex-flow: row;">
@@ -139,7 +139,7 @@
                                 $batch->getName(); 
                              ?></div>
                     		<button class="no-print" onclick="window.close();" style="float: right; margin-right: 2px;">
-                    			<img src="/Planificateur/images/exit.png" style="width: 16px; height: 16px;">
+                    			<img src="../../images/exit.png" style="width: 16px; height: 16px;">
                     		Sortir</button>
                     	</div>
                     	
@@ -185,7 +185,7 @@
                 		<tr>
                 			<td>Propriétés de la porte</td>
                 			<td>
-                				<img src="/Planificateur/images/closewin.png" onclick="closePropertiesWindow();" 
+                				<img src="../../images/closewin.png" onclick="closePropertiesWindow();" 
                 					style="float: right; padding-right: 2px; cursor: pointer;">
                 			</td>
                 		</tr>
@@ -201,13 +201,13 @@
 			<div id="errMsg" class="modal-content" style='color:#FF0000;'></div>
 		</div>
     	
-    	<script src="/Planificateur/assets/js/jquery.min.js"></script>
-		<script src="/Planificateur/assets/js/jquery.dropotron.min.js"></script>
-		<script src="/Planificateur/assets/js/skel.min.js"></script>
-		<script src="/Planificateur/assets/js/util.js"></script>
-		<script src="/Planificateur/assets/js/main.js"></script>
-		<script src="/Planificateur/js/main.js"></script>
-		<script src="/Planificateur/js/toolbox.js"></script>
-		<script src="/Planificateur/sections/visualiseur/js/main.js"></script>
+    	<script src="../../assets/js/jquery.min.js"></script>
+		<script src="../../assets/js/jquery.dropotron.min.js"></script>
+		<script src="../../assets/js/skel.min.js"></script>
+		<script src="../../assets/js/util.js"></script>
+		<script src="../../assets/js/main.js"></script>
+		<script src="../../js/main.js"></script>
+		<script src="../../js/toolbox.js"></script>
+		<script src="../../sections/visualiseur/js/main.js"></script>
 	</body>
 </html>	

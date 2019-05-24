@@ -63,7 +63,7 @@ class TestController
     {
         $stmt = $this->getDBConnection()->getConnection()->prepare("
             SELECT `t`.`id` 
-            FROM `fabplan`.`test` AS `t` 
+            FROM `test` AS `t` 
             ORDER BY `t`.`id` " . ($ascending ? "ASC" : "DESC") . " " . 
             (($quantity === 0) ? "" : " LIMIT :quantity OFFSET :offset") . " " . 
             "FOR SHARE;"
@@ -96,7 +96,7 @@ class TestController
     {
         $stmt = $this->getDBConnection()->getConnection()->prepare("
             SELECT `t`.`id`
-            FROM `fabplan`.`test` AS `t`
+            FROM `test` AS `t`
             WHERE `t`.`estampille` >= :startDate AND `t`.`estampille` <= :endDate
             ORDER BY `t`.`estampille` " . ($ascending ? "ASC" : "DESC") . " " . 
             "FOR SHARE;"

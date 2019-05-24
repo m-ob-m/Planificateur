@@ -46,7 +46,7 @@ function linearize(inputFile, outputFileName)
 		$.ajax({
 			"type": "POST",
 			"contentType": "application/json;charset=utf-8",
-			"url": "/Planificateur/sections/machiningPrograms/actions/linearize.php",
+			"url": ROOT_URL + "/sections/machiningPrograms/actions/linearize.php",
 			"data": JSON.stringify({"inputFile": inputFile, "outputFileName": outputFileName}),
 			"dataType": "json",
 			"async": true,

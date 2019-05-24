@@ -60,7 +60,7 @@ class Generic implements \JsonSerializable
     {
         // Récupérer le Generic
         $stmt = $db->getConnection()->prepare(
-            "SELECT `g`.* FROM `fabplan`.`generics` AS `g` WHERE `g`.`id` = :id " . 
+            "SELECT `g`.* FROM `generics` AS `g` WHERE `g`.`id` = :id " . 
             (new \MYSQLDatabaseLockingReadTypes($databaseConnectionLockingReadType))->toLockingReadString() . ";"
         );
         $stmt->bindValue(':id', $id, PDO::PARAM_INT);
@@ -77,7 +77,7 @@ class Generic implements \JsonSerializable
         }
         
         $stmt= $db->getConnection()->prepare(
-            "SELECT `gp`.* FROM `fabplan`.`generic_parameters` AS `gp` 
+            "SELECT `gp`.* FROM `generic_parameters` AS `gp` 
             WHERE `gp`.`generic_id` = :genericId 
             ORDER BY `gp`.`id` ASC " . 
             (new \MYSQLDatabaseLockingReadTypes($databaseConnectionLockingReadType))->toLockingReadString() . ";"
@@ -197,11 +197,11 @@ class Generic implements \JsonSerializable
     {
         // Mise à jour d'un test
         $stmt = $db->getConnection()->prepare("
-            UPDATE `fabplan`.`generics` 
-            SET `fabplan`.`generics`.`filename` = :filename, 
-                `fabplan`.`generics`.`description` = :description, 
-                `fabplan`.`generics`.`heightParameter` = :heightParameter
-            WHERE `fabplan`.`generics`.`id` = :id;
+            UPDATE `generics` 
+            SET `generics`.`filename` = :filename, 
+                `generics`.`description` = :description, 
+                `generics`.`heightParameter` = :heightParameter
+            WHERE `generics`.`id` = :id;
         ");
         $stmt->bindValue(':filename', $this->_filename, PDO::PARAM_STR);
         $stmt->bindValue(':description', $this->_description, PDO::PARAM_STR);
@@ -244,7 +244,7 @@ class Generic implements \JsonSerializable
         else
         {
             $stmt = $db->getConnection()->prepare("
-                DELETE FROM `fabplan`.`generics` WHERE `fabplan`.`generics`.`id` = :id;
+                DELETE FROM `generics` WHERE `generics`.`id` = :id;
             ");
             $stmt->bindValue(':id', $this->_id, PDO::PARAM_INT);
             $stmt->execute();
@@ -265,7 +265,7 @@ class Generic implements \JsonSerializable
     public function getTimestampFromDatabase(\FabPlanConnection $db) : ?string
     {
         $stmt= $db->getConnection()->prepare("
-            SELECT `g`.`timestamp` FROM `fabplan`.`generics` AS `g` WHERE `g`.`id` = :id;
+            SELECT `g`.`timestamp` FROM `generics` AS `g` WHERE `g`.`id` = :id;
         ");
         $stmt->bindValue(':id', $this->getId(), PDO::PARAM_INT);
         $stmt->execute();

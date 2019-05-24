@@ -55,7 +55,7 @@ class ModelController {
 	{
 	    $stmt = $this->getDBConnection()->getConnection()->prepare("
             SELECT `dm`.`id_door_model` AS `id`
-            FROM `fabplan`.`door_model` AS `dm`
+            FROM `door_model` AS `dm`
             ORDER BY `dm`.`description_model` " . (($ascending === true) ? "ASC" : "DESC") . " " . 
 	        (($quantity === 0) ? "" : " LIMIT :quantity OFFSET :offset") . " " . 
 	        "FOR SHARE;"

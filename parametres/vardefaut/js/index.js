@@ -2,7 +2,10 @@
 
 $(async function()
 	{
-		await refreshParameters()
+		if($("select#generic >option").length > 0)
+		{
+			await refreshParameters();
+		}
 	}
 );
 
@@ -12,7 +15,7 @@ $(async function()
  */
 async function refreshParameters()
 {
-	let id = parseInt($("select#generic option:selected").val());
+	let id = parseInt($("select#generic >option:selected").val());
 	
 	try{
 		$("table#parametersTable >tbody >tr").remove();
@@ -43,7 +46,7 @@ function retrieveParameters(id)
 		$.ajax({
 			"type": "GET",
 			"contentType": "application/json;charset=utf-8",
-			"url": "/Planificateur/parametres/vardefaut/actions/getParameters.php",
+			"url": ROOT_URL + "/parametres/vardefaut/actions/getParameters.php",
 			"data": {"id": id},
 			"dataType": "json",
 			"async": true,
@@ -179,7 +182,7 @@ function saveParameters(id, parameters)
 		$.ajax({
 			"type": "POST",
 			"contentType": "application/json;charset=utf-8",
-			"url": "/Planificateur/parametres/vardefaut/actions/save.php",
+			"url": ROOT_URL + "/parametres/vardefaut/actions/save.php",
 			"data": JSON.stringify({"id": id, "parameters": parameters}),
 			"dataType": "json",
 			"async": true,
@@ -290,11 +293,11 @@ function newParameter(parameter = null)
 	
 	let addTool = $("<div></div>")
 	.css({"width": "100%", "display": "inline-block;"})
-	.append(imageButton("/Planificateur/images/add.png", "Ajouter", addParameter, [row]));
+	.append(imageButton(ROOT_URL + "/images/add.png", "Ajouter", addParameter, [row]));
 	
 	let minusTool = $("<div></div>")
 	.css({"width": "100%", "display": "inline-block"})
-	.append(imageButton("/Planificateur/images/minus.png", "Enlever", removeParameter, [row]));
+	.append(imageButton(ROOT_URL + "/images/minus.png", "Enlever", removeParameter, [row]));
 	
 	let toolsContainer = $("<div></div>")
 	.css({"height": "min-content"})
