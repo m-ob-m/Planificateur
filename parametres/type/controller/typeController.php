@@ -55,7 +55,7 @@ class TypeController {
 	{
 	    $stmt = $this->getDBConnection()->getConnection()->prepare("
             SELECT `dt`.`id` AS `id`
-            FROM `fabplan`.`door_types` AS `dt`
+            FROM `door_types` AS `dt`
             ORDER BY `dt`.`importNo` " . (($ascending === true) ? "ASC" : "DESC") .
 	        (($quantity === 0) ? "" : " LIMIT :quantity OFFSET :offset") .
 	        ";"
@@ -85,7 +85,7 @@ class TypeController {
 	{
 	    $stmt = $this->getDBConnection()->getConnection()->prepare("
             SELECT `dt`.`id` AS `id`
-            FROM `fabplan`.`door_types` AS `dt`
+            FROM `door_types` AS `dt`
             WHERE `dt`.`importNo` = :importNo
             ;"
 	    );

@@ -59,7 +59,7 @@ class JobController
     function getJobByName(string $name) : ?Job
     {
         $stmt = $this->getDBConnection()->getConnection()->prepare("
-            SELECT `j`.`id_job` AS `id` FROM `fabplan`.`job` AS `j` 
+            SELECT `j`.`id_job` AS `id` FROM `job` AS `j` 
             WHERE `j`.`numero` = :name;
         ");
         $stmt->bindValue(":name", $name, \PDO::PARAM_STR);
@@ -90,7 +90,7 @@ class JobController
     {
         $stmt = $this->getDBConnection()->getConnection()->prepare("
             SELECT `j`.`id`
-            FROM `fabplan`.`job` AS `j`
+            FROM `job` AS `j`
             ORDER BY `j`.`id_job` " . (($ascending === true) ? "ASC" : "DESC") .
             (($quantity === 0) ? "" : " LIMIT :quantity OFFSET :offset") .
             ";"

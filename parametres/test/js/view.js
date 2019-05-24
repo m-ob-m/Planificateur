@@ -324,7 +324,11 @@ async function refreshParametersStandard(testId, modelId, typeNo)
 	.append(makeStandardParametersTable().attr({"id": "parametersTable"}));
 	
 	try{ 
-		let parameters = await retrieveParameters(testId, modelId, typeNo);
+		let parameters = [];
+		if(modelId !== null && modelId !== "" && !isNaN(modelId) && typeNo !== null && typeNo !== "" && !isNaN(typeNo))
+		{
+			parameters = await retrieveParameters(testId, modelId, typeNo);
+		}
 		fillStandardParametersTable(parameters, testId === null);
 		$("div#mprFileDialogContainer").hide();
 	}

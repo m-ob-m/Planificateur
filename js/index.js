@@ -22,7 +22,7 @@ function retrieveEvents()
 {
 	return new Promise(function(resolve, reject){
 		$.ajax({
-	    	"url": "/Planificateur/actions/loadEvents.php",
+	    	"url": ROOT_URL + "/actions/loadEvents.php",
 	        "type": "GET",
 	        "contentType": "application/json;charset=utf-8",
 	        "data": {
@@ -58,7 +58,6 @@ function updateEventsCalendar(events)
 {
 	$("#calendar").fullCalendar('removeEvents');
 	$("#calendar").fullCalendar('addEventSource', events);
-	$("#calendar").fullCalendar('rerenderEvents');
 }
 
 /**
@@ -67,7 +66,8 @@ function updateEventsCalendar(events)
 $(function(){
     // Chargement du calendrier
     $('#calendar').fullCalendar({
-    	"height": "auto",
+    	"contentHeight": "9999",
+		"height": "9999",
 		"header": {"left": 'prev,next today', "center": 'title', "right": 'month, agendaWeek, agendaDay, listMonth'},
 		"locale": 'fr-ca',
 		"navLinks": true, // can click day/week names to navigate views
@@ -100,9 +100,8 @@ $(function(){
     $('.fc-month-button').click(function(){
     	$("html").css({"height": "125%"});
     	$("#calendar").fullCalendar("option", "height", $("#calendar").height());
-    }).click();
-    
-    reloadEvents();
+    });
+	reloadEvents();
 });
 
 /**
@@ -168,7 +167,7 @@ function getBatchIdFromJobName(jobName)
 {
 	return new Promise(function(resolve, reject){
 		$.ajax({
-			"url": "/Planificateur/sections/job/actions/findBatchByJobName.php",
+			"url": ROOT_URL + "/sections/job/actions/findBatchByJobName.php",
             "type": "POST",
             "contentType": "application/json;charset=utf-8",
             "data": JSON.stringify({"productionNumber": jobName}),
@@ -201,7 +200,7 @@ async function findJobByProductionNumber()
 	try 
 	{
 		let id = await getBatchIdFromJobName(productionNumber);
-		window.location.assign(["/Planificateur/sections/batch/index.php", "?", "id=", id].join(""));
+		window.location.assign([ROOT_URL + "/sections/batch/index.php", "?", "id=", id].join(""));
 	}
 	catch (error) {
 		showError("La job \"" + productionNumber + "\" n'a pas été trouvée : ", error);

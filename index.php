@@ -29,12 +29,12 @@
 		<title>Fabridor - Planificateur de production</title>
 		<meta name="viewport" content="width=device-width, initial-scale=1" />
 		<meta http-equiv="content-type" content="text/html; charset=UTF-8" />
-		<link rel="stylesheet" href="/Planificateur/assets/css/responsive.css" />
-		<link rel="stylesheet" href="/Planificateur/assets/css/fabridor.css" />
-		<link rel="stylesheet" href="/Planificateur/assets/css/loader.css" />
-		<link rel="stylesheet" href="/Planificateur/assets/css/imageButton.css" />
-		<link rel='stylesheet' href='/Planificateur/lib/fullcalendar/fullcalendar.css' />
-		<link rel='stylesheet' href='/Planificateur/css/index.css' />
+		<link rel="stylesheet" href="assets/css/responsive.css" />
+		<link rel="stylesheet" href="assets/css/fabridor.css" />
+		<link rel="stylesheet" href="assets/css/loader.css" />
+		<link rel="stylesheet" href="assets/css/imageButton.css" />
+		<link rel='stylesheet' href='lib/fullcalendar/fullcalendar.css' />
+		<link rel='stylesheet' href='css/index.css' />
 	</head>
 	<body class="homepage" style="height:100%;">
 		<div id="page-wrapper" style="display:flex; flex-direction:column; height:100%;">
@@ -44,7 +44,7 @@
 					<!-- Logo -->
 					<div id="logo">
 						<h1>
-							<a href="/Planificateur/index.php">
+							<a href="index.php">
 								<img src="images/fabridor.jpg">
 							</a>
 						</h1>
@@ -182,15 +182,15 @@
     		</div>			
 
 		    <!-- Scripts -->
-			<script src='/Planificateur/lib/fullcalendar/lib/jquery.min.js'></script>
-			<script src='/Planificateur/lib/fullcalendar/lib/jquery-ui.min.js'></script>
-			<script src='/Planificateur/lib/fullcalendar/lib/moment.min.js'></script>
-			<script src='/Planificateur/lib/fullcalendar/fullcalendar.js'></script>	
-			<script src='/Planificateur/lib/fullcalendar/locale/fr-ca.js'></script>
-			<script src="/Planificateur/assets/js/jquery.dropotron.min.js"></script>
-			<script src="/Planificateur/assets/js/skel.min.js"></script>
-			<script src="/Planificateur/assets/js/util.js"></script>
-			<script src="/Planificateur/assets/js/main.js"></script>
+			<script src='lib/fullcalendar/lib/jquery.min.js'></script>
+			<script src='lib/fullcalendar/lib/jquery-ui.min.js'></script>
+			<script src='lib/fullcalendar/lib/moment.min.js'></script>
+			<script src='lib/fullcalendar/fullcalendar.js'></script>	
+			<script src='lib/fullcalendar/locale/fr-ca.js'></script>
+			<script src="assets/js/jquery.dropotron.min.js"></script>
+			<script src="assets/js/skel.min.js"></script>
+			<script src="assets/js/util.js"></script>
+			<script src="assets/js/main.js"></script>
 			
 			<script src="js/main.js"></script>
 			<script src="js/index.js"></script>

@@ -117,11 +117,11 @@
 		<title>Fabridor - Batch</title>
 		<meta charset="utf-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1" />
-		<link rel="stylesheet" href="/Planificateur/assets/css/responsive.css" />
-		<link rel="stylesheet" href="/Planificateur/assets/css/fabridor.css" />
-		<link rel="stylesheet" href="/Planificateur/assets/css/parametersTable.css" />
-		<link rel="stylesheet" href="/Planificateur/assets/css/imageButton.css" />
-		<link rel="stylesheet" href="/Planificateur/assets/css/loader.css" />
+		<link rel="stylesheet" href="../../assets/css/responsive.css" />
+		<link rel="stylesheet" href="../../assets/css/fabridor.css" />
+		<link rel="stylesheet" href="../../assets/css/parametersTable.css" />
+		<link rel="stylesheet" href="../../assets/css/imageButton.css" />
+		<link rel="stylesheet" href="../../assets/css/loader.css" />
 	</head>
 	<body class="homepage">
 		<div id="page-wrapper">
@@ -131,34 +131,34 @@
 					<div id="logo">
 						<h1>
 							<a href="index.php">
-								<img src="/Planificateur/images/fabridor.jpg">
+								<img src="../../images/fabridor.jpg">
 							</a>
 						</h1>
 						<span>Nest de production</span>
 					</div>
-					<div style="display: inline-block;float: right;">
+					<div style="float: right;">
 						<nav id="nav">
 							<ul>
 								<li>
 									<a href="javascript: void(0);" onclick="saveConfirm();" class="imageButton">
-										<img src="/Planificateur/images/save.png"> 
+										<img src="../../images/save.png"> 
 									Sauvegarder</a>
 								</li>
 								<?php if($id !==  null): ?>
 									<li>
 										<a href="javascript: void(0);" onclick="downloadConfirm();" class="imageButton">
-											<img src="/Planificateur/images/download.png"> 
+											<img src="../../images/download.png"> 
 										Télécharger</a>
 									</li>
     								<li>
     									<a href="javascript: void(0);" onclick="deleteConfirm();" class="imageButton">
-    										<img src="/Planificateur/images/cancel16.png"> 
+    										<img src="../../images/cancel16.png"> 
     									Supprimer</a>
     								</li>
 								<?php endif; ?>
 								<li>
 									<a href="javascript: void(0);" onclick="goToIndex();" class="imageButton">
-										<img src="/Planificateur/images/exit.png"> 
+										<img src="../../images/exit.png"> 
 									Sortir</a>
 								</li>
 							</ul>
@@ -275,12 +275,12 @@
         							<td class="firstVisibleColumn" style="background-color: #c6e0b4;">Optimisation</td>
         							<?php if($batch->getMprStatus() === "N"): ?>
 										<td id="mprStatus" class="etatRouge lastVisibleColumn">
-											<div style="width: max-content; display: inline-block; float: left;">
+											<div style="width: max-content; float: left;">
 												<p style="margin-bottom: 0px;">Non téléchargé</p>
 											</div>
 											<a class="imageButton" href="javascript: void(0);" onclick="generateConfirm();"
 												style="width: max-content; float: right; text-decoration: underline;">
-												<img src="/Planificateur/images/download.png" style="margin-right: 2px;">
+												<img src="../../images/download.png" style="margin-right: 2px;">
 											Télécharger</a>
 										</td>
 									<?php elseif($batch->getMprStatus() === "A"): ?>
@@ -294,17 +294,17 @@
 											<p style="float: left; width: min-content;">Prêt</p>
 											<a class="imageButton" href="#" onclick="viewPrograms(<?= $id; ?>); return false;" 
 												style="float: right; color: black; text-decoration: underline; width: auto;">
-												<img src="/Planificateur/images/search16.png" style="margin-right: 2px;">
+												<img src="../../images/search16.png" style="margin-right: 2px;">
 											Visualiser</a>
 										</td>
 									<?php else: ?>
 										<td id="mprStatus" class="etatRouge lastVisibleColumn">
-											<div style="width: max-content; display: inline-block; float: left;">
+											<div style="width: max-content; float: left;">
 												<p style="margin-bottom: 0px;">Non téléchargé</p>
 											</div>
 											<a class="imageButton" href="javascript: void(0);" onclick="generateConfirm();"
 												style="width: max-content; float: right; text-decoration: underline;">
-												<img src="/Planificateur/images/download.png" style="margin-right: 2px;">
+												<img src="../../images/download.png" style="margin-right: 2px;">
 											Télécharger</a>
 										</td>
     								<?php endif; ?>
@@ -388,7 +388,7 @@
     					</table>
     					<br>
     					<!-- ### COMMANDES DU NEST ### -->
-    					<table id="orders" class="parametersTable" style="width=100%;">
+    					<table id="orders" class="parametersTable" style="width:100%;">
     						<thead>	
     							<tr>
     								<th class="firstVisibleColumn lastVisibleColumn" colspan="4">Commandes du nest</th>
@@ -455,19 +455,19 @@
 			<div id="loader" class="loader modal-content"></div>
 		</div>
 
-		<script src="/Planificateur/assets/js/moment.min.js"></script>
-		<script src="/Planificateur/assets/js/moment-timezone.js"></script>
-		<script src="/Planificateur/assets/js/jquery.min.js"></script>
-		<script src="/Planificateur/assets/js/jquery.dropotron.min.js"></script>
-		<script src="/Planificateur/assets/js/skel.min.js"></script>
-		<script src="/Planificateur/assets/js/util.js"></script>
-		<script src="/Planificateur/assets/js/main.js"></script>
-		<script src="/Planificateur/js/main.js"></script>
-		<script src="/Planificateur/js/toolbox.js"></script>
-		<script src="/Planificateur/sections/batch/js/batch.js"></script>
-		<script src="/Planificateur/sections/batch/js/index.js"></script>
-		<script src="/Planificateur/sections/batch/js/jobsTable.js"></script>
-		<script src="/Planificateur/sections/batch/js/main.js"></script>
-		<script src="/Planificateur/sections/batch/js/sessionDataStorage.js"></script>
+		<script src="../../assets/js/moment.min.js"></script>
+		<script src="../../assets/js/moment-timezone.js"></script>
+		<script src="../../assets/js/jquery.min.js"></script>
+		<script src="../../assets/js/jquery.dropotron.min.js"></script>
+		<script src="../../assets/js/skel.min.js"></script>
+		<script src="../../assets/js/util.js"></script>
+		<script src="../../assets/js/main.js"></script>
+		<script src="../../js/main.js"></script>
+		<script src="../../js/toolbox.js"></script>
+		<script src="../../sections/batch/js/batch.js"></script>
+		<script src="../../sections/batch/js/index.js"></script>
+		<script src="../../sections/batch/js/jobsTable.js"></script>
+		<script src="../../sections/batch/js/main.js"></script>
+		<script src="../../sections/batch/js/sessionDataStorage.js"></script>
 	</body> 
 </html>

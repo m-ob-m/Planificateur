@@ -58,7 +58,7 @@ async function reloadParameterEditor(modelId = null, typeNo = null)
 	}
 	else
 	{
-		if(modelId !== 2)
+		if(this.data().model.id !== 2)
 		{
 			let block = this;
 			let parameters = JSON.parse(JSON.stringify(block.data("genericParameters")));
@@ -165,14 +165,21 @@ function retrieveModelTypeGenericParameters(modelId, typeNo)
 		$.ajax({
 			"type": "GET",
 			"contentType": "application/json;charset=utf-8",
-			"url": "/Planificateur/parametres/varmodtypegen/actions/getParameters.php",
+			"url": ROOT_URL + "/parametres/varmodtypegen/actions/getParameters.php",
 			"data": {"modelId": modelId, "typeNo": typeNo},
 			"dataType": "json",
 			"async": true,
 			"cache": false,
 		}) 
 		.done(function(response){
-			resolve(response.success.data);
+			if(response.status === "success")
+			{
+				resolve(response.success.data);
+			}
+			else
+			{
+				reject(response.failure.message);
+			}
 		})
 		.fail(function(error){
 			reject(error.responseText);
@@ -192,6 +199,7 @@ function switchEditionMode(mode = 0)
 		$("table#parametersArray").css({"display": "table"});
 		$("tr#parametersEditorTypeSelectionRow").css({"display": "table-row"});
 		$("tr#parametersEditorMprFileSelectionRow").css({"display": "none"});
+		$("div#parametersEditor >div.modal-content").css({"display": "block", "height": "auto"});
 	}
 	else
 	{
@@ -199,6 +207,7 @@ function switchEditionMode(mode = 0)
 		$("table#parametersArray").css({"display": "none"});
 		$("tr#parametersEditorTypeSelectionRow").css({"display": "none"});
 		$("tr#parametersEditorMprFileSelectionRow").css({"display": "table-row"});
+		$("div#parametersEditor >div.modal-content").css({"display": "flex", "height": "100%"});
 	}
 }
 

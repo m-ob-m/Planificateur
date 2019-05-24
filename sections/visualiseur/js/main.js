@@ -33,7 +33,7 @@ function fetchDoorProperties(doorId)
 		$.ajax({
 			"type": "GET",
 			"contentType": "application/json;charset=utf-8",
-			"url": "/Planificateur/sections/visualiseur/actions/fetchProperties.php",
+			"url": ROOT_URL + "/sections/visualiseur/actions/fetchProperties.php",
 			"data": {"jobTypePorteId": doorId},
 			"dataType": "json",
 			"async": true,
@@ -211,7 +211,7 @@ function getLinkToProgram(id)
 		$.ajax({
 			"type": "GET",
 			"contentType": "application/json;charset=utf-8",
-			"url": "/Planificateur/sections/visualiseur/actions/downloadProgram.php",
+			"url": ROOT_URL + "/sections/visualiseur/actions/downloadProgram.php",
 			"data": {"jobTypePorteId": id},
 			"dataType": "json",
 			"async": true,
@@ -240,7 +240,7 @@ async function downloadProgram(id)
 {
 	try{
 		let downloadableFile = await getLinkToProgram(id);
-		downloadFile(downloadableFile.url, downloadableFile.name);
+		downloadFile(ROOT_URL + "/sections/visualiseur/temp/" + downloadableFile.url, downloadableFile.name);
 	}
 	catch(error){
 		showError("La récupération du programme d'usinage a échouée", error);

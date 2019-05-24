@@ -12,7 +12,7 @@ function retrieveJobTypes(jobId)
 		$.ajax({
 			"type": "GET",
 			"contentType": "application/json;charset=utf-8",
-			"url": "/Planificateur/sections/job/actions/getJobTypes.php",
+			"url": ROOT_URL + "/sections/job/actions/getJobTypes.php",
 			"data": {"jobId": jobId},
 			"dataType": "json",
 			"async": true,
@@ -62,7 +62,7 @@ function saveJob(job)
 		$.ajax({
 			"type": "POST",
 			"contentType": "application/json;charset=utf-8",
-			"url": "/Planificateur/sections/job/actions/save.php",
+			"url": ROOT_URL + "/sections/job/actions/save.php",
 			"data": JSON.stringify(job),
 			"dataType": "json",
 			"async": true,

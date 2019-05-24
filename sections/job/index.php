@@ -56,11 +56,11 @@ $batchId = $_GET["batchId"] ?? null;
 		<title>Fabridor - Validation</title>
 		<meta charset="utf-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1" />
-		<link rel="stylesheet" href="/Planificateur/assets/css/responsive.css" />
-		<link rel="stylesheet" href="/Planificateur/assets/css/fabridor.css" />
-		<link rel="stylesheet" href="/Planificateur/assets/css/parametersTable.css"/>
-		<link rel="stylesheet" href="/Planificateur/assets/css/imageButton.css">
-		<link rel="stylesheet" href="/Planificateur/assets/css/loader.css" />
+		<link rel="stylesheet" href="../../assets/css/responsive.css" />
+		<link rel="stylesheet" href="../../assets/css/fabridor.css" />
+		<link rel="stylesheet" href="../../assets/css/parametersTable.css"/>
+		<link rel="stylesheet" href="../../assets/css/imageButton.css">
+		<link rel="stylesheet" href="../../assets/css/loader.css" />
 	</head>
 	<body class="homepage">
     	<div id="page-wrapper">
@@ -70,7 +70,7 @@ $batchId = $_GET["batchId"] ?? null;
 					<!-- Logo -->
 					<div id="logo">
 						<h1>
-							<a href="/Planificateur/index.php"><img src="/Planificateur/images/fabridor.jpg"></a>
+							<a href="../../index.php"><img src="../../images/fabridor.jpg"></a>
 						</h1>
 						<div class="AL" style="line-height: 25px;float:right;padding:20px;">
 							<h3>Commande #<?= $job->getName(); ?></h3>
@@ -81,18 +81,18 @@ $batchId = $_GET["batchId"] ?? null;
 						</div>
 					</div>
 					
-    				<div style="display:inline-block; float:right;">
+    				<div style="float:right;">
     					<!-- Nav -->
 						<nav id="nav">
 							<ul>
 								<li>
 									<a href="javascript: void(0);" onclick="saveConfirm();" class="imageButton">
-										<img src="/Planificateur/images/save.png"> 
+										<img src="../../images/save.png"> 
 									Sauvegarder</a>
 								</li>
 								<li>
 									<a href="javascript: void(0);" onclick="goToBatch(<?= $batchId; ?>);" class="imageButton">
-										<img src="/Planificateur/images/exit.png">
+										<img src="../../images/exit.png">
 									Sortir</a>
 								</li>
 							</ul>
@@ -113,12 +113,12 @@ $batchId = $_GET["batchId"] ?? null;
 		
 		<!--  Fenêtre modale pour l'édition des paramètres -->
 		<div id="parametersEditor" class="modal">
-			<div class="modal-content" style="width: 70%;">
+			<div class="modal-content" style="width: 70%; flex-flow: column;">
 				<span class="editMenu">
-                    <img id="acceptEdit" src="/Planificateur/images/ok16.png" class="editIcon">
-                    <img id="cancelEdit" src="/Planificateur/images/cancel16.png" class="editIcon">
+                    <img id="acceptEdit" src="../../images/ok16.png" class="editIcon">
+                    <img id="cancelEdit" src="../../images/cancel16.png" class="editIcon">
                 </span>
-				<table class="parametersTable hoverEffectDisabled" style="margin-bottom: 20px;">
+				<table class="parametersTable hoverEffectDisabled" style="margin-bottom: 20px; flex: 0 1 auto;">
 					<thead>
 						<tr>
 							<th class="firstVisibleColumn lastVisibleColumn" colspan=2>Modèle et type de porte</th>
@@ -159,8 +159,8 @@ $batchId = $_GET["batchId"] ?? null;
 						</tr>
 					</tbody>
 				</table>
-				<div id="customFileTableBody" style="display: none;">
-					<textarea id=mprFileContents style="resize: none; width: 100%; height: 100%;"></textarea>
+				<div id="customFileTableBody" style="display: none; flex: 1 1 auto;">
+					<textarea id=mprFileContents style="resize: none; width: 100%; height: 100%; line-height: 1.5;"></textarea>
 				</div>
 				<table id="parametersArray" class="parametersTable hoverEffectDisabled">
 					<thead>
@@ -203,15 +203,15 @@ $batchId = $_GET["batchId"] ?? null;
 		</div>	
 	
 		<!-- Scripts -->
-		<script src="/Planificateur/assets/js/moment.min.js"></script>
-		<script src="/Planificateur/assets/js/moment-timezone.js"></script>
-		<script src="/Planificateur/assets/js/jquery.min.js"></script>
-		<script src="/Planificateur/assets/js/jquery.dropotron.min.js"></script>
-		<script src="/Planificateur/assets/js/skel.min.js"></script>
-		<script src="/Planificateur/assets/js/util.js"></script>
-		<script src="/Planificateur/assets/js/main.js"></script>
-		<script src="/Planificateur/js/main.js"></script>
-		<script src="/Planificateur/js/toolbox.js"></script>
+		<script src="../../assets/js/moment.min.js"></script>
+		<script src="../../assets/js/moment-timezone.js"></script>
+		<script src="../../assets/js/jquery.min.js"></script>
+		<script src="../../assets/js/jquery.dropotron.min.js"></script>
+		<script src="../../assets/js/skel.min.js"></script>
+		<script src="../../assets/js/util.js"></script>
+		<script src="../../assets/js/main.js"></script>
+		<script src="../../js/main.js"></script>
+		<script src="../../js/toolbox.js"></script>
 		<script src="js/index.js"></script>
 		<script src="js/job.js"></script>
 		<script src="js/jobType.js"></script>

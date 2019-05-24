@@ -66,7 +66,7 @@ class Job implements JsonSerializable
 	    $stmt = $db->getConnection()->prepare(
             "SELECT `j`.`numero` AS `name`, `j`.`date_livraison` AS `deliveryDate`, `j`.`etat` AS `status`, 
                 `j`.`estampille` AS `timestamp`
-            FROM `fabplan`.`job` AS `j` WHERE `j`.`id_job` = :id " . 
+            FROM `job` AS `j` WHERE `j`.`id_job` = :id " . 
 	        (new \MYSQLDatabaseLockingReadTypes($databaseConnectionLockingReadType))->toLockingReadString() . ";"
         );
 	    $stmt->bindValue(':id', $id, PDO::PARAM_INT);
@@ -84,7 +84,7 @@ class Job implements JsonSerializable
 	    //Récupérer les paramètres
 	    $stmt = $db->getConnection()->prepare(
             "SELECT `jt`.`id_job_type` AS `id` 
-            FROM `fabplan`.`job_type` AS `jt` 
+            FROM `job_type` AS `jt` 
             WHERE `jt`.`job_id` = :id 
             ORDER BY `jt`.`type_no` ASC, `jt`.`door_model_id` ASC " . 
 	        (new \MYSQLDatabaseLockingReadTypes($databaseConnectionLockingReadType))->toLockingReadString() . ";"
@@ -117,7 +117,7 @@ class Job implements JsonSerializable
 	    $stmt = $db->getConnection()->prepare("
             SELECT `j`.`id_job` AS `id`, `j`.`date_livraison` AS `deliveryDate`, `j`.`etat` AS `status`, 
                 `j`.`estampille` AS `timestamp`
-            FROM `fabplan`.`job` AS `j` WHERE `j`.`numero` = :name " . 
+            FROM `job` AS `j` WHERE `j`.`numero` = :name " . 
             (new \MYSQLDatabaseLockingReadTypes($databaseConnectionLockingReadType))->toLockingReadString() . ";"
         );
 	    $stmt->bindValue(':name', $name, PDO::PARAM_INT);
@@ -135,7 +135,7 @@ class Job implements JsonSerializable
 	    //Récupérer les JobType
 	    $stmt = $db->getConnection()->prepare(
             "SELECT `jt`.`id_job_type` AS `id` 
-            FROM `fabplan`.`job_type` AS `jt` 
+            FROM `job_type` AS `jt` 
             WHERE `jt`.`job_id` = :id 
             ORDER BY `jt`.`type_no` ASC, `jt`.`door_model_id` ASC " . 
 	        (new \MYSQLDatabaseLockingReadTypes($databaseConnectionLockingReadType))->toLockingReadString() . ";"
@@ -164,7 +164,7 @@ class Job implements JsonSerializable
 	public function save(FabPlanConnection $db) : Job
 	{
 	    $stmt = $db->getConnection()->prepare("
-            SELECT `j`.* FROM `fabplan`.`job` AS `j` WHERE `j`.`id_job` = :id LIMIT 1;
+            SELECT `j`.* FROM `job` AS `j` WHERE `j`.`id_job` = :id LIMIT 1;
         ");
 	    $stmt->bindValue(':id', $this->getId(), PDO::PARAM_INT);
 	    $stmt->execute();
@@ -213,7 +213,7 @@ class Job implements JsonSerializable
 	private function insert(FabPlanConnection $db) : Job
 	{
 	    $stmt = $db->getConnection()->prepare("
-            INSERT INTO `fabplan`.`job` (`numero`, `date_livraison`, `etat`)
+            INSERT INTO `job` (`numero`, `date_livraison`, `etat`)
             VALUES (:name, :deliveryDate, :status);
         ");
 	    $stmt->bindValue(':name', $this->getName(), PDO::PARAM_STR);
@@ -243,7 +243,7 @@ class Job implements JsonSerializable
 	private function update(\FabPlanConnection $db) : \Job
 	{
 	    $stmt = $db->getConnection()->prepare("
-            UPDATE `fabplan`.`job`
+            UPDATE `job`
             SET `numero` = :name, `date_livraison` = :deliveryDate, `etat` = :status
             WHERE `id_job` = :id;
         ");
@@ -280,7 +280,7 @@ class Job implements JsonSerializable
 	    }
 	    else
 	    {
-    	    $stmt = $db->getConnection()->prepare("DELETE FROM `fabplan`.`job` WHERE `id_job` = :id;");
+    	    $stmt = $db->getConnection()->prepare("DELETE FROM `job` WHERE `id_job` = :id;");
     	    $stmt->bindValue(':id', $this->getId(), PDO::PARAM_INT);
     	    $stmt->execute();
 	    }
@@ -300,7 +300,7 @@ class Job implements JsonSerializable
 	public function getTimestampFromDatabase(\FabPlanConnection $db) : ?string
 	{
 	    $stmt= $db->getConnection()->prepare("
-            SELECT `j`.`estampille` FROM `fabplan`.`job` AS `j` WHERE `j`.`id_job` = :id;
+            SELECT `j`.`estampille` FROM `job` AS `j` WHERE `j`.`id_job` = :id;
         ");
 	    $stmt->bindValue(':id', $this->getId(), PDO::PARAM_INT);
 	    $stmt->execute();
@@ -327,7 +327,7 @@ class Job implements JsonSerializable
 	private function emptyInDatabase(\FabPlanConnection $db) : \Job
 	{
 	    $stmt = $db->getConnection()->prepare("
-            SELECT `jt`.`id_job_type` AS `jobTypeId` FROM `fabplan`.`job_type` AS `jt` 
+            SELECT `jt`.`id_job_type` AS `jobTypeId` FROM `job_type` AS `jt` 
             WHERE `jt`.`job_id` = :id;
 	    ");
 	    $stmt->bindValue(':id', $this->getId(), PDO::PARAM_INT);
@@ -356,9 +356,9 @@ class Job implements JsonSerializable
 	{
 	    $stmt = $db->getConnection()->prepare(
             "SELECT `b`.`id_batch` AS `batchId` 
-            FROM `fabplan`.`job` AS `j`
-            INNER JOIN `fabplan`.`batch_job` AS `bj` ON `bj`.`job_id` = `j`.`id_job`
-            INNER JOIN `fabplan`.`batch` AS `b` ON `b`.`id_batch` = `bj`.`batch_id`
+            FROM `job` AS `j`
+            INNER JOIN `batch_job` AS `bj` ON `bj`.`job_id` = `j`.`id_job`
+            INNER JOIN `batch` AS `b` ON `b`.`id_batch` = `bj`.`batch_id`
             WHERE `j`.`id_job` = :id " . 
 	        (new \MYSQLDatabaseLockingReadTypes($this->getDatabaseConnectionLockingReadType()))->toLockingReadString() . ";"
         );

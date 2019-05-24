@@ -6,7 +6,7 @@
  */
 function openType(id = null)
 {
-	let view_URL = ["/Planificateur/parametres/type/view.php"];
+	let view_URL = [ROOT_URL + "/parametres/type/view.php"];
 	if(id !== null && id !== "")
 	{
 		view_URL.push("?id=", id);

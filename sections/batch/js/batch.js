@@ -13,7 +13,7 @@ function retrieveBatchStatus(id)
 		$.ajax({
 			"type": "GET",
 			"contentType": "application/json;charset=utf-8",
-			"url": "/Planificateur/sections/batch/actions/getStatus.php",
+			"url": ROOT_URL + "/sections/batch/actions/getStatus.php",
 			"data": {"batchId": id},
 			"dataType": "json",
 			"async": true,
@@ -48,7 +48,7 @@ function retrievePannels(materialId)
 		$.ajax({
 			"type": "GET",
 			"contentType": "application/json;charset=utf-8",
-			"url": "/Planificateur/parametres/materiel/actions/getPannels.php",
+			"url": ROOT_URL + "/parametres/materiel/actions/getPannels.php",
 			"data": {"materialId": materialId},
 			"dataType": "json",
 			"async": true,
@@ -83,7 +83,7 @@ function retrieveJobs(batchId)
 		$.ajax({
 			"type": "GET",
 			"contentType": "application/json;charset=utf-8",
-			"url": "/Planificateur/sections/batch/actions/getJobs.php",
+			"url": ROOT_URL + "/sections/batch/actions/getJobs.php",
 			"data": {"batchId": batchId},
 			"dataType": "json",
 			"async": true,
@@ -119,7 +119,7 @@ function getJobSummary(identifier, isName = false)
 		$.ajax({
 			"type": "GET",
 			"contentType": "application/json;charset=utf-8",
-			"url": "/Planificateur/sections/job/actions/getSummary.php",
+			"url": ROOT_URL + "/sections/job/actions/getSummary.php",
 			"data": {[isName ? "name" : "id"]: identifier},
 			"dataType": "json",
 			"async": true,
@@ -163,7 +163,7 @@ function saveBatch(id, name, startDate, endDate, fullDay, material, boardSize, s
 		$.ajax({
 			"type": "POST",
 			"contentType": "application/json;charset=utf-8",
-			"url": "/Planificateur/sections/batch/actions/save.php",
+			"url": ROOT_URL + "/sections/batch/actions/save.php",
 			"data": JSON.stringify({
 				"id": id, 
 				"name": name, 
@@ -210,7 +210,7 @@ function downloadBatch(id, action = 1)
 		$.ajax({
 			"type": "POST",
 			"contentType": "application/json;charset=utf-8",
-			"url": "/Planificateur/sections/batch/actions/download.php",
+			"url": ROOT_URL + "/sections/batch/actions/download.php",
 			"data": JSON.stringify({"batchId": id, "action": action}),
 			"dataType": "json",
 			"async": true,
@@ -244,7 +244,7 @@ function deleteBatch(id)
 		$.ajax({
 			"type": "POST",
 			"contentType": "application/json;charset=utf-8",
-			"url": "/Planificateur/sections/batch/actions/delete.php",
+			"url": ROOT_URL + "/sections/batch/actions/delete.php",
 			"data": JSON.stringify({"batchId": id}),
 			"dataType": "json",
 			"async": true,

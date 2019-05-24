@@ -62,7 +62,7 @@ class BatchController
     {
         $stmt = $this->getDBConnection()->getConnection()->prepare("
             SELECT `b`.`id`
-            FROM `fabplan`.`batch` AS `b`
+            FROM `batch` AS `b`
             ORDER BY `t`.`id` " . (($ascending === true) ? "ASC" : "DESC") .
             (($quantity === 0) ? "" : " LIMIT :quantity OFFSET :offset") .
             "FOR SHARE;"

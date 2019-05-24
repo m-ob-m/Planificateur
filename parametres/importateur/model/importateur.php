@@ -44,7 +44,7 @@
             // Récupérer le test
             $stmt = $db->getConnection()->prepare(
                 "SELECT `i`.`derniere_date` AS `lastUpdateTimestamp`, `i`.`estampille` AS `timestamp`
-                FROM `fabplan`.`importateur` AS `i`;"
+                FROM `importateur` AS `i`;"
             );
             $stmt->execute();
             
@@ -72,7 +72,7 @@
         public function save(FabPlanConnection $db) : \Importateur
         {
             $stmt = $db->getConnection()->prepare("
-                UPDATE `fabplan`.`importateur`
+                UPDATE `importateur`
                 SET `derniere_date` = :lastUpdateTimestamp;
             ");
             $stmt->bindValue(':lastUpdateTimestamp', $this->getLastUpdateTimestamp(), PDO::PARAM_INT);
@@ -96,7 +96,7 @@
         public function getTimestampFromDatabase(\FabPlanConnection $db) : ?string
         {
             $stmt= $db->getConnection()->prepare("
-                SELECT `i`.`estampille` FROM `fabplan`.`importateur` AS `i`;
+                SELECT `i`.`estampille` FROM `importateur` AS `i`;
             ");
             $stmt->execute();
             

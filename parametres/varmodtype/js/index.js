@@ -127,7 +127,7 @@ function retrieveParameters(modelId, typeNo)
 		$.ajax({
 			"type": "GET",
 			"contentType": "application/json;charset=utf-8",
-			"url": "/Planificateur/parametres/varmodtype/actions/getParameters.php",
+			"url": ROOT_URL + "/parametres/varmodtype/actions/getParameters.php",
 			"data": {"modelId": modelId, "typeNo": typeNo},
 			"dataType": "json",
 			"async": true,
@@ -164,7 +164,7 @@ function saveParameters(modelId, typeNo, parameters)
 		$.ajax({
 			"type": "POST",
 			"contentType": "application/json;charset=utf-8",
-			"url": "/Planificateur/parametres/varmodtype/actions/save.php",
+			"url": ROOT_URL + "/parametres/varmodtype/actions/save.php",
 			"data": JSON.stringify({"modelId": modelId, "typeNo": typeNo, "parameters": parameters}),
 			"dataType": "json",
 			"async": true,
@@ -242,18 +242,21 @@ async function refreshParameters()
 {
 	$("table#parametersTable >tbody >tr").remove();
 	try{
-		let modelId = $("select#model option:selected").val();
-		let typeNo = $("select#type option:selected").val();
-		let parameters = await retrieveParameters(modelId, typeNo);
-		if(parameters.length > 0)
+		if($("select#model >option").length > 0 && $("select#type >option").length > 0)
 		{
-			$(parameters).each(function(){
-				$("table#parametersTable >tbody").append(newParameter(this));
-			});
-		}
-		else
-		{
-			$("table#parametersTable >tbody").append(newParameter());
+			let modelId = $("select#model option:selected").val();
+			let typeNo = $("select#type option:selected").val();
+			let parameters = await retrieveParameters(modelId, typeNo);
+			if(parameters.length > 0)
+			{
+				$(parameters).each(function(){
+					$("table#parametersTable >tbody").append(newParameter(this));
+				});
+			}
+			else
+			{
+				$("table#parametersTable >tbody").append(newParameter());
+			}
 		}
 	}
 	catch(error){
@@ -296,7 +299,7 @@ function exportParametersToExcelFile(modelId)
 		$.ajax({
 			"type": "GET",
 			"contentType": "application/json;charset=utf-8",
-			"url": "/Planificateur/parametres/varmodtype/actions/exportToExcel.php",
+			"url": ROOT_URL + "/parametres/varmodtype/actions/exportToExcel.php",
 			"data": {"modelId": modelId, "generic": null},
 			"dataType": "json",
 			"async": true,
@@ -333,7 +336,7 @@ function importParametersFromExcelFile(file)
 			"type": "POST",
 			"contentType": false,
 			"processData": false,
-			"url": "/Planificateur/parametres/varmodtype/actions/importFromExcel.php",
+			"url": ROOT_URL + "/parametres/varmodtype/actions/importFromExcel.php",
 			"data": formData,
 			"dataType": "json",
 			"async": true,

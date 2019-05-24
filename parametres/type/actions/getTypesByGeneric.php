@@ -17,6 +17,7 @@ include_once __DIR__ . '/../../generic/model/generic.php'; // Modèle de Generic
 //Structure de retour vers javascript
 $responseArray = array("status" => null, "success" => array("data" => null), "failure" => array("message" => null));
 
+$associatedTypes = array();
 try
 {
     $genericId = intval($_GET["genericId"]) ?? null;
@@ -24,7 +25,11 @@ try
     try
     {
         $db->getConnection()->beginTransaction();
-        $associatedTypes = \Generic::withID($db, $genericId)->getAssociatedTypes();
+        $generic = \Generic::withID($db, $genericId);
+        if($generic !== null)
+        {
+            $associatedTypes = $generic->getAssociatedTypes();
+        }
         $db->getConnection()->commit();
     }
     catch(\Exception $e)

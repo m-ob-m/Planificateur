@@ -26,7 +26,11 @@ try
     $typeNo = $_GET["typeNo"] ?? null;
     
     // Get the information
-    $parameters = createModelTypeGenericParametersView($modelId, $typeNo);
+    $parameters = array();
+    if($modelId !== "" && $modelId !== null && $typeNo !== "" && $typeNo !== null)
+    {
+        $parameters = createModelTypeGenericParametersView($modelId, $typeNo);
+    }
     
     // Retour au javascript
     $responseArray["status"] = "success";

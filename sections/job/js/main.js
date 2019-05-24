@@ -10,12 +10,12 @@ async function goToBatch(batchId)
 	{
 		if(await askConfirmation("Quitter cette job?", "Les modifications non sauvegardés seront perdues."))
 		{
-			window.location.assign("/Planificateur/sections/batch/index.php?id=" + batchId);
+			window.location.assign(ROOT_URL + "/sections/batch/index.php?id=" + batchId);
 		}
 	}
 	else
 	{
-		window.location.assign("/Planificateur/sections/batch/index.php?id=" + batchId);
+		window.location.assign(ROOT_URL + "/sections/batch/index.php?id=" + batchId);
 	}
 }
 
@@ -26,5 +26,5 @@ async function goToBatch(batchId)
  */
 function goToJob(jobId, batchId)
 {
-	window.location.assign("/Planificateur/sections/job/index.php?jobId=" + jobId  + "&batchId=" + batchId);
+	window.location.assign(ROOT_URL + "/sections/job/index.php?jobId=" + jobId  + "&batchId=" + batchId);
 }

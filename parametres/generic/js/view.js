@@ -94,7 +94,7 @@ function saveGeneric(id, filename, description, heightParameter, copyParametersF
 {
 	return new Promise(function(resolve, reject){
 		$.ajax({
-	    	"url": "/Planificateur/parametres/generic/actions/save.php",
+	    	"url": ROOT_URL + "/parametres/generic/actions/save.php",
 	        "type": "POST",
 	        "contentType": "application/json;charset=utf-8",
 	        "data": JSON.stringify({
@@ -156,7 +156,7 @@ function deleteGeneric(id)
 {
 	return new Promise(function(resolve, reject){
 		$.ajax({
-			"url": "/Planificateur/parametres/generic/actions/delete.php",
+			"url": ROOT_URL + "/parametres/generic/actions/delete.php",
 			"type": "POST",
 			"contentType": "application/json;charset=utf-8",
 			"data": JSON.stringify({"id": id}),

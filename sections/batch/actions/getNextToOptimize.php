@@ -28,10 +28,10 @@ try
         $db->getConnection()->beginTransaction();
         $stmt = $db->getConnection()->prepare("
             SELECT `b`.`id_batch` AS `id`, `b`.`nom_batch` AS `name`, `b`.`panneaux` AS `pannels`, SUM(`jtp`.`quantite`) AS `quantity
-            FROM `fabplan`.`batch` AS `b`
-            INNER JOIN `fabplan`.`job` AS `j` ON `b`.`id_batch` = `j`.`batch_id`
-            INNER JOIN `fabplan`.`job_type` AS `jt` ON `j`.`id_job` = `jt`.`job_id`
-            INNER JOIN `fabplan`.`job_type_porte` AS `jtp` ON `jt`.`id_job_type` = `jtp`.`job_type_id`
+            FROM `batch` AS `b`
+            INNER JOIN `job` AS `j` ON `b`.`id_batch` = `j`.`batch_id`
+            INNER JOIN `job_type` AS `jt` ON `j`.`id_job` = `jt`.`job_id`
+            INNER JOIN `job_type_porte` AS `jtp` ON `jt`.`id_job_type` = `jtp`.`job_type_id`
             WHERE `b`.`etat_mpr` = 'A'
             GROUP BY `b`.`id_batch`, `b`.`nom_batch`, `b`.`panneaux` 
             ORDER BY `quantity` ASC

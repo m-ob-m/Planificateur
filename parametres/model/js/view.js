@@ -82,7 +82,7 @@ function saveModel(id, description, copyParametersFrom)
 {
 	return new Promise(function(resolve, reject){
 		$.ajax({
-	    	"url": "/Planificateur/parametres/model/actions/save.php",
+	    	"url": ROOT_URL + "/parametres/model/actions/save.php",
 	        "type": "POST",
 	        "contentType": "application/json;charset=utf-8",
 	        "data": JSON.stringify({
@@ -143,7 +143,7 @@ function deleteModel(id)
 {
 	return new Promise(function(resolve, reject){
 		$.ajax({
-			"url": "/Planificateur/parametres/model/actions/delete.php",
+			"url": ROOT_URL + "/parametres/model/actions/delete.php",
 			"type": "POST",
 			"contentType": "application/json;charset=utf-8",
 			"data": JSON.stringify({"id": id}),

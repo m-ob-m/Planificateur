@@ -105,7 +105,7 @@ function saveType(id, importNo, description, genericId, copyParametersFrom)
 {
 	return new Promise(function(resolve, reject){
 		$.ajax({
-	    	"url": "/Planificateur/parametres/type/actions/save.php",
+	    	"url": ROOT_URL + "/parametres/type/actions/save.php",
 	        "type": "POST",
 	        "contentType": "application/json;charset=utf-8",
 	        "data": JSON.stringify({
@@ -166,7 +166,7 @@ function deleteType(id)
 {
 	return new Promise(function(resolve, reject){
 		$.ajax({
-			"url": "/Planificateur/parametres/type/actions/delete.php",
+			"url": ROOT_URL + "/parametres/type/actions/delete.php",
 			"type": "POST",
 			"contentType": "application/json;charset=utf-8",
 			"data": JSON.stringify({"id": id}),
@@ -222,7 +222,7 @@ function getTypesWithGeneric(id)
 {
 	return new Promise(function(resolve, reject){
 		$.ajax({
-			"url": "/Planificateur/parametres/type/actions/getTypesByGeneric.php",
+			"url": ROOT_URL + "/parametres/type/actions/getTypesByGeneric.php",
 			"type": "GET",
 			"contentType": "application/json;charset=utf-8",
 			"data": {"genericId": id},

@@ -34,8 +34,8 @@
             {
                 $stmt = $db->getConnection()->prepare("
                     SELECT `bj`.`batch_Id` AS `batchId`
-                    FROM `fabplan`.`batch_job` AS `bj`
-                    INNER JOIN `fabplan`.`job` AS `j` ON `bj`.`job_Id` = `j`.`id_Job`
+                    FROM `batch_job` AS `bj`
+                    INNER JOIN `job` AS `j` ON `bj`.`job_Id` = `j`.`id_Job`
                     WHERE `j`.`id_job` = :jobId
                     LIMIT 1
                     FOR SHARE;

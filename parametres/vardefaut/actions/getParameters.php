@@ -17,17 +17,23 @@ include_once __DIR__ . '/../../../lib/connect.php';	// Classe de connection à l
 // Structure de retour vers javascript
 $responseArray = array("status" => null, "success" => array("data" => null), "failure" => array("message" => null));
 
+$data = array();
 try
 {
     $input =  json_decode(file_get_contents("php://input"));
     
     // Vérification des paramètres
     $id = $_GET["id"] ?? null;
+    
     $db = new \FabPlanConnection();
     try
     {
         $db->getConnection()->beginTransaction();
-        $data = \Generic::withID($db, $id)->getGenericParameters();
+        $generic = \Generic::withID($db, $id);
+        if($generic !== null)
+        {
+            $data = $generic->getGenericParameters();
+        }
         $db->getConnection()->commit();
     }
     catch(\Exception $e)

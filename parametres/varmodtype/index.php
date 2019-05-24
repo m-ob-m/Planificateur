@@ -46,12 +46,12 @@
 		<title>Fabridor - Liste des valeurs par défaut</title>
 		<meta charset="UTF-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1" />
-		<link rel="stylesheet" href="/Planificateur/assets/css/responsive.css" />
-		<link rel="stylesheet" href="/Planificateur/assets/css/fabridor.css" />
-		<link rel="stylesheet" href="/Planificateur/assets/css/loader.css" />
-		<link rel="stylesheet" href="/Planificateur/assets/css/parametersTable.css"/>
-		<link rel="stylesheet" href="/Planificateur/assets/css/imageButton.css">
-		<link rel="stylesheet" href="/Planificateur/assets/css/parametersForm.css"/>
+		<link rel="stylesheet" href="../../assets/css/responsive.css" />
+		<link rel="stylesheet" href="../../assets/css/fabridor.css" />
+		<link rel="stylesheet" href="../../assets/css/loader.css" />
+		<link rel="stylesheet" href="../../assets/css/parametersTable.css"/>
+		<link rel="stylesheet" href="../../assets/css/imageButton.css">
+		<link rel="stylesheet" href="../../assets/css/parametersForm.css"/>
 	</head>
 	<body class="homepage">
 		<div id="page-wrapper">
@@ -62,34 +62,34 @@
 					<div id="logo">
 						<h1>
 							<a href="index.php">
-								<img src="/Planificateur/images/fabridor.jpg">
+								<img src="../../images/fabridor.jpg">
 							</a>
 						</h1>
 						<span>Variables modèle-type</span>
 					</div>
 					
-					<div style="display:inline-block;float:right;">
+					<div style="float:right;">
     					<!-- Nav -->
     					<nav id="nav">
     						<ul>
     							<li>
     								<a href="javascript: void(0);" onclick="exportParameters();" class="imageButton">
-    									<img src="/Planificateur/images/export32.png">
+    									<img src="../../images/export32.png">
     								Exporter</a>
     							</li>
     							<li>
     								<a href="javascript: void(0);" onclick="importParameters();" class="imageButton">
-    									<img src="/Planificateur/images/export32.png">
+    									<img src="../../images/export32.png">
     								Importer</a>
     							</li>
     							<li>
     								<a href="javascript: void(0);" onclick="saveConfirm();" class="imageButton">
-    									<img src="/Planificateur/images/save.png">
+    									<img src="../../images/save.png">
     								Sauvegarder</a>
     							</li>
     							<li>
-    								<a href="/Planificateur/index.php" class="imageButton">
-    									<img src="/Planificateur/images/exit.png">
+    								<a href="../../index.php" class="imageButton">
+    									<img src="../../images/exit.png">
     								Sortir</a>
     							</li>
     						</ul>
@@ -171,13 +171,13 @@
 		</div>		
 		
 		<!-- Scripts -->
-		<script type="text/javascript" src="/Planificateur/assets/js/jquery.min.js"></script>
-		<script type="text/javascript" src="/Planificateur/assets/js/jquery.dropotron.min.js"></script>
-		<script type="text/javascript" src="/Planificateur/assets/js/skel.min.js"></script>
-		<script type="text/javascript" src="/Planificateur/assets/js/util.js"></script>
-		<script type="text/javascript" src="/Planificateur/assets/js/main.js"></script>
-		<script type="text/javascript" src="/Planificateur/js/main.js"></script>
-		<script type="text/javascript" src="/Planificateur/js/toolbox.js"></script>
+		<script type="text/javascript" src="../../assets/js/jquery.min.js"></script>
+		<script type="text/javascript" src="../../assets/js/jquery.dropotron.min.js"></script>
+		<script type="text/javascript" src="../../assets/js/skel.min.js"></script>
+		<script type="text/javascript" src="../../assets/js/util.js"></script>
+		<script type="text/javascript" src="../../assets/js/main.js"></script>
+		<script type="text/javascript" src="../../js/main.js"></script>
+		<script type="text/javascript" src="../../js/toolbox.js"></script>
 		<script type="text/javascript" src="js/main.js"></script>
 		<script type="text/javascript" src="js/index.js"></script>
 	</body>

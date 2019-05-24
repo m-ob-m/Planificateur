@@ -63,7 +63,7 @@ class Test extends ModelTypeGeneric implements JsonSerializable
 	{ 	    
 	    // Récupérer le test
 	    $stmt = $db->getConnection()->prepare(
-            "SELECT `t`.* FROM `fabplan`.`test` AS `t` WHERE `t`.`id` = :id " . 
+            "SELECT `t`.* FROM `test` AS `t` WHERE `t`.`id` = :id " . 
 	        (new \MYSQLDatabaseLockingReadTypes($databaseConnectionLockingReadType))->toLockingReadString() . ";"
         );
 	    $stmt->bindValue(':id', $id, PDO::PARAM_INT);
@@ -83,11 +83,11 @@ class Test extends ModelTypeGeneric implements JsonSerializable
 	    //Récupérer les paramètres
 	    $stmt = $db->getConnection()->prepare(
             "SELECT `tp`.* 
-            FROM `fabplan`.`test_parameters` AS `tp` 
-            INNER JOIN `fabplan`.`test` AS `t` ON `tp`.`test_id` = `t`.`id`
-            INNER JOIN `fabplan`.`door_types` AS `dt` ON `dt`.`importNo` = `t`.`type_no`
-            INNER JOIN `fabplan`.`generics` AS `g` ON `g`.`id` = `dt`.`generic_id`
-        	INNER JOIN `fabplan`.`generic_parameters` AS `gp` 
+            FROM `test_parameters` AS `tp` 
+            INNER JOIN `test` AS `t` ON `tp`.`test_id` = `t`.`id`
+            INNER JOIN `door_types` AS `dt` ON `dt`.`importNo` = `t`.`type_no`
+            INNER JOIN `generics` AS `g` ON `g`.`id` = `dt`.`generic_id`
+        	INNER JOIN `generic_parameters` AS `gp` 
                 ON `gp`.`generic_id` = `g`.`id` AND `gp`.`parameter_key` = `tp`.`parameter_key`
             WHERE `t`.`id` = :id
             ORDER BY `gp`.`id` ASC " . 
@@ -188,7 +188,7 @@ class Test extends ModelTypeGeneric implements JsonSerializable
 	{
 	    // Création d'un type de test
 	    $stmt = $db->getConnection()->prepare("
-            INSERT INTO `fabplan`.`test` (`id`, `name`, `door_model_id`, `type_no`, `fichier_mpr`)
+            INSERT INTO `test` (`id`, `name`, `door_model_id`, `type_no`, `fichier_mpr`)
             VALUES (:id, :name, :door_model_id, :type_no, :fichier_mpr)
         ");
 	    $stmt->bindValue(':id', $this->getId(), PDO::PARAM_INT);
@@ -222,7 +222,7 @@ class Test extends ModelTypeGeneric implements JsonSerializable
 	{
 	    // Mise à jour d'un testType
 	    $stmt = $db->getConnection()->prepare("
-            UPDATE `fabplan`.`test` AS `t`
+            UPDATE `test` AS `t`
             SET `name` = :name, `door_model_id` = :door_model_id, `type_no` = :type_no, `fichier_mpr` = :fichier_mpr
             WHERE `id` = :id;
         ");
@@ -280,7 +280,7 @@ class Test extends ModelTypeGeneric implements JsonSerializable
 	public function getTimestampFromDatabase(\FabPlanConnection $db) : ?string
 	{
 	    $stmt= $db->getConnection()->prepare("
-            SELECT `t`.`estampille` FROM `fabplan`.`test` AS `t` WHERE `t`.`id` = :id;
+            SELECT `t`.`estampille` FROM `test` AS `t` WHERE `t`.`id` = :id;
         ");
 	    $stmt->bindValue(':id', $this->getId(), PDO::PARAM_INT);
 	    $stmt->execute();
@@ -311,11 +311,11 @@ class Test extends ModelTypeGeneric implements JsonSerializable
 	    $stmt = $db->getConnection()->prepare(
         	"SELECT `gp`.`parameter_key` AS `key`, `dmd`.`paramValue` AS `specificValue`, 
                 `gp`.`parameter_value` AS `genericValue`, `gp`.`description` AS `description`
-        	FROM `fabplan`.`door_types` AS `dt`
-        	INNER JOIN `fabplan`.`generics` AS `g` ON `dt`.`generic_id` = `g`.`id` AND `dt`.`importNo` = :typeNo
+        	FROM `door_types` AS `dt`
+        	INNER JOIN `generics` AS `g` ON `dt`.`generic_id` = `g`.`id` AND `dt`.`importNo` = :typeNo
         	INNER JOIN `generic_parameters` AS `gp` ON `gp`.`generic_id` = `g`.`id`
-        	INNER JOIN `fabplan`.`door_model` AS `dm` ON `dm`.`id_door_model` = :modelId
-        	LEFT JOIN `fabplan`.`door_model_data` AS `dmd` ON `dmd`.`paramKey` = `gp`.`parameter_key`
+        	INNER JOIN `door_model` AS `dm` ON `dm`.`id_door_model` = :modelId
+        	LEFT JOIN `door_model_data` AS `dmd` ON `dmd`.`paramKey` = `gp`.`parameter_key`
         		AND `dmd`.`fkDoorModel` = `dm`.`id_door_model` AND `dmd`.`fkDoorType` = `dt`.`importNo`
             ORDER BY `gp`.`id` ASC " . 
 	        (new \MYSQLDatabaseLockingReadTypes($this->getDatabaseConnectionLockingReadType()))->toLockingReadString() . ";"
