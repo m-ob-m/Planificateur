@@ -76,7 +76,7 @@ finally
 					</div>
 					
 					<div style="float:right;">
-    					<nav id="nav">
+    					<nav id="nav" style="display: block;">
     						<ul>
     							<li>
     								<a href="javascript: void(0);" onclick="saveConfirm();" class="imageButton">
@@ -148,12 +148,12 @@ finally
 		</div>
 		
 		<!--  Fenetre Modal pour message d'erreurs -->
-		<div id="errMsgModal" class="modal" onclick='$(this).css({"display": "none"});'>
+		<div id="errMsgModal" class="modal" onclick='this.style.display = "none";'>
 			<div id="errMsg" class="modal-content" style='color:#FF0000;'></div>
 		</div>
 		
 		<!--  Fenetre Modal pour message de validation -->
-		<div id="validationMsgModal" class="modal" onclick='$(this).css({"display": "none"});'>
+		<div id="validationMsgModal" class="modal" onclick='this.style.display = "none";'>
 			<div id="validationMsg" class="modal-content" style='color:#FF0000;'></div>
 		</div>
 		
@@ -163,14 +163,11 @@ finally
 		</div>	
 		
 		<!-- Scripts -->
-		<script src="../../assets/js/jquery.min.js"></script>
-		<script src="../../assets/js/jquery.dropotron.min.js"></script>
-		<script src="../../assets/js/skel.min.js"></script>
-		<script src="../../assets/js/util.js"></script>
-		<script src="../../assets/js/main.js"></script>
-		<script src="../../js/main.js"></script>
-		<script src="../../js/toolbox.js"></script>
-		<script src="js/main.js"></script>
-		<script src="js/view.js"></script>
+		<script type="text/javascript" src="../../assets/js/ajax.js"></script>
+		<script type="text/javascript" src="../../assets/js/docReady.js"></script>
+		<script type="text/javascript" src="../../js/main.js"></script>
+		<script type="text/javascript" src="../../js/toolbox.js"></script>
+		<script type="text/javascript" src="js/main.js"></script>
+		<script type="text/javascript" src="js/view.js"></script>
 	</body>
 </html>

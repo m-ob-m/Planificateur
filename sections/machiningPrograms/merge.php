@@ -40,7 +40,7 @@
 						<span>Combiner des programmes</span>
 					</div>
 					<div style="float: right;">
-						<nav id="nav">
+						<nav id="nav" style="display: block;">
 							<ul>
 								<li>
 									<a href="../../sections/machiningPrograms/linearize.php" class="imageButton">
@@ -77,12 +77,12 @@
 		</div>
 
 		<!--  Fenêtre Modal pour message d'erreurs -->
-		<div id="errMsgModal" class="modal" onclick='$(this).css({"display": "none"});' >
+		<div id="errMsgModal" class="modal" onclick='this.style.display = "none";' >
 			<div id="errMsg" class="modal-content" style='color: #FF0000;'></div>
 		</div>
 		
 		<!--  Fenêtre Modal pour message de validation -->
-		<div id="validationMsgModal" class="modal" onclick='$(this).css({"display": "none"});' >
+		<div id="validationMsgModal" class="modal" onclick='this.style.display = "none";' >
 			<div id="validationMsg" class="modal-content" style='color: #FF0000;'></div>
 		</div>
 		
@@ -91,14 +91,11 @@
 			<div id="loader" class="loader modal-content"></div>
 		</div>
 
-		<script src="../../assets/js/jquery.min.js"></script>
-		<script src="../../assets/js/jquery.dropotron.min.js"></script>
-		<script src="../../assets/js/skel.min.js"></script>
-		<script src="../../assets/js/util.js"></script>
-		<script src="../../assets/js/main.js"></script>
-		<script src="../../js/main.js"></script>
-		<script src="../../js/toolbox.js"></script>
-		<script src="js/main.js"></script>
-		<script src="js/merge.js"></script>
+		<script type="text/javascript" src="../../assets/js/ajax.js"></script>
+		<script type="text/javascript" src="../../assets/js/docReady.js"></script>
+		<script type="text/javascript" src="../../js/main.js"></script>
+		<script type="text/javascript" src="../../js/toolbox.js"></script>
+		<script type="text/javascript" src="js/main.js"></script>
+		<script type="text/javascript" src="js/merge.js"></script>
 	</body> 
 </html>

@@ -30,7 +30,7 @@ function retrieveBatchStatus(id)
 			}
 		})
 		.fail(function(error){
-			reject(error.responseText);
+			reject(error);
 		});
 	});
 }
@@ -65,7 +65,7 @@ function retrievePannels(materialId)
 			}
 		})
 		.fail(function(error){
-			reject(error.responseText);
+			reject(error);
 		});
 	});
 }
@@ -100,7 +100,7 @@ function retrieveJobs(batchId)
 			}
 		})
 		.fail(function(error){
-			reject(error.responseText);
+			reject(error);
 		});
 	});
 }
@@ -136,7 +136,7 @@ function getJobSummary(identifier, isName = false)
 			}
 		})
 		.fail(function(error){
-			reject(error.responseText);
+			reject(error);
 		});
 	});
 }
@@ -164,7 +164,7 @@ function saveBatch(id, name, startDate, endDate, fullDay, material, boardSize, s
 			"type": "POST",
 			"contentType": "application/json;charset=utf-8",
 			"url": ROOT_URL + "/sections/batch/actions/save.php",
-			"data": JSON.stringify({
+			"data": {
 				"id": id, 
 				"name": name, 
 				"startDate": startDate.format("YYYY-MM-DD HH:mm:ss"), 
@@ -174,8 +174,8 @@ function saveBatch(id, name, startDate, endDate, fullDay, material, boardSize, s
 				"boardSize": boardSize, 
 				"status": status, 
 				"comments": comments, 
-				"jobIds": jobIds}
-			),
+				"jobIds": jobIds
+			},
 			"dataType": "json",
 			"async": true,
 			"cache": false,
@@ -191,7 +191,7 @@ function saveBatch(id, name, startDate, endDate, fullDay, material, boardSize, s
 			}
 		})
 		.fail(function(error){
-			reject(error.responseText);
+			reject(error);
 		});
 	});
 }
@@ -211,7 +211,7 @@ function downloadBatch(id, action = 1)
 			"type": "POST",
 			"contentType": "application/json;charset=utf-8",
 			"url": ROOT_URL + "/sections/batch/actions/download.php",
-			"data": JSON.stringify({"batchId": id, "action": action}),
+			"data": {"batchId": id, "action": action},
 			"dataType": "json",
 			"async": true,
 			"cache": false
@@ -227,7 +227,7 @@ function downloadBatch(id, action = 1)
 			}
 		})
 		.fail(function(error){
-			reject(error.responseText);
+			reject(error);
 		});
 	});
 }
@@ -245,7 +245,7 @@ function deleteBatch(id)
 			"type": "POST",
 			"contentType": "application/json;charset=utf-8",
 			"url": ROOT_URL + "/sections/batch/actions/delete.php",
-			"data": JSON.stringify({"batchId": id}),
+			"data": {"batchId": id},
 			"dataType": "json",
 			"async": true,
 			"cache": false,
@@ -261,7 +261,7 @@ function deleteBatch(id)
 			}
 		})
 		.fail(function(error){
-			reject(error.responseText);
+			reject(error);
 		});
 	});
 }

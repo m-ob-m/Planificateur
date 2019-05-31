@@ -47,14 +47,28 @@
 					$defaultExternalProfile = $jobType->getType()->getGeneric()->getParametersAsKeyValuePairs()["T_Ext"];
                     $externalProfile = $jobType->getParametersAsKeyValuePairs()["T_Ext"] ?? $defaultExternalProfile;
                     $modelId = $jobType->getModel()->getId();
-                    $typeNo = $jobType->getType()->getImportNo();
+					$typeNo = $jobType->getType()->getImportNo();
+					$height = ($generic->getHeightParameter() === "LPX") ? $part->getLength() : $part->getWidth();
+					$width = ($generic->getHeightParameter() === "LPX") ? $part->getWidth() : $part->getLength();
+					$grain = $part->getGrain();
+					if($generic->getHeightParameter() === "LPY")
+					{
+						if($grain === "X")
+						{
+							$grain = "Y";
+						}
+						elseif($grain === "Y")
+						{
+							$grain = "X";
+						}
+					}
                     $this->_csv .=  "{$modelId}_{$typeNo}_{$jobType->getId()};" . 
                         "{$material->getCodeCutRite()};" . 
                         "{$part->getQuantityToProduce()};" . 
-    					(($generic->getHeightParameter() === "LPX") ? $part->getLength() : $part->getWidth()) . ";" .
-    					(($generic->getHeightParameter() === "LPX") ? $part->getWidth() : $part->getLength()) . ";" .
+    					"{$height};" .
+    					"{$width};" .
     					"{$typeNo};" .
-    					"{$part->getGrain()};" .
+    					"{$grain};" .
     					"{$externalProfile};" .
     					"{$job->getName()}_{$part->getId()};;;;;;;\n"; 
     			}

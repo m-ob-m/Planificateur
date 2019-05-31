@@ -76,16 +76,16 @@ async function deleteConfirm()
 	
 	if(await askConfirmation("Suppression de matériel", "Voulez-vous vraiment supprimer ce matériel?"))
 	{
-		$("#loadingModal").css({"display": "block"});
+		document.getElementById("loadingModal").style.display = "block";
 		try{
-			await deleteMaterial($("#id_materiel").val());
+			await deleteMaterial(document.getElementById("id_materiel").value);
 			goToIndex();
 		}
 		catch(error){
 			showError("La suppression du matériel a échouée", error);
 		}
 		finally{
-			$("#loadingModal").css({"display": "none"});
+			document.getElementById("loadingModal").style.display = "none";
 		}
 	}
 }
@@ -95,22 +95,42 @@ async function deleteConfirm()
  */
 async function saveConfirm()
 {
+	let hasGrain = null;
+	for (let item of document.getElementsByName("has_grain"))
+	{
+		if(item.checked)
+		{
+			hasGrain = item.value;
+			break;
+		}
+	}
+
+	let isMDF = null;
+	for (let item of document.getElementsByName("est_mdf"))
+	{
+		if(item.checked)
+		{
+			isMDF = item.value;
+			break;
+		}
+	}
+
 	let args = [
-		$("#id_materiel").val(), 
-		$("#description").val(), 
-		$("#codeSIA").val(), 
-		$("#codeCutRite").val(), 
-		$("#epaisseur").val(), 
-		$("#essence").val(), 
-		$("input[name=has_grain]:checked").val(), 
-		$("input[name=est_mdf]:checked").val()
+		document.getElementById("id_materiel").value, 
+		document.getElementById("description").value, 
+		document.getElementById("codeSIA").value, 
+		document.getElementById("codeCutRite").value, 
+		document.getElementById("epaisseur").value, 
+		document.getElementById("essence").value, 
+		hasGrain, 
+		isMDF
 	];
 	
 	if(validateInformation.apply(null, args))
 	{
 		if(await askConfirmation("Sauvegarde de matériel", "Voulez-vous vraiment sauvegarder ce matériel?"))
 		{
-			$("#loadingModal").css({"display": "block"});
+			document.getElementById("loadingModal").style.display = "block";
 			try{
 				let id = await saveMaterial.apply(null, args);
 				openMaterial(id);
@@ -119,7 +139,7 @@ async function saveConfirm()
 				showError("La sauvegarde du matériel a échouée", error);
 			}
 			finally{
-				$("#loadingModal").css({"display": "none"});
+				document.getElementById("loadingModal").style.display = "none";
 			}
 		}
 	}
@@ -134,27 +154,27 @@ async function saveConfirm()
 function deleteMaterial(id)
 {	
 	return new Promise(function(resolve, reject){
-		$.ajax({
+		ajax.send({
 			"type": "POST",
 			"contentType": "application/json;charset=utf-8",
 			"url": ROOT_URL + "/parametres/materiel/actions/delete.php",
-			"data": JSON.stringify({"id": id}),
+			"data": {"id": id},
 			"dataType": "json",
 			"async": true,
 			"cache": false,
-		})
-		.done(function(response){
-			if(response.status === "success")
-			{
-				resolve(response.success.data);
+			"onSuccess": function(response){
+				if(response.status === "success")
+				{
+					resolve(response.success.data);
+				}
+				else
+				{
+					reject(response.failure.message);
+				}
+			},
+			"onFailure": function(error){
+				reject(error);
 			}
-			else
-			{
-				reject(response.failure.message);
-			}
-		})
-		.fail(function(error){
-			reject(error.responseText);
 		});
 	});
 }
@@ -175,11 +195,11 @@ function deleteMaterial(id)
 function saveMaterial(id, description, siaCode, cutRiteCode, thickness, woodType, grain, isMDF)
 {	
 	return new Promise(function(resolve, reject){
-		$.ajax({
+		ajax.send({
 			"type": "POST",
 			"contentType": "application/json;charset=utf-8",
 			"url": ROOT_URL + "/parametres/materiel/actions/save.php",
-			"data": JSON.stringify({
+			"data": {
 				"id": ((id === "") ? null : id), 
 				"description": description, 
 				"siaCode": siaCode, 
@@ -188,23 +208,23 @@ function saveMaterial(id, description, siaCode, cutRiteCode, thickness, woodType
 				"woodType": woodType, 
 				"grain": grain, 
 				"isMDF": isMDF
-			}),
+			},
 			"dataType": "json",
 			"async": true,
 			"cache": false,
-		})
-		.done(function(response){
-			if(response.status === "success")
-			{
-				resolve(response.success.data);
+			"onSuccess": function(response){
+				if(response.status === "success")
+				{
+					resolve(response.success.data);
+				}
+				else
+				{
+					reject(response.failure.message);
+				}
+			},
+			"onFailure": function(error){
+				reject(error);
 			}
-			else
-			{
-				reject(response.failure.message);
-			}
-		})
-		.fail(function(error){
-			reject(error.responseText);
 		});
 	});
 }

@@ -110,7 +110,7 @@ async function saveConfirm()
 	{
 		if(await askConfirmation("Sauvegarde de job", "Voulez-vous vraiment sauvegarder cette job?"))
 		{
-			$("#loadingModal").css({"display": "block"});
+			document.getElementById("loadingModal").style.display = "block";
 			try{
 				await saveJob(job);
 				dataHasChanged(false);
@@ -124,7 +124,7 @@ async function saveConfirm()
 				showError("La sauvegarde de la job a échouée", error);
 			}
 			finally{
-				$("#loadingModal").css({"display": "none"});
+				document.getElementById("loadingModal").style.display = "none";
 			}
 		}
 	}

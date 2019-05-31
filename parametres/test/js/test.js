@@ -10,45 +10,29 @@
  */
 function retrieveParameters(testId, modelId, typeNo)
 {	
-	let url;
-	let data;
-	let isNew;
-
-	if(testId === null)
-	{
-		url = ROOT_URL + "/parametres/varmodtypegen/actions/getParameters.php";
-		data = {"modelId": modelId, "typeNo": typeNo};
-		isNew = true;
-	}
-	else
-	{
-		url = ROOT_URL + "/parametres/test/actions/getParameters.php";
-		data = {"testId": testId};
-		isNew = false;
-	}
-	
+	let url = ROOT_URL + "/parametres/" + ((testId === null) ? "varmodtype" : "test") + "/actions/getParameters.php";
 	return new Promise(function(resolve, reject){
-		$.ajax({
+		ajax.send({
 			"type": "GET",
 			"contentType": "application/json;charset=utf-8",
 			"url": url,
-			"data": data,
+			"data": (testId === null) ? {"modelId": modelId, "typeNo": typeNo} : {"testId": testId},
 			"dataType": "json",
 			"async": true,
-			"cache": false
-		})
-		.done(function(response){
-			if(response.status === "success")
-			{
-				resolve(response.success.data);
+			"cache": false,
+			"onSuccess": function(response){
+				if(response.status === "success")
+				{
+					resolve(response.success.data);
+				}
+				else
+				{
+					reject(response.failure.message);
+				}
+			},
+			"onFailure": function(error){
+				reject(error);
 			}
-			else
-			{
-				reject(response.failure.message);
-			}
-		})
-		.fail(function(error){
-			reject(error.responseText);
 		});
 	});
 }
@@ -62,28 +46,28 @@ function retrieveParameters(testId, modelId, typeNo)
 function retrieveCustomMpr(testId)
 {
 	return new Promise(function(resolve, reject){
-		$.ajax({
+		ajax.send({
 			"type": "GET",
 			"contentType": "application/json;charset=utf-8",
 			"url": ROOT_URL + "/parametres/test/actions/getCustomMpr.php",
 			"data": {"id": testId},
 			"dataType": "json",
 			"async": true,
-			"cache": false
-		})
-		.done(function(response){
-			if(response.status === "success")
-			{
-				resolve(response.success.data);
+			"cache": false,
+			"onSuccess": function(response){
+				if(response.status === "success")
+				{
+					resolve(response.success.data);
+				}
+				else
+				{
+					reject(response.failure.message);
+				}
+			},
+			"onFailure": function(error){
+				reject(error);
 			}
-			else
-			{
-				reject(response.failure.message);
-			}
-		})
-		.fail(function(error){
-			reject(error.responseText);
-		})
+		});
 	});
 }
 
@@ -96,27 +80,27 @@ function retrieveCustomMpr(testId)
 function deleteTest(id)
 {
 	return new Promise(function(resolve, reject){
-		$.ajax({
+		ajax.send({
 			"url": ROOT_URL + "/parametres/test/actions/delete.php",
 			"contentType": "application/json;charset=utf-8",
 			"type": "POST",
-			"data": JSON.stringify({"id": id}),
+			"data": {"id": id},
 			"dataType": "json",
 			"async": true,
-			"cache": false
-		})
-		.done(function(response){
-			if(response.status === "success")
-			{
-				resolve(response.success.data);
+			"cache": false,
+			"onSuccess": function(response){
+				if(response.status === "success")
+				{
+					resolve(response.success.data);
+				}
+				else
+				{
+					reject(response.failure.message);
+				}
+			},
+			"onFailure": function(error){
+				reject(error);
 			}
-			else
-			{
-				reject(response.failure.message);
-			}
-		})
-		.fail(function(error){
-			reject(error.responseText);
 		});
 	});
 }
@@ -135,34 +119,34 @@ function deleteTest(id)
 function saveTest(testId, testName, modelId, typeNo, mpr, parameters)
 {	
 	return new Promise(function(resolve, reject){
-		$.ajax({
+		ajax.send({
 			"type": "POST",
 			"contentType": "application/json;charset=utf-8",
 			"url": ROOT_URL + "/parametres/test/actions/save.php",
-			"data": JSON.stringify({
+			"data": {
 				"testId": testId, 
 				"testName": testName, 
 				"modelId": modelId, 
 				"typeNo": typeNo, 
 				"mpr": mpr, 
 				"parameters": parameters
-			}),
+			},
 			"dataType": "json",
 			"async": true,
 			"cache": false,
-		})
-		.done(function(response){
-			if(response.status === "success")
-			{
-				resolve(response.success.data);
+			"onSuccess": function(response){
+				if(response.status === "success")
+				{
+					resolve(response.success.data);
+				}
+				else
+				{
+					reject(response.failure.message);
+				}
+			},
+			"onFailure": function(error){
+				reject(error);
 			}
-			else
-			{
-				reject(response.failure.message);
-			}
-		})
-		.fail(function(error){
-			reject(error.responseText);
 		});
 	});
 }
@@ -176,27 +160,27 @@ function saveTest(testId, testName, modelId, typeNo, mpr, parameters)
 function createMachiningProgram(testId)
 {
 	return new Promise(function(resolve, reject){
-		$.ajax({
+		ajax.send({
 			"type": "POST",
 			"contentType": "application/json;charset=utf-8",
 			"url": ROOT_URL + "/parametres/test/actions/download.php",
-			"data": JSON.stringify({"testId": testId}),
+			"data": {"testId": testId},
 			"dataType": "json",
 			"async": true,
-			"cache": false
-		})
-		.done(function(response){
-			if(response.status === "success")
-			{
-				resolve(response.success.data);
+			"cache": false,
+			"onSuccess": function(response){
+				if(response.status === "success")
+				{
+					resolve(response.success.data);
+				}
+				else
+				{
+					reject(response.failure.message);
+				}
+			},
+			"onFailure": function(error){
+				reject(error);
 			}
-			else
-			{
-				reject(response.failure.message);
-			}
-		})
-		.fail(function(error){
-			reject(error.responseText);
 		});
 	});
 }
@@ -211,7 +195,7 @@ function createMachiningProgram(testId)
 function retrieveTestsBetweenDates(startDate, endDate)
 {
 	return new Promise(function(resolve, reject){
-		$.ajax({
+		ajax.send({
 			"type": "GET",
 			"contentType": "application/json;charset=utf-8",
 			"url": ROOT_URL + "/parametres/test/actions/retrieveBetweenTwoDates.php",
@@ -221,20 +205,20 @@ function retrieveTestsBetweenDates(startDate, endDate)
 			},
 			"dataType": "json",
 			"async": true,
-			"cache": false
-		})
-		.done(function(response){
-			if(response.status === "success")
-			{
-				resolve(response.success.data);
+			"cache": false,
+			"onSuccess": function(response){
+				if(response.status === "success")
+				{
+					resolve(response.success.data);
+				}
+				else
+				{
+					reject(response.failure.message);
+				}
+			},
+			"onFailure": function(error){
+				reject(error);
 			}
-			else
-			{
-				reject(response.failure.message);
-			}
-		})
-		.fail(function(error){
-			reject(error.responseText);
 		});
 	});
 }

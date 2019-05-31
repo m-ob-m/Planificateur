@@ -795,7 +795,7 @@ class Batch implements JsonSerializable
     	        {
         	        foreach($job->getJobTypes() as $jobType)
         	        {
-        	            $parameters = $jobType->getParametersAsKeyValuePairs();
+						$parameters = $jobType->getParametersAsKeyValuePairs();
         	            $parameters = array_merge($parameters, $this->_carrousel->getSymbolicToolNamesArray());
         	            $NpasInt = \MprExpression\Evaluator::evaluate($parameters["NpasInt"] ?? 0, null, $parameters);
         	            for($i = 1; $i <= $NpasInt; $i++)

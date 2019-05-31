@@ -92,14 +92,14 @@ class JobType extends \ModelTypeGeneric implements \JsonSerializable
         
         //Récupérer les paramètres
         $stmt = $db->getConnection()->prepare(
-            "SELECT `jtp`.* 
+            "SELECT `gp`.`parameter_key` AS `param_key`, 
+                IF(`jtp`.`param_value` IS NULL, `gp`.`parameter_value`, `jtp`.`param_value`) AS `param_value`
             FROM `job_type_params` AS `jtp` 
-            INNER JOIN `job_type` AS `jt` ON `jt`.`id_job_type` = `jtp`.`job_type_id`
+            INNER JOIN `job_type` AS `jt` ON `jt`.`id_job_type` = `jtp`.`job_type_id` AND `jt`.`id_job_type` = :id
             INNER JOIN `door_types` AS `dt` ON `dt`.`importNo` = `jt`.`type_no`
             INNER JOIN `generics` AS `g` ON `g`.`id` = `dt`.`generic_id`
-        	INNER JOIN `generic_parameters` AS `gp` 
+            RIGHT JOIN `generic_parameters` AS `gp` 
                 ON `gp`.`generic_id` = `g`.`id` AND `gp`.`parameter_key` = `jtp`.`param_key`
-            WHERE `jt`.`id_job_type` = :id
             ORDER BY `gp`.`id` ASC " . 
             (new \MYSQLDatabaseLockingReadTypes($databaseConnectionLockingReadType))->toLockingReadString() . ";"
         );

@@ -8,7 +8,7 @@ table.parametersTable >thead >tr {
 	background-color: #0b5788;
 }
 
-table.parametersTable >thead >tr >th {
+table.parametersTable >thead >tr >th, table.parametersTable >tbody >tr >td, table.parametersTable >tbody >tr >td >* {
 	vertical-align: middle;
 	text-align: center;
 }
@@ -44,10 +44,6 @@ table.parametersTable.noExternalBorder >thead >tr >th.lastVisibleColumn {
 
 table.parametersTable:not(.hoverEffectDisabled) >tbody >tr >td.disabled:not(:hover) { 
 	background-color: #bfbfbf; 
-}
-
-table.parametersTable >tbody >tr >td {
-	padding: 0px;
 }
 
 table.parametersTable:not(.noExternalBorder):has(thead) >tbody:first-child >tr:first-child >td {
@@ -98,10 +94,6 @@ table.parametersTable:not(.noExternalBorder) >tbody:last-child >tr:last-child >t
 	border-bottom: 3px black solid;
 }
 
-table.parametersTable.noExternalBorder >tbody:last-child >tr:last-child >td {
-	border-bottom: 1px black solid;
-}
-
 table.parametersTable >tfoot >tr >td {
 	border-top: 2px black solid;
 }
@@ -134,27 +126,17 @@ table.parametersTable >tbody >tr:nth-of-type(odd) {
 	background-color: #ffffff; 
 }
 
-table.parametersTable:not(.hoverEffectDisabled) >tbody >tr:nth-of-type(odd):hover {
-	background-color: #110091; 
-	color: #ffffff;
-}
-
 table.parametersTable >tbody >tr:nth-of-type(even) { 
 	background-color: #97BFD9;
 }
 
-table.parametersTable:not(.hoverEffectDisabled) >tbody >tr:nth-of-type(even):hover {
-	background-color: #110091;
+table.parametersTable:not(.hoverEffectDisabled) >tbody >tr:hover {
+	background-color: #110091; 
 	color: #ffffff;
 }
 
 table.test.parametersTable >tbody >tr:nth-of-type(odd) {
 	background-color: #6ecf72; 
-}
-
-table.test.parametersTable:not(.hoverEffectDisabled) >tbody >tr:nth-of-type(odd):hover {
-	background-color: #110091; 
-	color: #ffffff;
 }
 
 table.test.parametersTable >tbody >tr:nth-of-type(even) {
@@ -166,27 +148,20 @@ table.test.parametersTable >tbody >tr:nth-of-type(even):hover {
 	color: #ffffff;
 }
 
-table.parametersTable >tbody >tr >td {
-	vertical-align: middle;
-	text-align: center;
-}
-
 table.parametersTable >tbody >tr >td >* {
 	color: inherit;
 	background-color: inherit;
 	width: 100%;
 	height: 100%;
 	border: none;
-	text-align: center;
-	vertical-align:middle;
 }
 
-table.parametersTable >tbody >tr.link {
+table.parametersTable >tbody .link {
 	cursor: pointer;
 }
 
-table.parametersTable >tbody >tr >td.link {
-	cursor: pointer;
+table.parametersTable >tbody >tr >td {
+	padding: 0px;
 }
 
 table.parametersTable td >* { 
@@ -213,6 +188,5 @@ table.parametersTable >tbody >tr >td >p {
 
 textarea.nonResizable {
 	overflow-x: hidden;
-	overflow-y: auto;
 	resize: none;
 }

@@ -29,7 +29,7 @@ function retrieveJobTypes(jobId)
 			}
 		})
 		.fail(function(error){
-			reject(error.responseText);
+			reject(error);
 		});
 	});
 }
@@ -63,7 +63,7 @@ function saveJob(job)
 			"type": "POST",
 			"contentType": "application/json;charset=utf-8",
 			"url": ROOT_URL + "/sections/job/actions/save.php",
-			"data": JSON.stringify(job),
+			"data": job,
 			"dataType": "json",
 			"async": true,
 			"cache": false,
@@ -79,7 +79,7 @@ function saveJob(job)
 			}
 		})
 		.fail(function(error){
-			reject(error.responseText);
+			reject(error);
 		});
 	});
 }

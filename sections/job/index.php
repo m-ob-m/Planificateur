@@ -83,7 +83,7 @@ $batchId = $_GET["batchId"] ?? null;
 					
     				<div style="float:right;">
     					<!-- Nav -->
-						<nav id="nav">
+						<nav id="nav" style="display: block;">
 							<ul>
 								<li>
 									<a href="javascript: void(0);" onclick="saveConfirm();" class="imageButton">
@@ -179,7 +179,7 @@ $batchId = $_GET["batchId"] ?? null;
 		</div>
 		
 		<!--  Fenêtre modale pour changement de bloc -->
-		<div id="moveBetweenBlocksModal" class="modal" onclick='$(this).css({"display": "none"});' >
+		<div id="moveBetweenBlocksModal" class="modal" onclick='this.style.display = "none";' >
 			<div class="modal-content" style='color:#FF0000;'>
 				<h4>Déplacer vers un autre bloc</h4>
 				<div id="blocksList"></div>
@@ -188,12 +188,12 @@ $batchId = $_GET["batchId"] ?? null;
 		</div>
 		
 		<!--  Fenêtre modale pour messages d'erreur -->
-		<div id="errMsgModal" class="modal" onclick='$(this).css({"display": "none"});' >
+		<div id="errMsgModal" class="modal" onclick='this.style.display = "none";' >
 			<div id="errMsg" class="modal-content" style='color:#FF0000;'></div>
 		</div>
 		
 		<!--  Fenêtre modale pour messages de validation -->
-		<div id="validationMsgModal" class="modal" onclick='$(this).css({"display": "none"});' >
+		<div id="validationMsgModal" class="modal" onclick='this.style.display = "none";' >
 			<div id="validationMsg" class="modal-content" style='color:#FF0000;'></div>
 		</div>
 		
@@ -203,19 +203,19 @@ $batchId = $_GET["batchId"] ?? null;
 		</div>	
 	
 		<!-- Scripts -->
-		<script src="../../assets/js/moment.min.js"></script>
-		<script src="../../assets/js/moment-timezone.js"></script>
-		<script src="../../assets/js/jquery.min.js"></script>
-		<script src="../../assets/js/jquery.dropotron.min.js"></script>
-		<script src="../../assets/js/skel.min.js"></script>
-		<script src="../../assets/js/util.js"></script>
-		<script src="../../assets/js/main.js"></script>
-		<script src="../../js/main.js"></script>
-		<script src="../../js/toolbox.js"></script>
-		<script src="js/index.js"></script>
-		<script src="js/job.js"></script>
-		<script src="js/jobType.js"></script>
-		<script src="js/main.js"></script>
-		<script src="js/parameterEditor.js"></script>
+		<script type="text/javascript" src="../../assets/js/moment.min.js"></script>
+		<script type="text/javascript" src="../../assets/js/moment-timezone.js"></script>
+		<script type="text/javascript" src="../../assets/js/jquery.min.js"></script>
+		<script type="text/javascript" src="../../assets/js/jquery.dropotron.min.js"></script>
+		<script type="text/javascript" src="../../assets/js/skel.min.js"></script>
+		<script type="text/javascript" src="../../assets/js/util.js"></script>
+		<script type="text/javascript" src="../../assets/js/main.js"></script>
+		<script type="text/javascript" src="../../js/main.js"></script>
+		<script type="text/javascript" src="../../js/toolbox.js"></script>
+		<script type="text/javascript" src="js/index.js"></script>
+		<script type="text/javascript" src="js/job.js"></script>
+		<script type="text/javascript" src="js/jobType.js"></script>
+		<script type="text/javascript" src="js/main.js"></script>
+		<script type="text/javascript" src="js/parameterEditor.js"></script>
 	</body>
 </html>

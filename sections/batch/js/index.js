@@ -255,7 +255,7 @@ async function saveConfirm()
 	if(validateInformation.apply(null, args)){
 		if(await askConfirmation("Sauvegarde de batch", "Voulez-vous vraiment sauvegarder cette batch?"))
 		{
-			$("#loadingModal").css({"display": "block"});
+			document.getElementById("loadingModal").style.display = "block";
 			try{
 				let id = await saveBatch.apply(null, args);
 				goToBatch(id);
@@ -264,7 +264,7 @@ async function saveConfirm()
 				showError("La sauvegarde de la batch a échouée", error);
 			}
 			finally{
-				$("#loadingModal").css({"display": "none"});
+				document.getElementById("loadingModal").style.display = "none";
 			}
 		}
 	}
@@ -298,7 +298,7 @@ async function generatePrograms(id, action = 1)
 {
 	if(compareWithSessionStorage())
 	{
-		$("#loadingModal").css({"display": "block"});
+		document.getElementById("loadingModal").style.display = "block";
 		try{
 			let downloadableFile = await downloadBatch(id, action);
 			if (action === 1)
@@ -315,7 +315,7 @@ async function generatePrograms(id, action = 1)
 			showError("La génération du programme d'usinage a échouée", error);
 		}
 		finally{
-			$("#loadingModal").css({"display": "none"});
+			document.getElementById("loadingModal").style.display = "none";
 		}
 	}
 	else
@@ -333,7 +333,7 @@ async function deleteConfirm()
 {
 	if(await askConfirmation("Suppression de batch", "Voulez-vous vraiment supprimer cette batch?"))
 	{
-		$("#loadingModal").css({"display": "block"});
+		document.getElementById("loadingModal").style.display = "block";
 		try{
 			await deleteBatch($("#batchId").val());
 			goToIndex();
@@ -342,7 +342,7 @@ async function deleteConfirm()
 			showError("La suppression de la batch a échouée", error);
 		}
 		finally{
-			$("#loadingModal").css({"display": "none"});
+			document.getElementById("loadingModal").style.display = "none";
 		}
 	}
 }

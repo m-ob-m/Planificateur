@@ -132,12 +132,12 @@ function rescheduleEvent(event)
 	    	"url": "actions/eventDrop.php",
 	        "type": "POST",
 	        "contentType": "application/json;charset=utf-8",
-	        "data": JSON.stringify({
+	        "data": {
 	        	"batchId": event.id, 
 	        	"debut": event.start.format(), 
 	        	"fin": event.end.format(), 
 	        	"allDay":event.allDay
-	        }),
+	        },
 			"dataType": "json",
 			"async": true,
 			"cache": false
@@ -192,11 +192,97 @@ function getBatchIdFromJobName(jobName)
 }
 
 /**
+ * Update all unitary programs
+ * @param {int} modelId The model id for which programs must be updated, null means all
+ * @param {int} TypeNo The type id for which programs must be updated, null means all
+ */
+async function updateUnitaryPrograms(modelId = null, typeNo = null)
+{
+	document.getelementById("loadingModal").style.display = "block";
+	try{
+		await updatePrograms()
+	}
+	catch(error){
+		showError("La génération des programmes unitaires a échouée", error);
+	}
+	finally{
+		document.getelementById("loadingModal").style.display = "none";
+	};
+}
+
+/**
+ * Updates unitary programs
+ * 
+ * @return {Promise}
+ */
+function updatePrograms()
+{
+	return new Promise(function(resolve, reject){
+		$.ajax({
+			"type": "POST",
+			"contentType": "application/json;charset=utf-8",
+			"url": ROOT_URL + "/parametres/varmodtype/actions/MAJModeleUnitaire.php",
+			"data": JSON.stringify({}),
+			"dataType": "json",
+			"async": true,
+			"cache": false,
+		})
+		.done(function(response){
+			if(response.status === "success")
+			{
+				resolve(response.success.data);
+			}
+			else
+			{
+				reject(response.failure.message);
+			}
+		})
+		.fail(function(error){
+			reject(error.responseText);
+		});
+	});
+}
+
+/**
+ * Regenerates unitary programs
+ * 
+ * @return {Promise}
+ */
+function getBatchIdFromJobName(jobName)
+{
+	return new Promise(function(resolve, reject){
+		$.ajax({
+			"url": ROOT_URL + "/sections/job/actions/findBatchByJobName.php",
+            "type": "POST",
+            "contentType": "application/json;charset=utf-8",
+            "data": JSON.stringify({"productionNumber": jobName}),
+            "dataType": 'json',
+            "async": true,
+            "cache": false,
+		})
+		.done(function(response){
+			if(response.status === "success")
+			{
+				resolve(response.success.data);
+			}
+			else
+			{
+				reject(response.failure.message);
+			}
+		})
+		.fail(function(error){
+			reject(error.responseText);
+		});
+	});
+}
+
+
+/**
  * Finds a job by production number
  */
 async function findJobByProductionNumber()
 {
-	let productionNumber = $("form#findBatchByJobNumberForm > input[name=jobNumero]").val();
+	let productionNumber = document.getElementById("findBatchByJobNumberForm").elements["jobNumero"].value;
 	try 
 	{
 		let id = await getBatchIdFromJobName(productionNumber);

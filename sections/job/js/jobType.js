@@ -60,9 +60,9 @@ function reloadQuickEditParametersTable()
  */
 function newJobTypeTable(block)
 {
-	let removeButton = imageButton(ROOT_URL + "/images/cancel16.png", "Supprimer", removeJobType, [], block)
+	let removeButton = $(imageButton(ROOT_URL + "/images/cancel16.png", "Supprimer", removeJobType, [], block))
 	.css({"float": "right", "margin-left": "10px", "color": "#FFFFFF"});
-	let modifyButton = imageButton(ROOT_URL + "/images/edit.png", "Modifier", modifyJobType, [], block)
+	let modifyButton = $(imageButton(ROOT_URL + "/images/edit.png", "Modifier", modifyJobType, [], block))
 	.css({"float": "right", "margin-left": "10px", "color": "#FFFFFF"});
 	let descriptionSpan = $("<span></span>").addClass("jobTypeIdentifier").css({"float": "left"});
 	
@@ -117,9 +117,9 @@ function newQuickEditParametersTable()
  */
 function newPartsTable(block)
 {	
-	let addButton = imageButton(ROOT_URL + "/images/add.png", "Ajouter", addPart, [], block)
+	let addButton = $(imageButton(ROOT_URL + "/images/add.png", "Ajouter", addPart, [], block))
 	.css({"flex": "0 1 auto", "margin-left": "10px", "color": "#FFFFFF"});
-	let minusButton = imageButton(ROOT_URL + "/images/minus.png", "Vider", emptyPartsTable, [], block)
+	let minusButton = $(imageButton(ROOT_URL + "/images/minus.png", "Vider", emptyPartsTable, [], block))
 	.css({"flex": "0 1 auto", "margin-left": "10px", "color": "#FFFFFF"});
 	let grainSelect = $("<select></select>").append(
 		$("<option></option>").text("Tous").val(""),
@@ -264,8 +264,10 @@ function newPart(part)
 		)
 	);
 	
-	let modifyTool = imageButton(ROOT_URL + "/images/edit.png", "", modifyPart, [], row).css({"margin-left": "10px"});
-	let deleteTool = imageButton(ROOT_URL + "/images/cancel16.png", "", removePart, [], row).css({"margin-left": "10px"});
+	let modifyTool = $(imageButton(ROOT_URL + "/images/edit.png", "", modifyPart, [], row))
+	.css({"margin-left": "10px"});
+	let deleteTool = $(imageButton(ROOT_URL + "/images/cancel16.png", "", removePart, [], row))
+	.css({"margin-left": "10px"});
 	row.find(">td:first-child").append(modifyTool, deleteTool);
 	return row;
 }
