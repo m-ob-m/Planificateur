@@ -182,7 +182,7 @@ function retrieveModelTypeGenericParameters(modelId, typeNo)
 			}
 		})
 		.fail(function(error){
-			reject(error.responseText);
+			reject(error);
 		});
 	});
 }

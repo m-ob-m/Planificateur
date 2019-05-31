@@ -97,12 +97,28 @@
         $type->save($db);
         if($create && $referenceId !== null)
         {
-            // Only on insert
+            $firstParameter = true;
+            
+            $query = "INSERT INTO `door_model_data` (`fkDoorModel`, `fkDoorType`, `paramKey`, `paramValue`) VALUES ";
             /* @var $parameter \ModelTypeParameter */
             foreach(\Type::withId($db, $referenceId)->getModelTypeParametersForAllModels($db) as $parameter)
             {
-                $parameter->setTypeNo($type->getImportNo())->save($db);
+                if(!$firstParameter)
+                {
+                    $query .= ", ";
+                }
+                $firstParameter = false;
+
+                $modelId = $db->getConnection()->quote($parameter->getModelId());
+                $typeNo = $db->getConnection()->quote($type->getImportNo());
+                $key = $db->getConnection()->quote($parameter->getKey());
+                $value = $db->getConnection()->quote($parameter->getValue());
+                $query .= "({$modelId}, {$typeNo}, {$key}, {$value})";
             }
+            $query .= ";";
+            
+            $stmt = $db->getConnection()->prepare($query);
+            $stmt->execute();
         }
             
         return $type;

@@ -123,15 +123,15 @@
         			<div class="pannelContainer" style="page-break-after: always;">
                     	<!-- Entete de navigation (on veut l'avoir sur chaque page lors de l'impression) -->
                     	<div style="width: 100%; margin-top: 2px; margin-bottom: 2px; text-align: center; overflow: hidden;">
-                    		<button title="Premier" class="no-print" onclick="goToFirst();">&lt;&lt;</button>
-                    		<button title="Précédent" class="no-print" onclick="goToPrevious();">&lt;</button>
+                            <button title="Premier" class="no-print goToFirst">&lt;&lt;</button>
+                            <button title="Précédent" class="no-print goToPrevious">&lt;</button>
                     		<div id="index" style="display: inline-block; border: 1px black solid; padding: 2px;"><?= 
                                 ($index + 1) . " / " . count($collection->getPanneaux()); 
                             ?></div>
-                    		<button title="Suivant" class="no-print" onclick="goToNext();">&gt;</button>
-                    		<button title="Dernier" class="no-print" onclick="goToLast();">&gt;&gt;</button>
-                    		<button class="no-print" onclick="printPannel();">Imprimer</button>
-                    		<button class="no-print" onclick="printAllPannels();">Imprimer tout</button> 
+                            <button title="Suivant" class="no-print goToNext">&gt;</button>
+                            <button title="Dernier" class="no-print goToLast">&gt;&gt;</button>
+                    		<button class="no-print printSingle">Imprimer</button>
+                    		<button class="no-print printAll">Imprimer tout</button> 
                     		<div id="quantity" style="display: inline-block; border: 1px black solid; padding: 2px;">Qté : <?= 
                                 $panneau->getQuantite(); 
                             ?></div>
@@ -201,13 +201,11 @@
 			<div id="errMsg" class="modal-content" style='color:#FF0000;'></div>
 		</div>
     	
-    	<script src="../../assets/js/jquery.min.js"></script>
-		<script src="../../assets/js/jquery.dropotron.min.js"></script>
-		<script src="../../assets/js/skel.min.js"></script>
-		<script src="../../assets/js/util.js"></script>
-		<script src="../../assets/js/main.js"></script>
-		<script src="../../js/main.js"></script>
-		<script src="../../js/toolbox.js"></script>
-		<script src="../../sections/visualiseur/js/main.js"></script>
+    	<script type="text/javascript" src="../../assets/js/ajax.js"></script>
+		<script type="text/javascript" src="../../assets/js/docReady.js"></script>
+		<script type="text/javascript" src="../../js/main.js"></script>
+		<script type="text/javascript" src="../../js/toolbox.js"></script>
+        <script type="module" src="js/main.js"></script>
+        <script type="module" src="js/viewer.js"></script>
 	</body>
 </html>	

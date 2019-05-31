@@ -1,9 +1,38 @@
-$(
-	function()
-	{
-		goToFirst();
-	}
-);
+"use strict";
+
+import {MachiningProgramViewer} from "./viewer.js";
+
+docReady(function(){
+	let viewer = new MachiningProgramViewer();
+	[...document.getElementsByClassName("pannelContainer")].forEach(function(pannelContainer){
+		[...pannelContainer.getElementsByTagName("button")].forEach(function(button){
+			if(button.classList.contains("goToFirst"))
+			{
+				button.onclick = function(){viewer.goToFirst()};
+			}
+			else if(button.classList.contains("goToPrevious"))
+			{
+				button.onclick = function(){viewer.goToPrevious()};
+			}
+			else if(button.classList.contains("goToNext"))
+			{
+				button.onclick = function(){viewer.goToNext()};		
+			}
+			else if(button.classList.contains("goToLast"))
+			{
+				button.onclick = function(){viewer.goToLast()};
+			}
+			else if(button.classList.contains("printSingle"))
+			{
+				button.onclick = function(){viewer.printPannel()};
+			}
+			else if(button.classList.contains("printAll"))
+			{
+				button.onclick = function(){viewer.printAllPannels()};
+			}
+		});
+	});
+});
 
 /**
  * Retrieves the door properties and displays them on the screen
@@ -27,10 +56,10 @@ async function displayDoorProperties(doorId)
  * 
  * @return {Promise}
  */
-function fetchDoorProperties(doorId)
+async function fetchDoorProperties(doorId)
 {
 	return new Promise(function(resolve, reject){
-		$.ajax({
+		ajax.send({
 			"type": "GET",
 			"contentType": "application/json;charset=utf-8",
 			"url": ROOT_URL + "/sections/visualiseur/actions/fetchProperties.php",
@@ -38,19 +67,19 @@ function fetchDoorProperties(doorId)
 			"dataType": "json",
 			"async": true,
 			"cache": false,
-		})
-		.done(function(response){
-			if(response.status === "success")
-			{
-				resolve(response.success.data);
+			"onSuccess": function(response){
+				if(response.status === "success")
+				{
+					resolve(response.success.data);
+				}
+				else
+				{
+					reject(response.failure.message);
+				}
+			},
+			"onFailure": function(error){
+				reject(error);
 			}
-			else
-			{
-				reject(response.failure.message);
-			}
-		})
-		.fail(function(error){
-			reject(error.responseText);
 		});
 	});	
 }
@@ -61,7 +90,9 @@ function fetchDoorProperties(doorId)
  */
 function showPropertiesWindow()
 {
-	$("#rightPannel").show().scrollTop();
+	let rightPannel = document.getElementById("rightPannel");
+	rightPannel.style.display = "block";
+	rightPannel.scrollTop = 0;
 }
 
 /**
@@ -70,7 +101,7 @@ function showPropertiesWindow()
  */
 function closePropertiesWindow()
 {
-	$("#rightPannel").hide();
+	document.getElementById("rightPannel").style.display = "none";
 }
 
 /**
@@ -79,127 +110,23 @@ function closePropertiesWindow()
  */
 function formatDoorProperties(doorProperties)
 {	
-	$("div#rightPannel >table >tbody").empty().append(
-		newDoorProperty("Commande", doorProperties.orderName),
-		newDoorProperty("Modèle", doorProperties.modelName),
-		newDoorProperty("Type", doorProperties.typeName),
-		newDoorProperty("Générique", doorProperties.genericName),
-		newDoorProperty("Hauteur", doorProperties.height),
-		newDoorProperty("Largeur", doorProperties.width),
-		newDoorProperty("Quantité", doorProperties.quantity),
-		newDoorProperty("Grain", doorProperties.grain),
-		$("<tr></tr>").append(
-			$("<td></td>").text("Programme"), 
-			$("<td></td>").append(
-				$("<a></a>")
-				.attr({"href": "javascript:void(0);"})
-				.css({"color": "#2A00E1"})
-				.text("Télécharger le fichier")
-				.click(function(){downloadProgram(doorProperties.id);})
-			)
-		)
-	);
-}
-
-/**
- * Creates a row for a new door property
- * @param {string} name The name of the property
- * @param {string} value The value of the property
- * 
- * @param {jquery} The new row
- */
-function newDoorProperty(name, value)
-{
-	return $("<tr></tr>").append($("<td></td>").text(name), $("<td></td>").text(value));
-}
-
-/**
- * Goes to the first pannel in the collection.
- * 
- */
-function goToFirst()
-{
-	if($("div.pannelContainer").length > 0)
-	{
-		goTo(0);
-	}
-}
-
-/**
- * Goes to the last pannel in the collection.
- * 
- */
-function goToLast()
-{
-	if($("div.pannelContainer").length > 0)
-	{
-		goTo($("div.pannelContainer").length - 1);
-	}
-}
-
-/**
- * Goes to the previous pannel in the collection.
- * 
- */
-function goToPrevious()
-{
-	let currentlyVisibleElement = $("div.pannelContainer:visible");
-	if(currentlyVisibleElement.length > 0)
-	{
-		let currentIndex = $("div.pannelContainer").index(currentlyVisibleElement[0]);
-		if(currentIndex > 0)
-		{
-			goTo(currentIndex - 1);
-		}
-	}
-}
-
-/**
- * Goes to the next pannel in the collection
- * 
- */
-function goToNext()
-{
-	let currentlyVisibleElement = $("div.pannelContainer:visible");
-	if(currentlyVisibleElement.length > 0)
-	{
-		let currentIndex = $("div.pannelContainer").index(currentlyVisibleElement[0]);
-		if(currentIndex < $("div.pannelContainer").length - 1)
-		{
-			goTo(currentIndex + 1);
-		}
-	}
-}
-
-/**
- * Goes to the specified index in the collection
- * @param {int} i The index of the pannel (0-based) 
- */
-function goTo(i)
-{
-	$("div.pannelContainer").hide();
-	$("div.pannelContainer:nth-child(" + (i + 1) + ")").show();
-}
-
-/**
- * Prints the current pannel
- * 
- */
-function printPannel()
-{
-	window.print();
-}
-
-/**
- * Prints all pannels
- * 
- */
-function printAllPannels()
-{
-	let currentlyInvisibleElements = $("div.pannelContainer:hidden");
-	currentlyInvisibleElements.show();
-	window.print();
-	currentlyInvisibleElements.hide();
+	let rightPannel = document.getElementById("rightPannel");
+	rightPannel.appendChild(newDoorProperty("Commande", doorProperties.orderName));
+	rightPannel.appendChild(newDoorProperty("Modèle", doorProperties.modelName));
+	rightPannel.appendChild(newDoorProperty("Type", doorProperties.typeName));
+	rightPannel.appendChild(newDoorProperty("Générique", doorProperties.genericName));
+	rightPannel.appendChild(newDoorProperty("Hauteur", doorProperties.height));
+	rightPannel.appendChild(newDoorProperty("Largeur", doorProperties.width));
+	rightPannel.appendChild(newDoorProperty("Quantité", doorProperties.quantity));
+	rightPannel.appendChild(newDoorProperty("Grain", doorProperties.grain));
+	
+	let downloadLink = document.createElement("a");
+	downloadLink.href = "javascript: void(0);";
+	downloadLink.style.color = "#2A00E1";
+	downloadLink.textContent = "Télécharger le fichier";
+	downloadLink.onclick = function(){
+		downloadProgram(doorProperties.id);
+	};
 }
 
 /**
@@ -208,7 +135,7 @@ function printAllPannels()
 function getLinkToProgram(id)
 {
 	return new Promise(function(resolve, reject){
-		$.ajax({
+		ajax.send({
 			"type": "GET",
 			"contentType": "application/json;charset=utf-8",
 			"url": ROOT_URL + "/sections/visualiseur/actions/downloadProgram.php",
@@ -216,19 +143,19 @@ function getLinkToProgram(id)
 			"dataType": "json",
 			"async": true,
 			"cache": false,
-		})
-		.done(function(response){
-			if(response.status === "success")
-			{
-				resolve(response.success.data);
+			"onSuccess": function(response){
+				if(response.status === "success")
+				{
+					resolve(response.success.data);
+				}
+				else
+				{
+					reject(response.failure.message);
+				}
+			},
+			"onFailure": function(error){
+				reject(error);
 			}
-			else
-			{
-				reject(response.failure.message);
-			}
-		})
-		.fail(function(error){
-			reject(error.responseText);
 		});
 	});	
 }
@@ -245,4 +172,25 @@ async function downloadProgram(id)
 	catch(error){
 		showError("La récupération du programme d'usinage a échouée", error);
 	}
+}
+
+/**
+ * Creates a row for a new door property
+ * @param {string} name The name of the property
+ * @param {string} value The value of the property
+ * 
+ * @param {jquery} The new row
+ */
+function newDoorProperty(name, value)
+{
+	let keyCell = document.createElement("td");
+	keyCell.textContent = name;
+
+	let valueCell = document.createElement("td");
+	valueCell.textContent = name;
+
+	let row = document.createElement("tr");
+	row.appendChild(keyCell);
+	row.appendChild(valueCell);
+	return row;
 }

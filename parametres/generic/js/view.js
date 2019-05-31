@@ -51,19 +51,21 @@ function validateInformation(id, filename, description, heightParameter, copyPar
  */
 async function saveConfirm()
 {
+	let copyParametersFromSelect = document.getElementById("copyParametersFrom");
+	let selectedIndex = (copyParametersFromSelect !== null) ? copyParametersFromSelect.selectedIndex : null;
 	let args = [
-		$("#id").val(), 
-		$("#filename").val(), 
-		$("#description").val(), 
-		$("#heightParameter").val(), 
-		$("#copyParametersFrom").val()
+		document.getElementById("id").value, 
+		document.getElementById("filename").value, 
+		document.getElementById("description").value, 
+		document.getElementById("heightParameter").value, 
+		(selectedIndex !== null) ? copyParametersFromSelect.options[selectedIndex].value : null
 	];
 	
 	if(validateInformation.apply(null, args))
 	{
 		if(await askConfirmation("Sauvegarde de générique", "Voulez-vous vraiment sauvegarder ce générique?"))
 		{
-			$("#loadingModal").css({"display": "block"});
+			document.getElementById("loadingModal").style.display = "block";
 			try{
 				let id = await saveGeneric.apply(null, args);
 				openGeneric(id);
@@ -73,7 +75,7 @@ async function saveConfirm()
 				showError("La sauvegarde du générique a échouée", error);
 			}
 			finally{
-				$("#loadingModal").css({"display": "none"});
+				document.getElementById("loadingModal").style.display = "none";
 			}
 		}
 	}
@@ -93,33 +95,33 @@ async function saveConfirm()
 function saveGeneric(id, filename, description, heightParameter, copyParametersFrom)
 {
 	return new Promise(function(resolve, reject){
-		$.ajax({
-	    	"url": ROOT_URL + "/parametres/generic/actions/save.php",
-	        "type": "POST",
-	        "contentType": "application/json;charset=utf-8",
-	        "data": JSON.stringify({
-	        	"id": ((id !== "") ? id : null), 
-	        	"filename": filename, 
-	        	"description": description,
-	        	"heightParameter": heightParameter,
-	        	"copyParametersFrom": ((copyParametersFrom !== "") ? copyParametersFrom : null)
-	        }),
-	        "dataType": 'json',
-	        "async": true,
-	        "cache": false
-     	})
-     	.done(function(response){
-			if(response.status === "success")
-			{
-				resolve(response.success.data);
+		ajax.send({
+			"url": ROOT_URL + "/parametres/generic/actions/save.php",
+			"type": "POST",
+			"contentType": "application/json;charset=utf-8",
+			"data": {
+				"id": ((id !== "") ? id : null), 
+				"filename": filename, 
+				"description": description,
+				"heightParameter": heightParameter,
+				"copyParametersFrom": ((copyParametersFrom !== "") ? copyParametersFrom : null)
+			},
+			"dataType": 'json',
+			"async": true,
+			"cache": false,
+			"onSuccess": function(response){
+				if(response.status === "success")
+				{
+					resolve(response.success.data);
+				}
+				else
+				{
+					reject(response.failure.message);
+				}
+			},
+			"onFailure": function(error){
+				reject(error);
 			}
-			else
-			{
-				reject(response.failure.message);
-			}
-		})
-		.fail(function(error){
-			reject(error.responseText);
 		});
   });
 }
@@ -131,17 +133,17 @@ async function deleteConfirm()
 {
 	if(await askConfirmation("Suppression de générique", "Voulez-vous vraiment supprimer ce générique?"))
 	{
-		$("#loadingModal").css({ "display": "block" });
+		document.getElementById("loadingModal").style.display = "block";
 		try
 		{
-			await deleteGeneric($("#id").val());
+			await deleteGeneric(document.getElementById("id").value);
 			goToIndex();
 		}
 		catch(error){
 			showError("La suppression du générique a échouée", error);
 		}
 		finally{
-			$("#loadingModal").css({ "display": "none" });
+			document.getElementById("loadingModal").style.display = "none";
 		}
 	}
 }
@@ -155,28 +157,28 @@ async function deleteConfirm()
 function deleteGeneric(id)
 {
 	return new Promise(function(resolve, reject){
-		$.ajax({
+		ajax.send({
 			"url": ROOT_URL + "/parametres/generic/actions/delete.php",
 			"type": "POST",
 			"contentType": "application/json;charset=utf-8",
-			"data": JSON.stringify({"id": id}),
+			"data": {"id": id},
 			"dataType": "json",
 			"async": true,
-	    })
-	    .done(function(response){
-			if(response.status === "success")
-			{
-				resolve(response.success.data);
+			"onSuccess": function(response){
+				if(response.status === "success")
+				{
+					resolve(response.success.data);
+				}
+				else
+				{
+					reject(response.failure.message);
+				}
+			},
+			"onFailure": function(error){
+				reject(error);
 			}
-			else
-			{
-				reject(response.failure.message);
-			}
-		})
-		.fail(function(error){
-			reject(error.responseText);
 		});
-	});
+	})
 }
 
 /**

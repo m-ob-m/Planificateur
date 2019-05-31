@@ -67,7 +67,7 @@
 					
 					<div style="float:right;">
     					<!-- Nav -->
-    					<nav id="nav">
+    					<nav id="nav" style="display: block;">
     						<ul>
     							<li>
     								<a href="javascript: void(0);" onclick="saveConfirm();" class="imageButton">
@@ -89,11 +89,11 @@
 			<div id="features-wrapper">
 				<div class="container">
 					<!-- Sélection du générique dont on veut éditer les paramètres par défaut -->
-        			<form id="genericSelectionForm" action="javascript: void(0);" onsubmit="refreshParameters();">
+        			<form id="genericSelectionForm" action="javascript: void(0);">
         				<div class="formContainer">
 							<div class="hFormElement">
                     			<label for="generic">Générique :
-                        			<select id="generic" name="generic" onchange="$('#genericSelectionForm').submit();">
+                        			<select id="generic" name="generic" onchange='refreshParameters();'>
                         				<?php foreach($generics as $generic):?>
                         					<?php $selected =  (($selectedGenericId == $generic->getId()) ? "selected" : ""); ?>
                         					<option value="<?= $generic->getId(); ?>" <?= $selected; ?>>
@@ -114,8 +114,8 @@
 						<thead>
 							<tr>
 								<th class="firstVisibleColumn spaceEfficientText" style="width:10%;">Clé</th>
-								<th class="spaceEfficientText" style="width:45%;">Valeur par défaut</th>
-								<th class="spaceEfficientText" style="width:25%;">Description</th>
+								<th class="spaceEfficientText" style="width:35%;">Valeur par défaut</th>
+								<th class="spaceEfficientText" style="width:35%;">Description</th>
 								<th class="spaceEfficientText" style="width:10%;">Édition rapide</th>
 								<th class="lastVisibleColumn spaceEfficientText" style="width:10%;"></th>
 							</tr>
@@ -129,12 +129,12 @@
 		</div>
 		
 		<!--  Fenetre Modal pour message d'erreurs -->
-		<div id="errMsgModal" class="modal" onclick='$(this).css({"display": "none"});'>
+		<div id="errMsgModal" class="modal" onclick='this.style.display = "none";'>
 			<div id="errMsg" class="modal-content" style='color:#FF0000;'></div>
 		</div>
 		
 		<!--  Fenetre Modal pour message de validation -->
-		<div id="validationMsgModal" class="modal" onclick='$(this).css({"display": "none"});'>
+		<div id="validationMsgModal" class="modal" onclick='this.style.display = "none";'>
 			<div id="validationMsg" class="modal-content" style='color:#FF0000;'></div>
 		</div>
 		
@@ -144,11 +144,8 @@
 		</div>	
 		
 		<!-- Scripts -->
-		<script type="text/javascript" src="../../assets/js/jquery.min.js"></script>
-		<script type="text/javascript" src="../../assets/js/jquery.dropotron.min.js"></script>
-		<script type="text/javascript" src="../../assets/js/skel.min.js"></script>
-		<script type="text/javascript" src="../../assets/js/util.js"></script>
-		<script type="text/javascript" src="../../assets/js/main.js"></script>
+		<script type="text/javascript" src="../../assets/js/ajax.js"></script>
+		<script type="text/javascript" src="../../assets/js/docReady.js"></script>
 		<script type="text/javascript" src="../../js/main.js"></script>
 		<script type="text/javascript" src="../../js/toolbox.js"></script>
 		<script type="text/javascript" src="js/main.js"></script>

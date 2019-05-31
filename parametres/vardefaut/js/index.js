@@ -1,13 +1,11 @@
 "use strict";
 
-$(async function()
+docReady(async function(){
+	if(document.getElementById("generic").childElementCount > 0)
 	{
-		if($("select#generic >option").length > 0)
-		{
-			await refreshParameters();
-		}
+		await refreshParameters();
 	}
-);
+});
 
 
 /**
@@ -15,21 +13,27 @@ $(async function()
  */
 async function refreshParameters()
 {
-	let id = parseInt($("select#generic >option:selected").val());
+	let genericSelect = document.getElementById("generic");
+	let id = genericSelect.options[genericSelect.selectedIndex].value;
+	let table = document.getElementById("parametersTable");
+	let tableBody = table.getElementsByTagName("tbody")[0];
 	
-	try{
-		$("table#parametersTable >tbody >tr").remove();
-		let parameters = await retrieveParameters(id);
-		$(parameters).each(function(){
-			$("table#parametersTable >tbody").append(newParameter(this));
-		});
+	while(tableBody.childElementCount > 0)
+	{
+		tableBody.firstElementChild.remove();
+	}
 
-		if(parameters.length < 1)
+	try
+	{
+		(await retrieveParameters(id)).map(function(parameter){tableBody.appendChild(newParameter(parameter));});
+
+		if(tableBody.childElementCount < 1)
 		{
-			$("table#parametersTable >tbody").append(newParameter());
+			tableBody.appendChild(newParameter());
 		}
 	}
-	catch(error){
+	catch(error)
+	{
 		showError("Le rafraîchissement des paramètres a échoué", error);
 	}
 }
@@ -43,7 +47,7 @@ async function refreshParameters()
 function retrieveParameters(id)
 {	
 	return new Promise(function(resolve, reject){
-		$.ajax({
+		ajax.send({
 			"type": "GET",
 			"contentType": "application/json;charset=utf-8",
 			"url": ROOT_URL + "/parametres/vardefaut/actions/getParameters.php",
@@ -51,19 +55,19 @@ function retrieveParameters(id)
 			"dataType": "json",
 			"async": true,
 			"cache": false,
-		})
-		.done(function(response){
-			if(response.status === "success")
-			{
-				resolve(response.success.data);
+			"onSuccess": function(response){
+				if(response.status === "success")
+				{
+					resolve(response.success.data);
+				}
+				else
+				{
+					reject(response.failure.message);
+				}
+			},
+			"onFailure": function(error){
+				reject(error);
 			}
-			else
-			{
-				reject(response.failure.message);
-			}
-		})
-		.fail(function(error){
-			reject(error.responseText);
 		});
 	});
 }
@@ -80,25 +84,25 @@ function validateInformation(id, parameters)
 	let err = "";
 	
 	// Validation des parametres pour chaque parametre
-	$(parameters).each(function(index){
+	parameters.forEach(function(element){
 		
-		if(!(new RegExp("^\\S+$")).test(this.key))
+		if(!(new RegExp("^\\S+$")).test(element.key))
 		{
-			err += "La clé du paramètre de la ligne \"" + (this.index + 1) + "\" est vide ou contient des espaces blancs. ";
+			err += "La clé du paramètre de la ligne \"" + (element.index + 1) + "\" est vide ou contient des espaces blancs. ";
 			return;
 		}
 		
-		if(!this.value.trim())
+		if(!element.value.trim())
 		{
-			err += "La valeur du paramètre ayant la clé \"" + this.key + "\" est vide. ";
+			err += "La valeur du paramètre ayant la clé \"" + element.key + "\" est vide. ";
 		}
 		
-		if(!this.description.trim())
+		if(!element.description.trim())
 		{
-			err += "La description du paramètre ayant la clé \"" + this.key + "\" est vide. ";
+			err += "La description du paramètre ayant la clé \"" + element.key + "\" est vide. ";
 		}
 		
-		if(this.quickEdit !== 0 && this.quickEdit !== 1)
+		if(element.quickEdit !== 0 && element.quickEdit !== 1)
 		{
 			err += "Le paramètre de l'édition rapide peut seulement prendre les valeurs \"0\" ou \"1\". ";
 		}
@@ -126,24 +130,26 @@ function validateInformation(id, parameters)
  */
 async function saveConfirm()
 {
-	let generic = $("select#generic option:selected");
-	let args = [generic.val(), getParametersArray()];
-	let confirmationMessage = "Voulez-vous vraiment sauvegarder ces paramètres pour le générique : \"" + generic.text()  + "\"?";
+	let genericSelect = document.getElementById("generic");
+	let genericId = genericSelect.options[genericSelect.selectedIndex].value;
+	let genericName = genericSelect.options[genericSelect.selectedIndex].text;
+	let args = [genericId, getParametersArray()];
+	let confirmationMessage = "Voulez-vous vraiment sauvegarder ces paramètres pour le générique : \"" + genericName  + "\"?";
 	
 	if(validateInformation.apply(null, args))
 	{
 		if(await askConfirmation("Sauvegarde de paramètres de générique", confirmationMessage))
 		{
-			$('#loadingModal').css({"display": "block"});
+			document.getElementById("loadingModal").style.display = "block";
 			try{
 				await saveParameters.apply(null, args);
-				openGenericParameters(generic.val());
+				openGenericParameters(genericId);
 			}
 			catch(error){
 				showError("La sauvegarde des paramètres du générique a échouée", error);
 			}
 			finally{
-				$('#loadingModal').css({"display": "none"});
+				document.getElementById("loadingModal").style.display = "none";
 			}
 		}
 	}
@@ -156,17 +162,17 @@ async function saveConfirm()
  */
 function getParametersArray()
 {
-	let parameters = [];
-	$("table#parametersTable >tbody >tr").each(function(index){
-		parameters.push({
-			"key": $(this).find('td:nth-child(1) >input').val(), 
-			"value": $(this).find('td:nth-child(2) >textarea').val(),
-			"description": $(this).find('td:nth-child(3) >textarea').val(),
-			"quickEdit": parseInt($(this).find('td:nth-child(4) >select').val()),
+	let parametersTable = document.getElementById("parametersTable");
+	return [...parametersTable.getElementsByTagName("tbody")[0].getElementsByTagName("tr")].map(function(element, index){
+		let quickEditSelect = element.getElementsByTagName("td")[3].getElementsByTagName("select")[0];
+		return {
+			"key": element.getElementsByTagName("td")[0].getElementsByTagName("input")[0].value, 
+			"value": element.getElementsByTagName("td")[1].getElementsByTagName("textarea")[0].value, 
+			"description": element.getElementsByTagName("td")[2].getElementsByTagName("textarea")[0].value,
+			"quickEdit": parseInt(quickEditSelect.options[quickEditSelect.selectedIndex].value),
 			"index": index
-		});
+		};
 	});
-	return parameters;
 }
 
 /**
@@ -179,55 +185,55 @@ function getParametersArray()
 function saveParameters(id, parameters)
 {
 	return new Promise(function(resolve, reject){
-		$.ajax({
+		ajax.send({
 			"type": "POST",
 			"contentType": "application/json;charset=utf-8",
 			"url": ROOT_URL + "/parametres/vardefaut/actions/save.php",
-			"data": JSON.stringify({"id": id, "parameters": parameters}),
+			"data": {"id": id, "parameters": parameters},
 			"dataType": "json",
 			"async": true,
-			"cache": false
-		})
-		.done(function(response){
-			if(response.status === "success")
-			{
-				resolve(response.success.data);
+			"cache": false,
+			"onSuccess": function(response){
+				if(response.status === "success")
+				{
+					resolve(response.success.data);
+				}
+				else
+				{
+					reject(response.failure.message);
+				}
+			},
+			"onFailure": function(error){
+				reject(error);
 			}
-			else
-			{
-				reject(response.failure.message);
-			}
-		})
-		.fail(function(error){
-			reject(error.responseText);
 		});
 	});
 }
 
 /**
  * Adds a parameter to the parameters list
- * @param {jquery} row The row after which the element must be added.
+ * @this {Node} row The row after which the element must be added.
  * 
  * @return {bool} false To prevent any further behavior (automatic page scroll to top)
  */
-function addParameter(row)
+function addParameter()
 {
-	row.after(newParameter());
+	this.after(newParameter());
 	
 	return false;
 }
 
 /**
  * Removes a parameter from the parameters list
- * @param {jquery} row The row to remove.
+ * @this {Node} row The row to remove.
  * 
  * @return {bool} false To prevent any further behavior (automatic page scroll to top)
  */
-function removeParameter(row)
+function removeParameter()
 {
-	if(row.siblings().length > 1)
+	if(this.parentNode.childElementCount > 1)
 	{
-		row.remove();
+		this.remove();
 	}
 	
 	return false;
@@ -237,7 +243,7 @@ function removeParameter(row)
  * Creates a new parameter row to add in the parameters list
  * @param {object} parameter An object that respects the following formatting {_key: "key", _value: value, _description: "description"}.
  * 
- * @return {jquery} A new parameter row
+ * @return {Node} A new parameter row
  */
 function newParameter(parameter = null)
 {
@@ -246,66 +252,72 @@ function newParameter(parameter = null)
 	let description = ((parameter === null) ? null : parameter._description);
 	let quickEdit = ((parameter === null) ? 0 : parameter._quick_edit);
 	
-	let row = $("<tr></tr>")
-	.css({"height": "50px"});
+	let row = document.createElement("tr");
+	row.style.height = "50px";
 	
-	let keyInput = $("<input>")
-	.addClass("spaceEfficientText")
-	.attr({"maxlength": "8"})
-	.val(key);
+	let keyInput = document.createElement("input");
+	keyInput.className = "spaceEfficientText";
+	keyInput.maxLength = 8;
+	keyInput.value = key;
 	
-	let keyCell = $("<td></td>")
-	.addClass("firstVisibleColumn")
-	.append(keyInput);
+	let keyCell = document.createElement("td");
+	keyCell.className = "firstVisibleColumn";
+	keyCell.appendChild(keyInput);
+
+	let valueTextArea = document.createElement("textarea");
+	valueTextArea.className = "spaceEfficientText";
+	valueTextArea.style.overflowX = "hidden"; 
+	valueTextArea.style.resize = "none";
+	valueTextArea.value = value;
+
+	let valueCell = document.createElement("td");
+	valueCell.style.verticalAlign = "middle";
+	valueCell.appendChild(valueTextArea);
 	
-	let valueInput = $("<textarea></textarea>")
-	.addClass("spaceEfficientText")
-	.css({"overflow-x": "hidden", "overflow-y": "auto", "resize": "none"})
-	.val(value);
+	let descriptionTextArea = document.createElement("textarea");
+	descriptionTextArea.className = "spaceEfficientText";
+	descriptionTextArea.style.overflowX = "hidden";
+	descriptionTextArea.style.resize = "none";
+	descriptionTextArea.value = description;
 	
-	let valueCell = $("<td></td>")
-	.css({"vertical-align": "middle"})
-	.append(valueInput);
+	let descriptionCell = document.createElement("td");;
+	descriptionCell.appendChild(descriptionTextArea);
+
+	let quickEditSelectOption0 = document.createElement("option");
+	quickEditSelectOption0.value = "0";
+	quickEditSelectOption0.text = "Désactivé";
+
+	let quickEditSelectOption1 = document.createElement("option");
+	quickEditSelectOption1.value = "1";
+	quickEditSelectOption1.text = "Activé";
+
+	let quickEditSelect = document.createElement("select");
+	quickEditSelect.className = "spaceEfficientText";
+	quickEditSelect.appendChild(quickEditSelectOption0);
+	quickEditSelect.appendChild(quickEditSelectOption1);
+	quickEditSelect.value = String(quickEdit);
+
+	let quickEditCell = document.createElement("td");
+	quickEditCell.appendChild(quickEditSelect);
+
+	let addTool = document.createElement("div");
+	addTool.appendChild(imageButton(ROOT_URL + "/images/add.png", "Ajouter", addParameter, [], row));
+
+	let deleteTool = document.createElement("div");
+	deleteTool.appendChild(imageButton(ROOT_URL + "/images/minus.png", "Enlever", removeParameter, [], row));
 	
-	let descriptionInput = $("<textarea></textarea>")
-	.addClass("spaceEfficientText")
-	.css({"overflow-x": "hidden", "overflow-y": "auto", "resize": "none"})
-	.val(description);
+	let toolsDiv = document.createElement("div");
+	toolsDiv.appendChild(addTool);
+	toolsDiv.appendChild(deleteTool);
 	
-	let descriptionCell = $("<td></td>")
-	.append(descriptionInput);
-	
-	let quickEditOption1 = $("<option></option>")
-	.val("0")
-	.text("Désactivé")
-	
-	let quickEditOption2 = $("<option></option>")
-	.val("1")
-	.text("Activé")
-	
-	let quickEditSelect = $("<select></select>")
-	.addClass("spaceEfficientText")
-	.append(quickEditOption1, quickEditOption2)
-	.val(quickEdit);
-	
-	let quickEditCell = $("<td></td>")
-	.append(quickEditSelect);
-	
-	let addTool = $("<div></div>")
-	.css({"width": "100%", "display": "inline-block;"})
-	.append(imageButton(ROOT_URL + "/images/add.png", "Ajouter", addParameter, [row]));
-	
-	let minusTool = $("<div></div>")
-	.css({"width": "100%", "display": "inline-block"})
-	.append(imageButton(ROOT_URL + "/images/minus.png", "Enlever", removeParameter, [row]));
-	
-	let toolsContainer = $("<div></div>")
-	.css({"height": "min-content"})
-	.append(addTool, minusTool);
-	
-	let toolsCell = $("<td></td>")
-	.addClass("lastVisibleColumn")
-	.append(toolsContainer);
-	
-	return row.append(keyCell, valueCell, descriptionCell, quickEditCell, toolsCell);
+	let toolsCell = document.createElement("td");
+	toolsCell.className = "lastVisibleColumn"
+	toolsCell.appendChild(toolsDiv);
+
+	row.appendChild(keyCell);
+	row.appendChild(valueCell);
+	row.appendChild(descriptionCell);
+	row.appendChild(quickEditCell);
+	row.appendChild(toolsCell);
+	return row;
 }

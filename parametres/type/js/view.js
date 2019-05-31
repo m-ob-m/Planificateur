@@ -1,6 +1,6 @@
 "use strict";
 
-$(
+docReady(
 	function()
 	{
 		updateCopyParametersFrom();
@@ -63,19 +63,21 @@ function validateInformation(id, siaNumber, description, genericId, copyParamete
  */
 async function saveConfirm()
 {
+	let copyParametersFromSelect = document.getElementById("copyParametersFrom");
+	let selectedIndex = (copyParametersFromSelect !== null) ? copyParametersFromSelect.selectedIndex : null;
 	let args = [
-		$("#id").text(), 
-		$("#importNo").val(), 
-		$("#description").val(), 
-		$("#generic").val(), 
-		$("#copyParametersFrom").val()
+		document.getElementById("id").value, 
+		document.getElementById("importNo").value, 
+		document.getElementById("description").value, 
+		document.getElementById("generic").value, 
+		(selectedIndex !== null) ? copyParametersFromSelect.options[selectedIndex].value : null
 	];
 	
 	if(validateInformation.apply(null, args))
 	{
 		if(await askConfirmation("Sauvegarde de type", "Voulez-vous vraiment sauvegarder ce type?"))
 		{
-			$("#loadingModal").css({"display": "block"});
+			document.getElementById("loadingModal").style.display = "block";
 			try{
 				let id = await saveType.apply(null, args);
 				openType(id);
@@ -85,7 +87,7 @@ async function saveConfirm()
 				showError("La sauvegarde du type a échouée", error);
 			}
 			finally{
-				$("#loadingModal").css({"display": "none"});
+				document.getElementById("loadingModal").style.display = "none";
 			}
 		}
 	}
@@ -104,33 +106,33 @@ async function saveConfirm()
 function saveType(id, importNo, description, genericId, copyParametersFrom)
 {
 	return new Promise(function(resolve, reject){
-		$.ajax({
-	    	"url": ROOT_URL + "/parametres/type/actions/save.php",
-	        "type": "POST",
-	        "contentType": "application/json;charset=utf-8",
-	        "data": JSON.stringify({
-	    		"id": (id !== "") ? id : null, 
-	    		"importNo": (importNo !== "") ? importNo : null, 
-	    		"description": (description !== "") ? description : null, 
-	    		"genericId": (genericId !== "") ? genericId : null, 
-	    		"copyParametersFrom": copyParametersFrom
-	        }),
-	        "dataType": 'json',
-	        "async": true,
-	        "cache": false
-     	})
-     	.done(function(response){
-			if(response.status === "success")
-			{
-				resolve(response.success.data);
+		ajax.send({
+			"url": ROOT_URL + "/parametres/type/actions/save.php",
+			"type": "POST",
+			"contentType": "application/json;charset=utf-8",
+			"data": {
+			"id": (id !== "") ? id : null, 
+			"importNo": (importNo !== "") ? importNo : null, 
+			"description": (description !== "") ? description : null, 
+			"genericId": (genericId !== "") ? genericId : null, 
+			"copyParametersFrom": copyParametersFrom
+			},
+			"dataType": 'json',
+			"async": true,
+			"cache": false,
+			"onSuccess": function(response){
+				if(response.status === "success")
+				{
+					resolve(response.success.data);
+				}
+				else
+				{
+					reject(response.failure.message);
+				}
+			}, 
+			"onFailure": function(error){
+				reject(error);
 			}
-			else
-			{
-				reject(response.failure.message);
-			}
-		})
-		.fail(function(error){
-			reject(error.responseText);
 		});
 	});
 }
@@ -142,16 +144,16 @@ async function deleteConfirm()
 {
 	if(await askConfirmation("Suppression de type", "Voulez-vous vraiment supprimer ce type?"))
 	{
-		$("#loadingModal").css({"display": "block"});
+		document.getElementById("loadingModal").style.display = "block";
 		try{
-			await deleteType($("#id").text());
+			await deleteType(document.getElementById("id").value);
 			goToIndex();
 		}
 		catch(error){
 			showError("La suppression du type a échouée", error);
 		}
 		finally{
-			$("#loadingModal").css({"display": "none"});
+			document.getElementById("loadingModal").style.display = "none";
 		}
 	}
 }
@@ -165,27 +167,27 @@ async function deleteConfirm()
 function deleteType(id)
 {
 	return new Promise(function(resolve, reject){
-		$.ajax({
+		ajax.send({
 			"url": ROOT_URL + "/parametres/type/actions/delete.php",
 			"type": "POST",
 			"contentType": "application/json;charset=utf-8",
-			"data": JSON.stringify({"id": id}),
+			"data": {"id": id},
 			"dataType": "json",
 			"async": true,
 			"cache": false,
-		})
-		.done(function(response){
-			if(response.status === "success")
-			{
-				resolve(response.success.data);
+			"onSuccess": function(response){
+				if(response.status === "success")
+				{
+					resolve(response.success.data);
+				}
+				else
+				{
+					reject(response.failure.message);
+				}
+			},
+			"onFailure": function(error){
+				reject(error);
 			}
-			else
-			{
-				reject(response.failure.message);
-			}
-		})
-		.fail(function(error){
-			reject(error.responseText);
 		});
 	});
 }
@@ -195,14 +197,26 @@ function deleteType(id)
  */
 async function updateCopyParametersFrom()
 {
-	if($("#copyParametersFrom").length)
+	let copyParametersFromSelect = document.getElementById("copyParametersFrom"); 
+	if(copyParametersFromSelect !== null)
 	{
-		$("#copyParametersFrom").empty();
+		while(copyParametersFromSelect.childElementCount > 0)
+		{
+			copyParametersFromSelect.firstElementChild.remove();
+		}
+
+		let noneOption = document.createElement("option");
+		noneOption.value = "";
+		noneOption.text = "Aucun";
+		copyParametersFromSelect.appendChild(noneOption);
+
 		try{
-			$("#copyParametersFrom").append($("<option></option>").val("").text("Aucun")).val("");
-			let types = await getTypesWithGeneric($("#generic").val());
-			$(types).each(function(){
-				$("#copyParametersFrom").append($("<option></option>").val(this._id).text(this._description));
+			let generic = document.getElementById("generic").value;
+			(await getTypesWithGeneric(generic)).forEach(function(element){
+				let option = document.createElement("option");
+				option.value = element._id;
+				option.text = element._description;
+				copyParametersFromSelect.appendChild(option);
 			});
 		}
 		catch(error){
@@ -221,27 +235,27 @@ async function updateCopyParametersFrom()
 function getTypesWithGeneric(id)
 {
 	return new Promise(function(resolve, reject){
-		$.ajax({
+		ajax.send({
 			"url": ROOT_URL + "/parametres/type/actions/getTypesByGeneric.php",
 			"type": "GET",
 			"contentType": "application/json;charset=utf-8",
 			"data": {"genericId": id},
 			"dataType": "json",
 			"async": true,
-			"cache": false
-		})
-		.done(function(response){
-			if(response.status === "success")
-			{
-				resolve(response.success.data);
+			"cache": false,
+			"onSuccess": function(response){
+				if(response.status === "success")
+				{
+					resolve(response.success.data);
+				}
+				else
+				{
+					reject(response.failure.message);
+				}
+			},
+			"onFailure": function(error){
+				reject(error);
 			}
-			else
-			{
-				reject(response.failure.message);
-			}
-		})
-		.fail(function(error){
-			reject(error.responseText);
 		});
 	});
 }

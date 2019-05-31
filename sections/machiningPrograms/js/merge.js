@@ -1,6 +1,6 @@
 "use strict";
 
-$(function(){
+docReady(function(){
 	addInputFileSelectionField();
 });
 
@@ -9,34 +9,49 @@ $(function(){
  */
 function addInputFileSelectionField()
 {
-	$("div#inputFilesContainer").append(
-		$("<input>")
-		.attr({"type": "file", "accept": "*.mpr"})
-		.css({"width": "100%", "flex": "0 1 auto"})
-		.change(function(){
-			if($("div#inputFilesContainer >input:last-child")[0] === this)
+	document.getElementById("inputFilesContainer").appendChild(newFileInput());
+}
+
+/**
+ * Creates a new file input element.
+ * 
+ * @return {Node} The new file input element
+ */
+function newFileInput()
+{
+	let inputFileInput = document.createElement("input");
+	inputFileInput.type = "file";
+	inputFileInput.accept = "*.mpr";
+	inputFileInput.style.width = "100%";
+	inputFileInput.style.flexGrow = "0";
+	inputFileInput.style.flexShrink = "1";
+	inputFileInput.style.flexBasis = "auto";
+	inputFileInput.value = "";
+	inputFileInput.onchange = function(){
+		let inputFilesContainer = document.getElementById("inputFilesContainer");
+		let inputFileInputArray = inputFilesContainer.getElementsByTagName("input");
+		if(inputFileInputArray[inputFileInputArray.length - 1] === this)
+		{
+			if(this.value !== "" || this.value !== null || this.value !== undefined)
 			{
-				if($(this).val() !== "" || $(this).val() !== null || $(this).val() !== undefined)
-				{
-					addInputFileSelectionField();
-				}
+				addInputFileSelectionField();
 			}
-			else
+		}
+		else
+		{
+			if(this.value === "" || this.value === null || this.value === undefined)
 			{
-				if($(this).val() === "" || $(this).val() === null || $(this).val() === undefined)
-				{
-					removeInputFileSelectionField.apply($(this));
-				}
+				removeInputFileSelectionField.apply(this);
 			}
-		})
-		.val("")
-	);
+		}
+	}
+	return inputFileInput;
 }
 
 /**
  * Removes an input file selection field
  * 
- * @this {jquery} The input file selection field to remove
+ * @this {Node} The input file selection field to remove
  * 
  * @return
  */
@@ -52,9 +67,11 @@ async function mergePrograms()
 {
 	let args = null;
 	
-	let inputFiles = []
+	let inputFiles = [];
+	let inputFilesContainer = document.getElementById("inputFilesContainer");
+	let inputFileInputArray = inputFilesContainer.getElementsByTagName("input");
 	await Promise.all(
-		$("div#inputFilesContainer >input:not(:last-child)").toArray().map(async function(inputFile){
+		[...inputFileInputArray].slice(0, -1).map(async function(inputFile){
 			return new Promise(async function(resolve, reject){
 				try{
 					let contents = await readFile(inputFile.files[0], "iso88591");
@@ -69,10 +86,10 @@ async function mergePrograms()
 		})
 	)
 
-	args = [inputFiles, $("input#outputFileName").val()];
+	args = [inputFiles, document.getElementById("outputFileName").value];
 	if(validateInformation.apply(null, args))
 	{
-		$("#loadingModal").css({"display": "block"});
+		document.getElementById("loadingModal").style.display = "block";
 		try{
 			await merge.apply(null, args);
 		}
@@ -80,7 +97,7 @@ async function mergePrograms()
 			showError("La combinaison des programmes a échouée", error);
 		}
 		finally{
-			$("#loadingModal").css({"display": "none"});
+			document.getElementById("loadingModal").style.display = "none";
 		}
 	}
 }
@@ -96,27 +113,27 @@ async function mergePrograms()
 function merge(inputFiles, outputFileName)
 {
 	return new Promise(function(resolve, reject){
-		$.ajax({
+		ajax.send({
 			"type": "POST",
 			"contentType": "application/json;charset=utf-8",
 			"url": ROOT_URL + "/sections/machiningPrograms/actions/merge.php",
-			"data": JSON.stringify({"inputFiles": inputFiles, "outputFileName": outputFileName}),
+			"data": {"inputFiles": inputFiles, "outputFileName": outputFileName},
 			"dataType": "json",
 			"async": true,
-			"cache": false
-		})
-		.done(function(response){
-			if(response.status === "success")
-			{
-				resolve(response.success.data);
+			"cache": false,
+			"onSuccess": function(response){
+				if(response.status === "success")
+				{
+					resolve(response.success.data);
+				}
+				else
+				{
+					reject(response.failure.message);
+				}
+			},
+			"onFailure": function(error){
+				reject(error);
 			}
-			else
-			{
-				reject(response.failure.message);
-			}
-		})
-		.fail(function(error){
-			reject(error.responseText);
 		});
 	});
 }
@@ -135,8 +152,8 @@ function validateInformation(inputFiles, outputFileName)
 	
 	if(Array.isArray(inputFiles) && inputFiles.length > 1)
 	{
-		$(inputFiles).each(function(){
-			if(this === "" || this === null || this === undefined)
+		inputFiles.forEach(function(element){
+			if(element === "" || element === null || element === undefined)
 			{
 				error += "Un des programmes d'entrée est vide. ";
 			}

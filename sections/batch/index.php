@@ -137,7 +137,7 @@
 						<span>Nest de production</span>
 					</div>
 					<div style="float: right;">
-						<nav id="nav">
+						<nav id="nav" style="display: block;">
 							<ul>
 								<li>
 									<a href="javascript: void(0);" onclick="saveConfirm();" class="imageButton">
@@ -426,17 +426,17 @@
 		</div>
 
 		<!--  Fenêtre Modal pour message d'erreurs -->
-		<div id="errMsgModal" class="modal" onclick='$(this).css({"display": "none"});' >
+		<div id="errMsgModal" class="modal" onclick='this.style.display = "none";' >
 			<div id="errMsg" class="modal-content" style='color: #FF0000;'></div>
 		</div>
 		
 		<!--  Fenêtre Modal pour message de validation -->
-		<div id="validationMsgModal" class="modal" onclick='$(this).css({"display": "none"});' >
+		<div id="validationMsgModal" class="modal" onclick='this.style.display = "none";' >
 			<div id="validationMsg" class="modal-content" style='color: #FF0000;'></div>
 		</div>
 		
 		<!--  Fenêtre Modale pour envoi des données pour génération des programmes -->
-		<div id="downloadMsgModal" class="modal" onclick='$(this).css({"display": "none"});' 
+		<div id="downloadMsgModal" class="modal" onclick='this.style.display = "none";' 
 			style="color: #FF0000; text-align: center;">
 			<div id="downloadMsg" class="modal-content">
 				<h4>Choisissez une option</h4>
@@ -455,19 +455,19 @@
 			<div id="loader" class="loader modal-content"></div>
 		</div>
 
-		<script src="../../assets/js/moment.min.js"></script>
-		<script src="../../assets/js/moment-timezone.js"></script>
-		<script src="../../assets/js/jquery.min.js"></script>
-		<script src="../../assets/js/jquery.dropotron.min.js"></script>
-		<script src="../../assets/js/skel.min.js"></script>
-		<script src="../../assets/js/util.js"></script>
-		<script src="../../assets/js/main.js"></script>
-		<script src="../../js/main.js"></script>
-		<script src="../../js/toolbox.js"></script>
-		<script src="../../sections/batch/js/batch.js"></script>
-		<script src="../../sections/batch/js/index.js"></script>
-		<script src="../../sections/batch/js/jobsTable.js"></script>
-		<script src="../../sections/batch/js/main.js"></script>
-		<script src="../../sections/batch/js/sessionDataStorage.js"></script>
+		<script type="text/javascript" src="../../assets/js/moment.min.js"></script>
+		<script type="text/javascript" src="../../assets/js/moment-timezone.js"></script>
+		<script type="text/javascript" src="../../assets/js/jquery.min.js"></script>
+		<script type="text/javascript" src="../../assets/js/jquery.dropotron.min.js"></script>
+		<script type="text/javascript" src="../../assets/js/skel.min.js"></script>
+		<script type="text/javascript" src="../../assets/js/util.js"></script>
+		<script type="text/javascript" src="../../assets/js/main.js"></script>
+		<script type="text/javascript" src="../../js/main.js"></script>
+		<script type="text/javascript" src="../../js/toolbox.js"></script>
+		<script type="text/javascript" src="../../sections/batch/js/batch.js"></script>
+		<script type="text/javascript" src="../../sections/batch/js/index.js"></script>
+		<script type="text/javascript" src="../../sections/batch/js/jobsTable.js"></script>
+		<script type="text/javascript" src="../../sections/batch/js/main.js"></script>
+		<script type="text/javascript" src="../../sections/batch/js/sessionDataStorage.js"></script>
 	</body> 
 </html>

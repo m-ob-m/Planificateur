@@ -52,7 +52,7 @@
 					</div>
 					<!-- Navigation menu -->
 					<div style="display:inline-block;float:right;">
-    					<nav id="nav">
+    					<nav id="nav" style="display: block;">
     						<ul>									
     							<li>
     								<a href="sections/batch/index.php" class="imageButton">
@@ -166,12 +166,12 @@
 			</div>
 
 			<!--  Fenetre Modal pour message d'erreurs -->
-    		<div id="errMsgModal" class="modal" onclick='$(this).css({"display": "none"});' style="z-index:4;">
+    		<div id="errMsgModal" class="modal" onclick='this.style.display = "none";' style="z-index:4;">
     			<div id="errMsg" class="modal-content" style='color:#FF0000;'></div>
     		</div>
     		
     		<!--  Fenetre Modal pour message de validation -->
-    		<div id="validationMsgModal" class="modal" onclick='$(this).css({"display": "none"});' style="z-index:4;">
+    		<div id="validationMsgModal" class="modal" onclick='this.style.display = "none";' style="z-index:4;">
                 <!-- Modal content -->
     			<div id="validationMsg" class="modal-content" style='color:#FF0000;'></div>
     		</div>
@@ -182,18 +182,18 @@
     		</div>			
 
 		    <!-- Scripts -->
-			<script src='lib/fullcalendar/lib/jquery.min.js'></script>
-			<script src='lib/fullcalendar/lib/jquery-ui.min.js'></script>
-			<script src='lib/fullcalendar/lib/moment.min.js'></script>
-			<script src='lib/fullcalendar/fullcalendar.js'></script>	
-			<script src='lib/fullcalendar/locale/fr-ca.js'></script>
-			<script src="assets/js/jquery.dropotron.min.js"></script>
-			<script src="assets/js/skel.min.js"></script>
-			<script src="assets/js/util.js"></script>
-			<script src="assets/js/main.js"></script>
+			<script type="text/javascript" src="lib/fullcalendar/lib/jquery.min.js"></script>
+			<script type="text/javascript" src="lib/fullcalendar/lib/jquery-ui.min.js"></script>
+			<script type="text/javascript" src="lib/fullcalendar/lib/moment.min.js"></script>
+			<script type="text/javascript" src="lib/fullcalendar/fullcalendar.js"></script>	
+			<script type="text/javascript" src="lib/fullcalendar/locale/fr-ca.js"></script>
+			<script type="text/javascript" src="assets/js/jquery.dropotron.min.js"></script>
+			<script type="text/javascript" src="assets/js/skel.min.js"></script>
+			<script type="text/javascript" src="assets/js/util.js"></script>
+			<script type="text/javascript" src="assets/js/main.js"></script>
 			
-			<script src="js/main.js"></script>
-			<script src="js/index.js"></script>
+			<script type="text/javascript" src="js/main.js"></script>
+			<script type="text/javascript" src="js/index.js"></script>
 		</div>
 	</body>
 </html>

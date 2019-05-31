@@ -14,10 +14,8 @@
     include_once __DIR__ . "/../../../lib/PhpSpreadsheet/autoload.php"; // PHPSpreadsheet
     include_once __DIR__ . "/../../../lib/fileFunctions/fileFunctions.php"; // Fonctions sur les fichiers
     
-    use \PhpOffice\PhpSpreadsheet\Spreadsheet as PHPSpreadSheetWorkBook;
-    use \PhpOffice\PhpSpreadsheet\Worksheet\Worksheet as PHPSpreadSheetWorkSheet;
-    use \PhpOffice\PhpSpreadsheet\Cell as PHPSpreadSheetCell;
     use \PhpOffice\PhpSpreadsheet\Cell\Coordinate as PHPSpreadSheetCoordinate;
+    use \PhpOffice\PhpSpreadsheet\Reader\Xlsx as PHPSpreadSheetXlsxReader;
 
     // Structure de retour vers javascript
     $responseArray = array("status" => null, "success" => array("data" => null), "failure" => array("message" => null));
@@ -89,7 +87,7 @@
      */
     function extractDataFromExcelFile(string $filePath) : \StdClass
     {
-        $reader = new \PhpOffice\PhpSpreadsheet\Reader\Xlsx();
+        $reader = new PHPSpreadSheetXlsxReader();
         $workbook = $reader->load("{$filePath}");
 
         $data = new \stdClass();

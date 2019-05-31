@@ -25,7 +25,7 @@ class mprCutrite
 		$this->_header = "";
 		
 		$myfile = fopen($genericFilePath, "r") or die("Unable to open generic MPR file!");
-		$this->_generic = fread($myfile,filesize($genericFilePath));
+		$this->_generic = utf8_encode(fread($myfile,filesize($genericFilePath)));
 		fclose($myfile);
 		
 	}
@@ -163,12 +163,10 @@ class mprCutrite
 	        }
 	        
 	        $this->extractMprBlocks();
-	        $this->_mpr = preg_replace("/(?<=\[001\r\n).{0}(?=\r\n\r\n)/s", $variables, $this->_header);
-	        $this->_mpr = str_replace("**var_token**\r\n", $variables, $this->_header, $count);
+			$this->_mpr = preg_replace("/(?<=\[001\r\n).{0}(?=\r\n\r\n)/s", $variables, $this->_header);
 		}
 		
 	    $parameters = array_merge($parameters, (new Carrousel())->getSymbolicToolNamesArray());
-		$count = 1;
 				
 		$child_count = 0;	// Nombre d'enfants d'un parent;
 		$child_text = "";	// Texte des enfants;
@@ -217,7 +215,7 @@ class mprCutrite
 	 * \details    	Permet de générer le texte d'un fichier CSV à partir d'un Test
 	 *
 	 */
-	public function makeMprFromTest(Test $test, array $paramDescription)
+	public function makeMprFromTest(Test $test)
 	{
 	    $var_token = "";
 	    $parameters = [];
@@ -250,27 +248,31 @@ class mprCutrite
         }
 	    else
 	    {
+			$generic = $test->getType()->getGeneric();
+	        $defaultKeyDescriptionindex = $generic->getParametersAsKeyDescriptionPairs();
+			$defaultKeyValueindex = $generic->getParametersAsKeyValuePairs();
+			$specificKeyValueIndex = $test->getParametersAsKeyValuePairs();
+			
 			$variables = "";
-	        foreach ($test->getParameters() as $parameter)
-    	    {
-    	        $parameters[$parameter->getKey()] = $parameter->getValue();
-    	        
-    	        $var_token .= "{$parameter->getKey()}=\"{$parameter->getValue()}\"\r\n";
-    	        $var_token .= "KM=\"{$parameter->getDescription()}\"\r\n";
-    	    }
-    	    
-    	    $this->extractMprBlocks();
-    	    $this->_mpr = preg_replace("/(?<=\[001\r\n).{0}(?=\r\n\r\n)/s", $variables, $this->_header);
+	        foreach ($defaultKeyDescriptionindex as $key => $description)
+	        {
+	            $value = $specificKeyValueIndex[$key] ?? $defaultKeyValueindex[$key];
+	            $parameters[$key] = $value;
+	            
+	            $variables .= "{$key}=\"{$value}\"\r\nKM=\"{$description}\"\r\n";
+	        }
+	        
+	        $this->extractMprBlocks();
+			$this->_mpr = preg_replace("/(?<=\[001\r\n).{0}(?=\r\n\r\n)/s", $variables, $this->_header);
 	    }
 	    $parameters = array_merge($parameters, (new Carrousel())->getSymbolicToolNamesArray());
-	    $count = 1;
 	    
 	    $child_count = 0;	// Nombre d'enfants d'un parent;
 	    $child_text = "";	// Texte des enfants;
 	    
 	    foreach($this->getBlocks() as $bloc)
 	    {
-	        $condition = boolval(\MprExpression\Evaluator::evaluate($bloc->getCondition(), null, $parameters));
+	        $condition = boolval(\MprExpression\Evaluator::evaluate($bloc->getCondition() ?? "1", null, $parameters));
 	        if($condition)
 	        {
 	            $child_text = "";
