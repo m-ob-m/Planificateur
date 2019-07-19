@@ -60,7 +60,6 @@ try
         }
         
         $mpr = fread($sourceFileHandle, filesize(CR_FABRIDOR . "SYSTEM_DATA/mpr/{$programName}"));
-        $mpr = mb_convert_encoding($mpr, "ISO-8859-1", "UTF-8");
         $mpr = applyDimensionsToMpr($mpr, strval($jobTypePorte->getLength()), strval($jobTypePorte->getWidth()));
         fwrite($destinationFileHandle, $mpr);
         

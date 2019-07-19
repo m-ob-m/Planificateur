@@ -51,10 +51,10 @@
         /**
          * Linearization function
          *
-         * @param \MprMergeInputFile | \stdClass | string $inputFile An array containing the input file and its 
+         * @param \MprMergeInputFile|\stdClass|string $inputFile An array containing the input file and its 
          *                                                           parameters.
          * @param string $outputFilePath The desired path of the output mpr file.
-         * @param array[\MprVariable | \stdClass] $variables An array of variables applied to the the program before 
+         * @param array[\MprVariable|\stdClass] $variables An array of variables applied to the the program before 
          *                                                   linearization.
          *
          * @throws \UnexpectedMprMergeInputFileParametersFormatException If the functions fails to generate a valid 
@@ -66,7 +66,7 @@
         public static function linearize($inputFile, string $outputFilePath, array $variables = array()) : void
         {
             $instance = new self();
-            
+            $variableData = "";
             foreach($variables as &$variable)
             {
                 /* Variables that are set both in the parameters file and in the component will be assigned
@@ -99,7 +99,7 @@
                 }
                 elseif(is_string($inputFile))
                 {
-                    $inputFile = new \MprMergeInputFile($inputFile);
+                    $inputFile = new \MprMergeInputFile((string)$inputFile);
                 }
                 else
                 {
@@ -183,7 +183,7 @@
                 }
                 elseif(is_string($inputFile))
                 {
-                    $inputFile = new \MprMergeInputFile($inputFile);
+                    $inputFile = new \MprMergeInputFile((string)$inputFile);
                 }
                 else
                 {

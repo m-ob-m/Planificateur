@@ -198,7 +198,7 @@ function getBatchIdFromJobName(jobName)
  */
 async function updateUnitaryPrograms(modelId = null, typeNo = null)
 {
-	document.getelementById("loadingModal").style.display = "block";
+	document.getElementById("loadingModal").style.display = "block";
 	try{
 		await updatePrograms()
 	}
@@ -206,7 +206,7 @@ async function updateUnitaryPrograms(modelId = null, typeNo = null)
 		showError("La génération des programmes unitaires a échouée", error);
 	}
 	finally{
-		document.getelementById("loadingModal").style.display = "none";
+		document.getElementById("loadingModal").style.display = "none";
 	};
 }
 

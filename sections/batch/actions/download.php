@@ -161,7 +161,7 @@ function createZipArchiveForBatch(\Batch $batch, int $action) : string
             array_push($filesToDelete, $mprPath);
             if($action === 1)
             {
-                copy($mprPath, \FileFunctions\PathSanitizer::sanitize(CR_FABRIDOR . "SYSTEM_DATA\\import\\" . basename($mprPath)));
+                copy($mprPath, \FileFunctions\PathSanitizer::sanitize(CR_FABRIDOR . "SYSTEM_DATA\\mpr\\" . basename($mprPath)));
             }
         }
     }

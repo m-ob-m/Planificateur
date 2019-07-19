@@ -19,13 +19,13 @@ async function refreshTests()
 	let endDate = moment(endDateInput.value, "YYYY-MM-DDTHH:mm:ss").tz("America/Montreal");
 	
 	try{
-		let parametersTable = document.getElementById("parametersTable")
-		while(parametersTable.getElementsByTagName("tbody")[0].childElementCount > 0)
+		let parametersTableBody = document.getElementById("parametersTable").getElementsByTagName("tbody")[0];
+		while(parametersTableBody.childElementCount > 0)
 		{
-			parametersTable.getElementsByTagName("tbody")[0].firstElementChild.remove();
+			parametersTableBody.firstElementChild.remove();
 		}
 		(await retrieveTestsBetweenDates(startDate, endDate)).forEach(function(test){
-			parametersTable.getElementsByTagName("tbody")[0].appendChild(newTest(test));
+			parametersTableBody.appendChild(newTest(test));
 		});
 	}
 	catch(error){
@@ -36,12 +36,12 @@ async function refreshTests()
 /**
  * Creates a new row for a Test
  * @param {object} test A Test
- * @return {Node} The new row for the test
+ * @return {Element} The new row for the test
  */
 function newTest(test)
 {
 	let idCell = document.createElement("td");
-	idCell.classList = "firstVisibleColumn";
+	idCell.classList.add("firstVisibleColumn");
 	idCell.textContent = test.id;
 
 	let nameCell = document.createElement("td");
@@ -57,11 +57,11 @@ function newTest(test)
 	genericCell.textContent = test.generic;
 
 	let timestampCell = document.createElement("td");
-	timestampCell.classList = "lastVisibleColumn";
+	timestampCell.classList.add("lastVisibleColumn");
 	timestampCell.textContent = test.timestamp;
 
 	let row = document.createElement("tr");
-	row.classList = "link";
+	row.classList.add("link");
 	row.onclick = function(){
 		openTest(test.id);
 	}

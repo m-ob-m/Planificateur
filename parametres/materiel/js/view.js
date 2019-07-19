@@ -16,7 +16,7 @@
 function validateInformation(id, description, siaCode, cutRiteCode, thickness, woodType, grain, isMDF){
 	let err = "";
 			
-	if(!isPositiveInteger(id) && id !== "" && id!== null)
+	if(!isPositiveInteger(id, true, true) && id !== "" && id!== null)
 	{
 		err += "L'identificateur unique doit être un entier positif. ";
 	}

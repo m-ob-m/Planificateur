@@ -111,11 +111,11 @@ class GenericParameter extends \Parameter implements \JsonSerializable
     /**
      * Insert the GenericParameter object in the database
      *
-     * @param FabPlanConnection $db The database in which the record must be inserted
+     * @param \FabPlanConnection $db The database in which the record must be inserted
      *
      * @throws
      * @author Marc-Olivier Bazin-Maurice
-     * @return GenericParameter This GenericParameter (for method chaining)
+     * @return \GenericParameter This GenericParameter (for method chaining)
      */
     private function insert(\FabPlanConnection $db) : \GenericParameter
     {     
@@ -137,13 +137,13 @@ class GenericParameter extends \Parameter implements \JsonSerializable
     /**
      * Update the GenericParameter object in the database
      *
-     * @param FabPlanConnection $db The database in which the record must be updated
+     * @param \FabPlanConnection $db The database in which the record must be updated
      *
      * @throws
      * @author Marc-Olivier Bazin-Maurice
-     * @return GenericParameter This GenericParameter (for method chaining)
+     * @return \GenericParameter This GenericParameter (for method chaining)
      */
-    private function update(FabPlanConnection $db) : GenericParameter
+    private function update(\FabPlanConnection $db) : \GenericParameter
     {
         $stmt = $db->getConnection()->prepare("
             UPDATE `generic_parameters` 
@@ -163,13 +163,13 @@ class GenericParameter extends \Parameter implements \JsonSerializable
     /**
      * Delete the GenericParameter object from the database
      *
-     * @param FabPlanConnection $db The database from which the record must be deleted
+     * @param \FabPlanConnection $db The database from which the record must be deleted
      *
      * @throws
      * @author Marc-Olivier Bazin-Maurice
-     * @return GenericParameter This GenericParameter (for method chaining)
+     * @return \GenericParameter This GenericParameter (for method chaining)
      */
-    public function delete(FabPlanConnection $db) : GenericParameter
+    public function delete(\FabPlanConnection $db) : \GenericParameter
     {
         $stmt = $db->getConnection()->prepare("
             DELETE FROM `generic_parameters` 

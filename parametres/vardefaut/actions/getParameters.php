@@ -32,7 +32,7 @@ try
         $generic = \Generic::withID($db, $id);
         if($generic !== null)
         {
-            $data = $generic->getGenericParameters();
+            $data = $generic->getParameters();
         }
         $db->getConnection()->commit();
     }

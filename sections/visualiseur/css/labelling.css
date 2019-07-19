@@ -1,0 +1,11 @@
+@media print{    
+    @page{
+        margin: 5px;
+    }
+    div#labelView{
+        display: block !important;
+    }
+    div#mainView{
+        display: none !important;
+    }
+}

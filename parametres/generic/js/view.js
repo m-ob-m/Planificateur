@@ -15,7 +15,7 @@ function validateInformation(id, filename, description, heightParameter, copyPar
 {
 	let err = "";
 	
-	if(!isPositiveInteger(id) && id !== "" && id!== null)
+	if(!isPositiveInteger(id, true, true) && id !== "" && id!== null)
 	{
 		err += "L'identificateur unique doit être un entier positif. ";
 	}

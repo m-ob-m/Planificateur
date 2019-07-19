@@ -213,8 +213,7 @@
             							<label style="cursor: pointer;">
             								<?php $fullDayChecked = $isFullDay ? "checked" : ""; ?>
             								<?php $fullDayValue = $isFullDay ? "Y" : "N"; ?>
-            								<input type="checkbox" id="fullDay" value="<?= $fullDayValue; ?>" 
-            								    <?= $fullDayChecked; ?>>
+            								<input type="checkbox" id="fullDay" <?= $fullDayChecked; ?>>
             							Toute la journée</label>
             						</td>
             					</tr>
@@ -455,19 +454,17 @@
 			<div id="loader" class="loader modal-content"></div>
 		</div>
 
+		<script type="text/javascript" src="../../assets/js/ajax.js"></script>
+		<script type="text/javascript" src="../../assets/js/docReady.js"></script>
+		<script type="text/javascript" src="../../assets/js/checkBox.js"></script>
 		<script type="text/javascript" src="../../assets/js/moment.min.js"></script>
 		<script type="text/javascript" src="../../assets/js/moment-timezone.js"></script>
-		<script type="text/javascript" src="../../assets/js/jquery.min.js"></script>
-		<script type="text/javascript" src="../../assets/js/jquery.dropotron.min.js"></script>
-		<script type="text/javascript" src="../../assets/js/skel.min.js"></script>
-		<script type="text/javascript" src="../../assets/js/util.js"></script>
-		<script type="text/javascript" src="../../assets/js/main.js"></script>
 		<script type="text/javascript" src="../../js/main.js"></script>
 		<script type="text/javascript" src="../../js/toolbox.js"></script>
-		<script type="text/javascript" src="../../sections/batch/js/batch.js"></script>
-		<script type="text/javascript" src="../../sections/batch/js/index.js"></script>
-		<script type="text/javascript" src="../../sections/batch/js/jobsTable.js"></script>
-		<script type="text/javascript" src="../../sections/batch/js/main.js"></script>
-		<script type="text/javascript" src="../../sections/batch/js/sessionDataStorage.js"></script>
+		<script type="text/javascript" src="js/batch.js"></script>
+		<script type="text/javascript" src="js/index.js"></script>
+		<script type="text/javascript" src="js/jobsTable.js"></script>
+		<script type="text/javascript" src="js/main.js"></script>
+		<script type="text/javascript" src="js/sessionDataStorage.js"></script>
 	</body> 
 </html>

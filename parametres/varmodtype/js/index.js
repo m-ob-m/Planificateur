@@ -24,12 +24,12 @@ function validateInformation(modelId, typeNo, parameters)
 		}
 	});
 			
-	if(!isPositiveInteger(modelId) && modelId !== "" && modelId !== null)
+	if(!isPositiveInteger(modelId, true, true) && modelId !== "" && modelId !== null)
 	{
 		err += "Le modèle choisi présente un problème. ";
 	}
 	
-	if(!isPositiveInteger(typeNo) && typeNo !== "" && typeNo !== null)
+	if(!isPositiveInteger(typeNo, true, false) && typeNo !== "" && typeNo !== null)
 	{
 		err += "Le type choisi présente un problème. ";
 	}
@@ -90,9 +90,9 @@ async function saveConfirm()
  */
 function getModifiedParametersArray()
 {
-	let parametersTable = document.getElementById("parametersTable");
+	let tableBody = document.getElementById("parametersTable").getElementsByTagName("tbody")[0];
 	let parameters = [];
-	[...parametersTable.getElementsByTagName("tbody")[0].getElementsByTagName("tr")].forEach(function(parameterRow, index){
+	[...tableBody.getElementsByTagName("tr")].forEach(function(parameterRow, index){
 		let key = parameterRow.getElementsByTagName("td")[0].getElementsByTagName("input")[0].value;
 		let previousValue = parameterRow.getElementsByTagName("td")[4].getElementsByTagName("input")[0].value;
 		let newValue = parameterRow.getElementsByTagName("td")[1].getElementsByTagName("textarea")[0].value;
@@ -185,30 +185,30 @@ function saveParameters(modelId, typeNo, parameters)
  * @param {object} parameter An object that respects the following formatting 
  * 		{key: "key", value: value, description: "description", defaultValue: "defaultValue"}.
  * 
- * @return {Node} A new parameter row
+ * @return {Element} A new parameter row
  */
 function newParameter(parameter)
 {
 	let key = ((parameter === null) ? null : parameter.key);
-	let value = ((parameter === null) ? null : parameter.value);
+	let value = ((parameter === null) ? null : parameter.specificValue);
 	let description = ((parameter === null) ? null : parameter.description);
 	let defaultValue = ((parameter === null) ? null : parameter.defaultValue);
 	
 	let keyInput = document.createElement("input");
 	keyInput.style.height = "100%";
 	keyInput.disabled = true;
-	keyInput.className = "spaceEfficientText";
+	keyInput.classList.add("spaceEfficientText");
 	keyInput.value = key;
 	
 	let keyCell = document.createElement("td");
 	keyCell.style.verticalAlign = "middle";
-	keyCell.className = "firstVisibleColumn";
+	keyCell.classList.add("firstVisibleColumn");
 	keyCell.appendChild(keyInput);
 	
 	let valueInput = document.createElement("textarea");
 	valueInput.style.overflowX = "hidden"; 
 	valueInput.style.resize = "none";
-	valueInput.className = "spaceEfficientText";
+	valueInput.classList.add("spaceEfficientText");
 	valueInput.value = value;
 	
 	let valueCell = document.createElement("td");
@@ -219,7 +219,7 @@ function newParameter(parameter)
 	descriptionInput.style.overflowX = "hidden"; 
 	descriptionInput.style.resize = "none";
 	descriptionInput.readOnly = true;
-	descriptionInput.className = "spaceEfficientText";
+	descriptionInput.classList.add("spaceEfficientText");
 	descriptionInput.value = description;
 	
 	let descriptionCell = document.createElement("td");
@@ -230,12 +230,12 @@ function newParameter(parameter)
 	defaultValueInput.style.overflowX = "hidden"; 
 	defaultValueInput.style.resize = "none";
 	defaultValueInput.disabled = true;
-	defaultValueInput.className = "spaceEfficientText";
+	defaultValueInput.classList.add("spaceEfficientText");
 	defaultValueInput.value = defaultValue;
 	
 	let defaultValueCell = document.createElement("td");
 	defaultValueCell.style.verticalAlign = "middle";
-	defaultValueCell.className = "lastVisibleColumn";
+	defaultValueCell.classList.add("lastVisibleColumn");
 	defaultValueCell.appendChild(defaultValueInput);
 	
 	let oldValueInput = document.createElement("input");
@@ -263,8 +263,7 @@ function newParameter(parameter)
  */
 async function refreshParameters()
 {
-	let table = document.getElementById("parametersTable");
-	let tableBody = table.getElementsByTagName("tbody")[0];
+	let tableBody = document.getElementById("parametersTable").getElementsByTagName("tbody")[0];
 	let modelSelect = document.getElementById("model");
 	let typeSelect = document.getElementById("type");
 	let modelId = modelSelect.options[modelSelect.selectedIndex].value;

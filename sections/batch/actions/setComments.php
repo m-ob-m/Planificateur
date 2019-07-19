@@ -30,7 +30,7 @@ try
         $batch = \Batch::withID($db, $batchId, \MYSQLDatabaseLockingReadTypes::FOR_UPDATE);
         if($batch !== null)
         {
-            $batch-setComments($comments)->save($db);
+            $batch->setComments($comments)->save($db);
         }
         else
         {

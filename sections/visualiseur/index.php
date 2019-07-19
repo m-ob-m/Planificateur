@@ -160,9 +160,8 @@
                     				    <?php $t = $porte->getViewTop() - 30; // Haut de pièce décalé de 30px vers le bas. ?>
     									<?php $w = $porte->getViewHeight(); ?>
                     				    <?php $h = $porte->getViewWidth(); ?>
-    									<div class="porte no-print" onclick="displayDoorProperties(<?= $idjtp; ?>);" 
-    										style="left: <?= $l; ?>px; top: <?= $t; ?>px; width: <?= $w; ?>px;
-    											 height: <?= $h; ?>px;">
+    									<div class="porte no-print" data-id="<?= $idjtp; ?>" 
+    										style="left: <?= $l; ?>px; top: <?= $t; ?>px; width: <?= $w; ?>px; height: <?= $h; ?>px;">
                         					<?= $porte->getNoCommande(); ?><br>
                         					<?= $porte->getModele(); ?><br>
                         					<?= $porte->getHauteurPo() . " X " . $porte->getLargeurPo(); ?>
@@ -183,9 +182,9 @@
         		<table class="parametersTable" style="width: 100%;">
             		<thead>
                 		<tr>
-                			<td>Propriétés de la porte</td>
+                			<td style="padding-left: 5px; padding-right: 5px;">Propriétés de la porte</td>
                 			<td>
-                				<img src="../../images/closewin.png" onclick="closePropertiesWindow();" 
+                				<img id="propertiesWindowCloseButton" src="../../images/closewin.png" 
                 					style="float: right; padding-right: 2px; cursor: pointer;">
                 			</td>
                 		</tr>
@@ -197,7 +196,7 @@
     	</div>
     	
     	<!--  Fenêtre modale pour messages d'erreur -->
-		<div id="errMsgModal" class="modal" onclick='$(this).css({"display": "none"})'>
+		<div id="errMsgModal" class="modal" onclick='this.style.display = "none";'>
 			<div id="errMsg" class="modal-content" style='color:#FF0000;'></div>
 		</div>
     	
@@ -205,7 +204,7 @@
 		<script type="text/javascript" src="../../assets/js/docReady.js"></script>
 		<script type="text/javascript" src="../../js/main.js"></script>
 		<script type="text/javascript" src="../../js/toolbox.js"></script>
-        <script type="module" src="js/main.js"></script>
-        <script type="module" src="js/viewer.js"></script>
+        <script type="text/javascript" src="js/viewer.js"></script>
+        <script type="text/javascript" src="js/index.js"></script>
 	</body>
 </html>	

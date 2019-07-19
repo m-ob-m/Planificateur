@@ -82,20 +82,15 @@ function getModifiedParametersArray()
 	let parametersTable = document.getElementById("parametersTable");
 	if(parametersTable !== null)
 	{
-		let parametersTableBody = parametersTable.getElementsByTagName("tbody")[0];
-		[...parametersTableBody.getElementsByTagName("tr")].forEach(function(element, index) {
-			let key = element.getElementsByTagName("td")[0].getElementsByTagName("input")[0].value;
+		[...parametersTable.getElementsByTagName("tbody")[0].getElementsByTagName("tr")].forEach(function(element) {
 			let newValue = element.getElementsByTagName("td")[1].getElementsByTagName("textarea")[0].value;
-			let description = element.getElementsByTagName("td")[2].getElementsByTagName("textarea")[0].value;
 			let previousValue = element.getElementsByTagName("td")[3].getElementsByTagName("textarea")[0].value;
-			
 			if(previousValue !== newValue)
 			{
 				parameters.push({
-					"key": key, 
+					"key": element.getElementsByTagName("td")[0].getElementsByTagName("input")[0].value, 
 					"value": newValue,
-					"description": description,
-					"index": index
+					"description": element.getElementsByTagName("td")[2].getElementsByTagName("textarea")[0].value
 				});
 			}
 		});
@@ -137,7 +132,7 @@ function validateInformation(id, name, modelId, typeNo, mpr, parameters)
 		);
 	}
 		
-	if(!isPositiveInteger(id) && id !== "" && id !== null)
+	if(!isPositiveInteger(id, true, true) && id !== "" && id !== null)
 	{
 		err += "L'identificateur unique doit être un entier positif.";
 	}
@@ -147,12 +142,12 @@ function validateInformation(id, name, modelId, typeNo, mpr, parameters)
 		err += "Le nom du test ne peut pas être vide et ne doit contenir que des caractères alphanumériques et des \"_\".";
 	}
 	
-	if(!isPositiveInteger(modelId))
+	if(!isPositiveInteger(modelId, true, true))
 	{
 		err += "Le modèle sélectionné présente une erreur.";
 	}
 	
-	if(!isPositiveInteger(typeNo))
+	if(!isPositiveInteger(typeNo, true, false))
 	{
 		err += "Le type sélectionné présente une erreur.";
 	}
@@ -173,7 +168,7 @@ function validateInformation(id, name, modelId, typeNo, mpr, parameters)
  * Creates a new parameter row for the parameters table
  * @param {object} parameter An object of the type {key => "key", value => "value"}
  * @param {boolean} isNew A bit that indicates if thisTest is new (it has no id)
- * @returns {Node} The new parameter row
+ * @returns {Element} The new parameter row
  */
 function newParameter(parameter, isNew)
 {
@@ -185,7 +180,7 @@ function newParameter(parameter, isNew)
 	let oldValue = null;
 	if(parameter !== null)
 	{
-		if(parameter.hasOwnProperty("specificValue"))
+		if(parameter.specificValue !== null)
 		{
 			value = parameter.specificValue;
 			if(parameter.specificValue !== null && !isNew)
@@ -200,16 +195,16 @@ function newParameter(parameter, isNew)
 	}
 	
 	let keyInput = document.createElement("input");
-	keyInput.className = "spaceEfficientText";
+	keyInput.classList.add("spaceEfficientText");
 	keyInput.disabled = true;
 	keyInput.value = key;
 	
 	let keyCell = document.createElement("td");
-	keyCell.className = "firstVisibleColumn";
+	keyCell.classList.add("firstVisibleColumn");
 	keyCell.appendChild(keyInput);
 	
 	let valueInput = document.createElement("textarea");
-	valueInput.className = "spaceEfficientText";
+	valueInput.classList.add("spaceEfficientText");
 	valueInput.style.overflowX = "hidden";
 	valueInput.style.resize = "none";
 	valueInput.value = (value === null) ? defaultValue : value;
@@ -218,7 +213,7 @@ function newParameter(parameter, isNew)
 	valueCell.appendChild(valueInput);
 	
 	let descriptionInput = document.createElement("textarea");
-	descriptionInput.className = "spaceEfficientText";
+	descriptionInput.classList.add("spaceEfficientText");
 	descriptionInput.readOnly = true;
 	descriptionInput.style.overflowX = "hidden";
 	descriptionInput.style.resize = "none";
@@ -228,14 +223,14 @@ function newParameter(parameter, isNew)
 	descriptionCell.appendChild(descriptionInput);
 	
 	let defaultValueInput = document.createElement("textarea");
-	defaultValueInput.className = "spaceEfficientText";
+	defaultValueInput.classList.add("spaceEfficientText");
 	defaultValueInput.disabled = true;
 	defaultValueInput.style.overflowX = "hidden";
 	defaultValueInput.style.resize = "none";
 	defaultValueInput.value = defaultValue;
 	
 	let defaultValueCell = document.createElement("td");
-	defaultValueCell.className = "lastVisibleColumn";
+	defaultValueCell.classList.add("lastVisibleColumn");
 	defaultValueCell.style.padding = "5px";
 	defaultValueCell.appendChild(defaultValueInput);
 	
@@ -273,7 +268,7 @@ async function refreshParameters()
 	let typeNo = parseInt(typeNoSelect.options[typeNoSelect.selectedIndex].value);
 	let modelId = parseInt(modelIdSelect.options[modelIdSelect.selectedIndex].value);
 	
-	while(parametersEditorContainer.childElementCount > 1)
+	while(parametersEditorContainer.childElementCount > 0)
 	{
 		parametersEditorContainer.firstElementChild.remove();
 	}
@@ -434,27 +429,27 @@ async function refreshParametersStandard(testId, modelId, typeNo)
 /**
  * Creates a parameterTable for generic-driven model-types
  * 
- * @return {Node} The new parametersTable
+ * @return {Element} The new parametersTable
  */
 function makeStandardParametersTable()
 {
 	let keyHeader = document.createElement("th");
-	keyHeader.className = "firstVisibleColumn spaceEfficientText";
+	keyHeader.classList.add("firstVisibleColumn", "spaceEfficientText");
 	keyHeader.style.width = "10%";
 	keyHeader.textContent ="Clé";
 	
 	let valueHeader = document.createElement("th");
-	valueHeader.className = "spaceEfficientText";
+	valueHeader.classList.add("spaceEfficientText");
 	valueHeader.style.width = "35%";
 	valueHeader.textContent = "Valeur";
 	
 	let descriptionHeader = document.createElement("th");
-	descriptionHeader.className = "spaceEfficientText";
+	descriptionHeader.classList.add("spaceEfficientText");
 	descriptionHeader.style.width = "20%";
 	descriptionHeader.textContent = "Description";
 	
 	let defaultValueHeader = document.createElement("th");
-	defaultValueHeader.className = "lastVisibleColumn spaceEfficientText";
+	defaultValueHeader.classList.add("lastVisibleColumn", "spaceEfficientText");
 	defaultValueHeader.style.width = "35%";
 	defaultValueHeader.textContent = "Valeur par défaut";
 	
@@ -473,7 +468,7 @@ function makeStandardParametersTable()
 	tableHead.appendChild(headerRow);
 
 	let table = document.createElement("table");
-	table.className = "test parametersTable";
+	table.classList.add("test", "parametersTable");
 	table.style.width = "100%";
 	table.appendChild(tableHead);
 	table.appendChild(document.createElement("tbody"));
@@ -506,14 +501,14 @@ function fillStandardParametersTable(parameters, isCreating = false)
 /**
  * Creates a textArea for custom model-types edition
  * 
- * @return {Node} The new textarea
+ * @return {Element} The new textarea
  */
 function makeCustomTextArea()
 {
 	let customTextArea = document.createElement("textarea");
 	customTextArea.spellcheck = false;
 	customTextArea.autocorrect = false;
-	customTextArea.className = "spaceEfficientText";
+	customTextArea.classList.add("spaceEfficientText");
 	customTextArea.style.resize = "none";
 	customTextArea.style.overflowX = "hidden";
 	customTextArea.style.flexGrow = "1";

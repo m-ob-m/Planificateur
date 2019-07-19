@@ -94,7 +94,7 @@
             // Only on insert
             $generic = \Generic::withID($db, $generic->getId(), \MYSQLDatabaseLockingReadTypes::FOR_UPDATE);
             $referenceGeneric = \Generic::withID($db, $referenceId, \MYSQLDatabaseLockingReadTypes::FOR_SHARE);
-            $generic = copyGenericParameters($generic, $referenceGeneric->getGenericParameters())->save($db, true);
+            $generic = copyGenericParameters($generic, $referenceGeneric->getParameters())->save($db, true);
         }
             
         return $generic;
@@ -117,7 +117,7 @@
             /* @var $parameter \GenericParameter */
             foreach($parameters as $parameter)
             {
-                $generic->addGenericParameter($parameter->setGenericId($generic->getId()));
+                $generic->addParameter($parameter->setGenericId($generic->getId()));
             }
         }
         return $generic;

@@ -1,36 +1,38 @@
 "use strict";
 
-import {MachiningProgramViewer} from "./viewer.js";
-
 docReady(function(){
 	let viewer = new MachiningProgramViewer();
 	[...document.getElementsByClassName("pannelContainer")].forEach(function(pannelContainer){
 		[...pannelContainer.getElementsByTagName("button")].forEach(function(button){
 			if(button.classList.contains("goToFirst"))
 			{
-				button.onclick = function(){viewer.goToFirst()};
+				button.onclick = function(){viewer.goToFirst()};;
 			}
 			else if(button.classList.contains("goToPrevious"))
 			{
-				button.onclick = function(){viewer.goToPrevious()};
+				button.onclick = function(){viewer.goToPrevious();};
 			}
 			else if(button.classList.contains("goToNext"))
 			{
-				button.onclick = function(){viewer.goToNext()};		
+				button.onclick = function(){viewer.goToNext();};		
 			}
 			else if(button.classList.contains("goToLast"))
 			{
-				button.onclick = function(){viewer.goToLast()};
+				button.onclick = function(){viewer.goToLast();};
 			}
 			else if(button.classList.contains("printSingle"))
 			{
-				button.onclick = function(){viewer.printPannel()};
+				button.onclick = function(){viewer.printPannel();};
 			}
 			else if(button.classList.contains("printAll"))
 			{
-				button.onclick = function(){viewer.printAllPannels()};
+				button.onclick = function(){viewer.printAllPannels();};
 			}
 		});
+		[...document.getElementsByClassName("porte")].forEach(function(part){
+			part.onclick = function(){displayDoorProperties(parseInt(part.dataset.id));};
+		});
+		document.getElementById("propertiesWindowCloseButton").onclick = function(){closePropertiesWindow();};
 	});
 });
 
@@ -41,8 +43,8 @@ docReady(function(){
 async function displayDoorProperties(doorId)
 {
 	try{
-		let properties = await fetchDoorProperties(doorId);
-		formatDoorProperties(properties);
+
+		formatDoorProperties(await fetchDoorProperties(doorId));
 		showPropertiesWindow();
 	}
 	catch(error){
@@ -91,7 +93,7 @@ async function fetchDoorProperties(doorId)
 function showPropertiesWindow()
 {
 	let rightPannel = document.getElementById("rightPannel");
-	rightPannel.style.display = "block";
+	rightPannel.style.display = null;
 	rightPannel.scrollTop = 0;
 }
 
@@ -110,16 +112,6 @@ function closePropertiesWindow()
  */
 function formatDoorProperties(doorProperties)
 {	
-	let rightPannel = document.getElementById("rightPannel");
-	rightPannel.appendChild(newDoorProperty("Commande", doorProperties.orderName));
-	rightPannel.appendChild(newDoorProperty("Modèle", doorProperties.modelName));
-	rightPannel.appendChild(newDoorProperty("Type", doorProperties.typeName));
-	rightPannel.appendChild(newDoorProperty("Générique", doorProperties.genericName));
-	rightPannel.appendChild(newDoorProperty("Hauteur", doorProperties.height));
-	rightPannel.appendChild(newDoorProperty("Largeur", doorProperties.width));
-	rightPannel.appendChild(newDoorProperty("Quantité", doorProperties.quantity));
-	rightPannel.appendChild(newDoorProperty("Grain", doorProperties.grain));
-	
 	let downloadLink = document.createElement("a");
 	downloadLink.href = "javascript: void(0);";
 	downloadLink.style.color = "#2A00E1";
@@ -127,6 +119,28 @@ function formatDoorProperties(doorProperties)
 	downloadLink.onclick = function(){
 		downloadProgram(doorProperties.id);
 	};
+
+	let downloadLinkCell = document.createElement("td");
+	downloadLinkCell.colSpan = "2";
+	downloadLinkCell.appendChild(downloadLink);
+	
+	let downloadLinkRow = document.createElement("tr");
+	downloadLinkRow.append(downloadLinkCell);
+
+	let tableBody = document.getElementById("rightPannel").getElementsByTagName("table")[0].getElementsByTagName("tbody")[0];
+	while(tableBody.childElementCount > 0)
+	{
+		tableBody.firstElementChild.remove();
+	}
+	tableBody.appendChild(newDoorProperty("Commande", doorProperties.orderName));
+	tableBody.appendChild(newDoorProperty("Modèle", doorProperties.modelName));
+	tableBody.appendChild(newDoorProperty("Type", doorProperties.typeName));
+	tableBody.appendChild(newDoorProperty("Générique", doorProperties.genericName));
+	tableBody.appendChild(newDoorProperty("Hauteur", doorProperties.height));
+	tableBody.appendChild(newDoorProperty("Largeur", doorProperties.width));
+	tableBody.appendChild(newDoorProperty("Quantité", doorProperties.quantity));
+	tableBody.appendChild(newDoorProperty("Grain", doorProperties.grain));
+	tableBody.appendChild(downloadLinkRow);
 }
 
 /**
@@ -187,7 +201,7 @@ function newDoorProperty(name, value)
 	keyCell.textContent = name;
 
 	let valueCell = document.createElement("td");
-	valueCell.textContent = name;
+	valueCell.textContent = value;
 
 	let row = document.createElement("tr");
 	row.appendChild(keyCell);

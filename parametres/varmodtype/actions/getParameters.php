@@ -27,7 +27,7 @@ try
     $modelId = $_GET["modelId"] ?? null;
     $typeNo = $_GET["typeNo"] ?? null;
     
-    if(is_positive_integer_or_equivalent_string($modelId))
+    if(is_positive_integer_or_equivalent_string($modelId, true, true))
     {
         $modelId = (int)$modelId;
     }
@@ -36,7 +36,7 @@ try
         throw new \Exception("L'identifiant unique de modèle fourni \"{$modelId}\" n'est pas valide.");
     }
     
-    if(is_positive_integer_or_equivalent_string($typeNo))
+    if(is_positive_integer_or_equivalent_string($typeNo, true, true))
     {
         $typeNo = (int)$typeNo;
     }
@@ -93,7 +93,7 @@ function createModelTypeParametersView(int $modelId, int $typeNo) : array
     
     $parameters = array();
     /* @var $genericParameter \GenericParameter */
-    foreach($modelType->getType()->getGeneric()->getGenericParameters() as $genericParameter)
+    foreach($modelType->getType()->getGeneric()->getParameters() as $genericParameter)
     {
         $key = $genericParameter->getKey();
         $value = null;
@@ -109,7 +109,7 @@ function createModelTypeParametersView(int $modelId, int $typeNo) : array
         // Fill the result array
         array_push($parameters, array(
                 "key" => $key, 
-                "value" => $value, 
+                "specificValue" => $value, 
                 "description" => $genericParameter->getDescription(),
                 "defaultValue" => $genericParameter->getValue()
             )

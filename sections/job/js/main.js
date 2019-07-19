@@ -6,7 +6,7 @@
  */
 async function goToBatch(batchId)
 {
-	if(dataHasChanged() === true)
+	if(hasChanged())
 	{
 		if(await askConfirmation("Quitter cette job?", "Les modifications non sauvegardés seront perdues."))
 		{

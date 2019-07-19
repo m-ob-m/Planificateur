@@ -19,7 +19,7 @@ try
     $input =  json_decode(file_get_contents("php://input"));
     
     $batchId = $input->id ?? null;
-    $status = $input->status ?? "";
+    $mprStatus = $input->mprStatus ?? "";
     
     // Get the information
     $batch = null;
@@ -30,7 +30,7 @@ try
         $batch = \Batch::withID($db, $batchId, \MYSQLDatabaseLockingReadTypes::FOR_UPDATE);
         if($batch !== null)
         {
-            $batch-setMprStatus($status)->save($db);
+            $batch->setMprStatus($mprStatus)->save($db);
         }
         else
         {

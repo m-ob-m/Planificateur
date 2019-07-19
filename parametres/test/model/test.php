@@ -82,15 +82,26 @@ class Test extends ModelTypeGeneric implements JsonSerializable
 	    
 	    //Récupérer les paramètres
 	    $stmt = $db->getConnection()->prepare(
-            "SELECT `gp`.`parameter_key` AS `parameter_key`, 
-				IF(`tp`.`parameter_value` IS NULL, `gp`.`parameter_value`, `tp`.`parameter_value`) AS `parameter_value`,
-				`gp`.`description` AS `parameter_description`
-			FROM `test_parameters` AS `tp` 
-			INNER JOIN `test` AS `t` ON `t`.`id` = `tp`.`test_id` AND `t`.`id` = :id
+            "SELECT `gp`.`key` AS `key`, 
+				IF(`tp`.`value` IS NULL, `gp`.`value`, `tp`.`value`) AS `value`,
+				`gp`.`description` AS `description`
+			FROM  `test` AS `t`
 			INNER JOIN `door_types` AS `dt` ON `dt`.`importNo` = `t`.`type_no`
 			INNER JOIN `generics` AS `g` ON `g`.`id` = `dt`.`generic_id`
-			RIGHT JOIN `generic_parameters` AS `gp` 
-				ON `gp`.`generic_id` = `g`.`id` AND `gp`.`parameter_key` = `tp`.`parameter_key`
+			INNER JOIN LATERAL(
+				SELECT `gp`.`id` AS `id`, 
+					`gp`.`parameter_key` AS `key`, 
+					`gp`.`parameter_value` AS `value`, 
+					`gp`.`description` AS `description`
+				FROM `generic_parameters` AS `gp` 
+				WHERE `gp`.`generic_id` = `g`.`id`
+			) AS `gp`
+			LEFT JOIN LATERAL(
+				SELECT `tp`.`parameter_key` AS `key`, `tp`.`parameter_value` AS `value` 
+				FROM `test_parameters` AS `tp` 
+				WHERE `t`.`id` = `tp`.`test_id`
+			) AS `tp` ON `tp`.`key` = `gp`.`key`
+			WHERE `t`.`id` = :id
 			ORDER BY `gp`.`id` ASC " . 
 	        (new \MYSQLDatabaseLockingReadTypes($databaseConnectionLockingReadType))->toLockingReadString() . ";"
         );
@@ -100,7 +111,7 @@ class Test extends ModelTypeGeneric implements JsonSerializable
 	    while($row = $stmt->fetch())	// Récupération de l'instance TestParameter
 	    {
 	        $instance = $instance->addParameter(
-	            new \TestParameter($id, $row["parameter_key"], $row["parameter_value"], $row["parameter_description"])
+	            new \TestParameter($id, $row["key"], $row["value"], $row["description"])
 	        );
 	    }
 	    
