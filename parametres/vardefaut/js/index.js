@@ -15,8 +15,7 @@ async function refreshParameters()
 {
 	let genericSelect = document.getElementById("generic");
 	let id = genericSelect.options[genericSelect.selectedIndex].value;
-	let table = document.getElementById("parametersTable");
-	let tableBody = table.getElementsByTagName("tbody")[0];
+	let tableBody = document.getElementById("parametersTable").getElementsByTagName("tbody")[0];
 	
 	while(tableBody.childElementCount > 0)
 	{
@@ -102,13 +101,13 @@ function validateInformation(id, parameters)
 			err += "La description du paramètre ayant la clé \"" + element.key + "\" est vide. ";
 		}
 		
-		if(element.quickEdit !== 0 && element.quickEdit !== 1)
+		if(isPositiveInteger(element.quickEdit,true, false) && ![0, 1].includes(parseInt(element.quickEdit)))
 		{
 			err += "Le paramètre de l'édition rapide peut seulement prendre les valeurs \"0\" ou \"1\". ";
 		}
 	});
 			
-	if(!isPositiveInteger(id) && id !== "" && id !== null)
+	if(!isPositiveInteger(id, true, true) && id !== "" && id !== null)
 	{
 		err += "L'identificateur unique doit être un entier positif. ";
 	}
@@ -162,14 +161,13 @@ async function saveConfirm()
  */
 function getParametersArray()
 {
-	let parametersTable = document.getElementById("parametersTable");
-	return [...parametersTable.getElementsByTagName("tbody")[0].getElementsByTagName("tr")].map(function(element, index){
-		let quickEditSelect = element.getElementsByTagName("td")[3].getElementsByTagName("select")[0];
+	let tableBody = document.getElementById("parametersTable").getElementsByTagName("tbody")[0];
+	return [...tableBody.getElementsByTagName("tr")].map(function(element, index){
 		return {
 			"key": element.getElementsByTagName("td")[0].getElementsByTagName("input")[0].value, 
 			"value": element.getElementsByTagName("td")[1].getElementsByTagName("textarea")[0].value, 
 			"description": element.getElementsByTagName("td")[2].getElementsByTagName("textarea")[0].value,
-			"quickEdit": parseInt(quickEditSelect.options[quickEditSelect.selectedIndex].value),
+			"quickEdit": element.getElementsByTagName("td")[3].getElementsByTagName("select")[0].value,
 			"index": index
 		};
 	});
@@ -212,7 +210,7 @@ function saveParameters(id, parameters)
 
 /**
  * Adds a parameter to the parameters list
- * @this {Node} row The row after which the element must be added.
+ * @this {Element} row The row after which the element must be added.
  * 
  * @return {bool} false To prevent any further behavior (automatic page scroll to top)
  */
@@ -225,13 +223,13 @@ function addParameter()
 
 /**
  * Removes a parameter from the parameters list
- * @this {Node} row The row to remove.
+ * @this {Element} row The row to remove.
  * 
  * @return {bool} false To prevent any further behavior (automatic page scroll to top)
  */
 function removeParameter()
 {
-	if(this.parentNode.childElementCount > 1)
+	if(this.parentElement.childElementCount > 1)
 	{
 		this.remove();
 	}
@@ -243,7 +241,7 @@ function removeParameter()
  * Creates a new parameter row to add in the parameters list
  * @param {object} parameter An object that respects the following formatting {_key: "key", _value: value, _description: "description"}.
  * 
- * @return {Node} A new parameter row
+ * @return {Element} A new parameter row
  */
 function newParameter(parameter = null)
 {
@@ -256,16 +254,16 @@ function newParameter(parameter = null)
 	row.style.height = "50px";
 	
 	let keyInput = document.createElement("input");
-	keyInput.className = "spaceEfficientText";
+	keyInput.classList.add("spaceEfficientText");
 	keyInput.maxLength = 8;
 	keyInput.value = key;
 	
 	let keyCell = document.createElement("td");
-	keyCell.className = "firstVisibleColumn";
+	keyCell.classList.add("firstVisibleColumn");
 	keyCell.appendChild(keyInput);
 
 	let valueTextArea = document.createElement("textarea");
-	valueTextArea.className = "spaceEfficientText";
+	valueTextArea.classList.add("spaceEfficientText");
 	valueTextArea.style.overflowX = "hidden"; 
 	valueTextArea.style.resize = "none";
 	valueTextArea.value = value;
@@ -275,7 +273,7 @@ function newParameter(parameter = null)
 	valueCell.appendChild(valueTextArea);
 	
 	let descriptionTextArea = document.createElement("textarea");
-	descriptionTextArea.className = "spaceEfficientText";
+	descriptionTextArea.classList.add("spaceEfficientText");
 	descriptionTextArea.style.overflowX = "hidden";
 	descriptionTextArea.style.resize = "none";
 	descriptionTextArea.value = description;
@@ -292,7 +290,7 @@ function newParameter(parameter = null)
 	quickEditSelectOption1.text = "Activé";
 
 	let quickEditSelect = document.createElement("select");
-	quickEditSelect.className = "spaceEfficientText";
+	quickEditSelect.classList.add("spaceEfficientText");
 	quickEditSelect.appendChild(quickEditSelectOption0);
 	quickEditSelect.appendChild(quickEditSelectOption1);
 	quickEditSelect.value = String(quickEdit);
@@ -311,7 +309,7 @@ function newParameter(parameter = null)
 	toolsDiv.appendChild(deleteTool);
 	
 	let toolsCell = document.createElement("td");
-	toolsCell.className = "lastVisibleColumn"
+	toolsCell.classList.add("lastVisibleColumn");
 	toolsCell.appendChild(toolsDiv);
 
 	row.appendChild(keyCell);

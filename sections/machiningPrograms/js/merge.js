@@ -15,7 +15,7 @@ function addInputFileSelectionField()
 /**
  * Creates a new file input element.
  * 
- * @return {Node} The new file input element
+ * @return {Element} The new file input element
  */
 function newFileInput()
 {
@@ -28,8 +28,7 @@ function newFileInput()
 	inputFileInput.style.flexBasis = "auto";
 	inputFileInput.value = "";
 	inputFileInput.onchange = function(){
-		let inputFilesContainer = document.getElementById("inputFilesContainer");
-		let inputFileInputArray = inputFilesContainer.getElementsByTagName("input");
+		let inputFileInputArray = document.getElementById("inputFilesContainer").getElementsByTagName("input");
 		if(inputFileInputArray[inputFileInputArray.length - 1] === this)
 		{
 			if(this.value !== "" || this.value !== null || this.value !== undefined)
@@ -51,7 +50,7 @@ function newFileInput()
 /**
  * Removes an input file selection field
  * 
- * @this {Node} The input file selection field to remove
+ * @this {Element} The input file selection field to remove
  * 
  * @return
  */
@@ -68,10 +67,8 @@ async function mergePrograms()
 	let args = null;
 	
 	let inputFiles = [];
-	let inputFilesContainer = document.getElementById("inputFilesContainer");
-	let inputFileInputArray = inputFilesContainer.getElementsByTagName("input");
 	await Promise.all(
-		[...inputFileInputArray].slice(0, -1).map(async function(inputFile){
+		[...document.getElementById("inputFilesContainer").getElementsByTagName("input")].slice(0, -1).map(async function(inputFile){
 			return new Promise(async function(resolve, reject){
 				try{
 					let contents = await readFile(inputFile.files[0], "iso88591");

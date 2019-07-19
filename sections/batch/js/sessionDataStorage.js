@@ -5,16 +5,20 @@
  */
 async function restoreSessionStorage()
 {
-	$("#batchName").val(window.sessionStorage.getItem("name"));
-	$("#fullDay").val(window.sessionStorage.getItem("fullDay"));
-	$("#startDate").val(window.sessionStorage.getItem("startDate"));
-	$("#endDate").val(window.sessionStorage.getItem("endDate"));
-	$("#status").val(window.sessionStorage.getItem("status"));
-	$("#comments").val(window.sessionStorage.getItem("comments"));
-	$("#material").val(window.sessionStorage.getItem("material"));
-	await updatePannelsList();
-	$("#boardSize").val(window.sessionStorage.getItem("boardSize"));
-	await fillJobsList(JSON.parse(window.sessionStorage.getItem("jobIds")), false);
+	if(typeof window.sessionStorage.batch !== "undefined")
+	{
+		let batch = JSON.parse(window.sessionStorage.batch);
+		document.getElementById("batchName").value = batch.name;
+		document.getElementById("fullDay").value = batch.fullDay;
+		document.getElementById("startDate").value = batch.startDate;
+		document.getElementById("endDate").value = batch.endDate;
+		document.getElementById("status").value = batch.status;
+		document.getElementById("comments").value = batch.comments;
+		document.getElementById("material").value = batch.material;
+		await updatePannelsList();
+		document.getElementById("boardSize").value = batch.boardSize;
+		await fillJobsList(batch.jobIds, false);
+	}
 }
 
 /**
@@ -22,22 +26,23 @@ async function restoreSessionStorage()
  */
 function updateSessionStorage()
 {
-	let jobIds = [];
-	$("table#orders >tbody >tr >td.jobIdCell").each(function(){
-		jobIds.push($(this).text());
+	let jobIds = [...document.getElementById("orders").getElementsByTagName("tbody")[0].getElementsByTagName("tr")].map(function(row){
+		return row.getElementsByClassName("jobIdCell")[0].textContent;
 	});
-	
-	window.sessionStorage.setItem("__type", "batch");
-	window.sessionStorage.setItem("id", $("#batchId").val());
-	window.sessionStorage.setItem("name", $("#batchName").val());
-	window.sessionStorage.setItem("startDate", $("#startDate").val());
-	window.sessionStorage.setItem("endDate", $("#endDate").val());
-	window.sessionStorage.setItem("fullDay", $("#fullDay").val());
-	window.sessionStorage.setItem("material", $("#material").val());
-	window.sessionStorage.setItem("boardSize", $("#boardSize").val());
-	window.sessionStorage.setItem("status", $("#status").val());
-	window.sessionStorage.setItem("comments", $("#comments").val());
-	window.sessionStorage.setItem("jobIds", JSON.stringify(jobIds));
+	let boardSizeSelect = document.getElementById("boardSize");
+
+	window.sessionStorage.batch = JSON.stringify({
+		"id": document.getElementById("batchId").value, 
+		"name": document.getElementById("batchName").value, 
+		"startDate": document.getElementById("startDate").value, 
+		"endDate": document.getElementById("endDate").value, 
+		"fullDay": document.getElementById("fullDay").value, 
+		"material": document.getElementById("material").value, 
+		"boardSize": boardSizeSelect[boardSizeSelect.selectedIndex].value, 
+		"status": document.getElementById("status").value, 
+		"comments": document.getElementById("comments").value, 
+		"jobIds": jobIds
+	});
 }
 
 /**
@@ -46,35 +51,24 @@ function updateSessionStorage()
  */
 function compareWithSessionStorage()
 {
-	let jobIds = [];
-	$("table#orders >tbody >tr >td.jobIdCell").each(function(){
-		jobIds.push($(this).text());
+	let jobIds = [...document.getElementById("orders").getElementsByTagName("tbody")[0].getElementsByTagName("tr")].map(function(row){
+		return row.getElementsByClassName("jobIdCell")[0].textContent;
 	});
 	
+	let sessionBatch = JSON.parse(window.sessionStorage.batch);
 	let comparedJobs = true;
-	let sessionjobIds = JSON.parse(window.sessionStorage.getItem("jobIds"));
-	if(jobIds.length === sessionjobIds.length)
-	{
-		$(jobIds).each(function(index){
-			if(this.toString() !== sessionjobIds[index])
-			{
-				comparedJobs = false;
-			}
-		});
-	}
-	else
-	{
-		comparedJobs = false;
-	}
+	comparedJobs = (jobIds.length === sessionBatch.jobIds.length) ? comparedJobs : false;
+	jobIds.map(function(element, index){comparedJobs =  (element.toString() === sessionBatch.jobIds[index]) ? comparedJobs : false;});
 	
-	return window.sessionStorage.getItem("id") === $("#batchId").val() && 
-		window.sessionStorage.getItem("name") === $("#batchName").val() && 
-		window.sessionStorage.getItem("startDate") === $("#startDate").val() && 
-		window.sessionStorage.getItem("endDate") === $("#endDate").val() && 
-		window.sessionStorage.getItem("fullDay") === $("#fullDay").val() && 
-		window.sessionStorage.getItem("material") === $("#material").val() && 
-		window.sessionStorage.getItem("boardSize") === $("#boardSize").val() && 
-		window.sessionStorage.getItem("status") === $("#status").val() &&
-		window.sessionStorage.getItem("comments") === $("#comments").val() && 
+	return typeof sessionBatch !== "undefined" && 
+		sessionBatch.id === document.getElementById("batchId").value && 
+		sessionBatch.name === document.getElementById("batchName").value && 
+		sessionBatch.startDate === document.getElementById("startDate").value && 
+		sessionBatch.endDate === document.getElementById("endDate").value && 
+		sessionBatch.fullDay === document.getElementById("fullDay").value && 
+		sessionBatch.material === document.getElementById("material").value && 
+		sessionBatch.boardSize === document.getElementById("boardSize").value && 
+		sessionBatch.status === document.getElementById("status").value &&
+		sessionBatch.comments === document.getElementById("comments").value && 
 		comparedJobs;
 }

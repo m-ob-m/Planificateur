@@ -21,12 +21,12 @@ function validateInformation(id, siaNumber, description, genericId, copyParamete
 {
 	let err = "";
 	
-	if(!isPositiveInteger(id) && id !== "" && id !== null)
+	if(!isPositiveInteger(id, true, true) && id !== "" && id !== null)
 	{
 		err += "L'identificateur unique doit être un entier positif. ";
 	}
 	
-	if(!isPositiveInteger(siaNumber))
+	if(!isPositiveInteger(siaNumber, true, false))
 	{
 		err += "Le numéro d'importation SIA doit être un entier positif. ";
 	}
@@ -36,12 +36,12 @@ function validateInformation(id, siaNumber, description, genericId, copyParamete
 		err += "Description manquante. ";
 	}
 	
-	if(!isPositiveInteger(genericId))
+	if(!isPositiveInteger(genericId, true, true))
 	{
 		err += "Le générique choisi présente un problème. ";
 	}
 	
-	if(!isPositiveInteger(copyParametersFrom) && copyParametersFrom && copyParametersFrom.length !== 0)
+	if(!isPositiveInteger(copyParametersFrom, true, true) && copyParametersFrom && copyParametersFrom.length !== 0)
 	{
 		err += "Un type invalide a été choisi pour la copie des paramètres. ";
 	}

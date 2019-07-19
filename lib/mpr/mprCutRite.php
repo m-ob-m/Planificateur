@@ -173,7 +173,7 @@ class mprCutrite
 		
 		foreach($this->getBlocks() as $bloc)
 		{	
-		    $condition = boolval(\MprExpression\Evaluator::evaluate($bloc->getCondition(), null, $parameters));
+			$condition = boolval(\MprExpression\Evaluator::evaluate($bloc->getCondition() ?? "1", null, $parameters));
 		    if($condition)
 		    {
 				$child_text = "";
@@ -197,11 +197,8 @@ class mprCutrite
 		//Si le fichier mpr n'a pas de marque de fin (un !), on en ajoute une.
         $this->_mpr .= ((preg_match("/^.*!\s*$/s", $this->_mpr)) ? "" : "!");
 		
-        if($jobType->getModel()->getId() === 2)
-        {
-    		//Remettre l'encodage des caractères en ISO-8859-1
-    		$this->_mpr = utf8_decode($this->_mpr);
-        }
+		//Remettre l'encodage des caractères en ISO-8859-1
+		$this->_mpr = utf8_decode($this->_mpr);
 	}
 	
 	

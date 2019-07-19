@@ -1,6 +1,6 @@
 "use strict";
 
-let ROOT_URL = "/" + document.currentScript.src.match(/(?<=^|\/|\\)[^\\\/]*(?=$|\/|\\)/g)[3];
+let ROOT_URL = "/" + document.currentScript.src.match(new RegExp("[^\\\\\\/]+", "g"))[2];
 
 /**
  * Display a modal window for error messages
@@ -38,7 +38,7 @@ function showError(title, message)
 * @param optional {array} parameters An array of parameters to apply to the on-click callback function
 * @param optional {any} thisElement The value of this in the callback function
 * 
-* @return {Node} An image button
+* @return {Element} An image button
 */
 function imageButton(imagePath, text, callback, parameters = [], thisElement = null)
 {
@@ -50,7 +50,7 @@ function imageButton(imagePath, text, callback, parameters = [], thisElement = n
 
 	let imageButton = document.createElement('a');
 	imageButton.href = "javascript: void(0);";
-	imageButton.className = "imageButton";
+	imageButton.classList.add("imageButton");
 	imageButton.addEventListener("click", function(){return callback.apply(thisElement, parameters);});
 	imageButton.appendChild(image);
 	imageButton.appendChild(textSpan);
@@ -166,8 +166,7 @@ function downloadFile(url, fileName)
 	req.open("GET", url, true);
 	req.responseType = "blob";
 
-	req.onload = function (event) 
-	{
+	req.onload = function(){
 		let blob = req.response;
 		let link = document.createElement("a");
 		link.href = window.URL.createObjectURL(blob);
@@ -181,3 +180,28 @@ function downloadFile(url, fileName)
 
 	req.send();
 }
+
+/**
+ * Creates a select box.
+ * @param {object} [options={}] An  object listing the options as value: text pairs with the first pair being the selected option 
+ * @param {function|null} [callback=null] The onchange callback function of the select box
+ * @return {Element} A select box
+ */
+function selectBox(options = {}, callback = null)
+{
+	let firstElement = true;
+	let select = document.createElement("select");
+	Object.keys(options).map(function(key){
+		let option = document.createElement("option");
+		option.text = options[key];
+		option.value = key;
+		select.appendChild(option);
+		if(firstElement)
+		{
+			select.value = key;
+			firstElement = false;
+		}
+	});
+	select.addEventListener("change", function(){callback !== "undefined" && isFunction(callback) ? callback(this.value) : null;});
+	return select;
+}	

@@ -7,30 +7,30 @@
  * 
  * @return {Promise}
  */
-function retrieveBatchStatus(id)
+function retrieveBatchMprStatus(id)
 {
 	return new Promise(function(resolve, reject){
-		$.ajax({
+		ajax.send({
 			"type": "GET",
 			"contentType": "application/json;charset=utf-8",
-			"url": ROOT_URL + "/sections/batch/actions/getStatus.php",
+			"url": ROOT_URL + "/sections/batch/actions/getMprStatus.php",
 			"data": {"batchId": id},
 			"dataType": "json",
 			"async": true,
-			"cache": false
-		})
-		.done(function(response){
-			if(response.status === "success")
-			{
-				resolve(response.success.data);
+			"cache": false,
+			"onSuccess": function(response){
+				if(response.status === "success")
+				{
+					resolve(response.success.data);
+				}
+				else
+				{
+					reject(response.failure.message);
+				}
+			},
+			"onFailure": function(error){
+				reject(error);
 			}
-			else
-			{
-				reject(response.failure.message);
-			}
-		})
-		.fail(function(error){
-			reject(error);
 		});
 	});
 }
@@ -45,27 +45,27 @@ function retrieveBatchStatus(id)
 function retrievePannels(materialId)
 {
 	return new Promise(function(resolve, reject){
-		$.ajax({
+		ajax.send({
 			"type": "GET",
 			"contentType": "application/json;charset=utf-8",
 			"url": ROOT_URL + "/parametres/materiel/actions/getPannels.php",
 			"data": {"materialId": materialId},
 			"dataType": "json",
 			"async": true,
-			"cache": false
-		})
-		.done(function(response){
-			if(response.status === "success")
-			{
-				resolve(response.success.data);
+			"cache": false,
+			"onSuccess": function(response){
+				if(response.status === "success")
+				{
+					resolve(response.success.data);
+				}
+				else
+				{
+					reject(response.failure.message);
+				}
+			},
+			"onFailure": function(error){
+				reject(error);
 			}
-			else
-			{
-				reject(response.failure.message);
-			}
-		})
-		.fail(function(error){
-			reject(error);
 		});
 	});
 }
@@ -80,27 +80,27 @@ function retrievePannels(materialId)
 function retrieveJobs(batchId)
 {
 	return new Promise(function(resolve, reject){
-		$.ajax({
+		ajax.send({
 			"type": "GET",
 			"contentType": "application/json;charset=utf-8",
 			"url": ROOT_URL + "/sections/batch/actions/getJobs.php",
 			"data": {"batchId": batchId},
 			"dataType": "json",
 			"async": true,
-			"cache": false
-		})
-		.done(function(response){
-			if(response.status === "success")
-			{
-				resolve(response.success.data);
+			"cache": false,
+			"onSuccess": function(response){
+				if(response.status === "success")
+				{
+					resolve(response.success.data);
+				}
+				else
+				{
+					reject(response.failure.message);
+				}
+			},
+			"onFailure": function(error){
+				reject(error);
 			}
-			else
-			{
-				reject(response.failure.message);
-			}
-		})
-		.fail(function(error){
-			reject(error);
 		});
 	});
 }
@@ -116,27 +116,27 @@ function retrieveJobs(batchId)
 function getJobSummary(identifier, isName = false)
 {
 	return new Promise(function(resolve, reject){
-		$.ajax({
+		ajax.send({
 			"type": "GET",
 			"contentType": "application/json;charset=utf-8",
 			"url": ROOT_URL + "/sections/job/actions/getSummary.php",
 			"data": {[isName ? "name" : "id"]: identifier},
 			"dataType": "json",
 			"async": true,
-			"cache": false
-		})
-		.done(function(response){
-			if(response.status === "success")
-			{
-				resolve(response.success.data);
+			"cache": false,
+			"onSuccess": function(response){
+				if(response.status === "success")
+				{
+					resolve(response.success.data);
+				}
+				else
+				{
+					reject(response.failure.message);
+				}
+			},
+			"onFailure": function(error){
+				reject(error);
 			}
-			else
-			{
-				reject(response.failure.message);
-			}
-		})
-		.fail(function(error){
-			reject(error);
 		});
 	});
 }
@@ -160,7 +160,7 @@ function getJobSummary(identifier, isName = false)
 function saveBatch(id, name, startDate, endDate, fullDay, material, boardSize, status, comments, jobIds)
 {
 	return new Promise(function(resolve, reject){
-		$.ajax({
+		ajax.send({
 			"type": "POST",
 			"contentType": "application/json;charset=utf-8",
 			"url": ROOT_URL + "/sections/batch/actions/save.php",
@@ -179,19 +179,19 @@ function saveBatch(id, name, startDate, endDate, fullDay, material, boardSize, s
 			"dataType": "json",
 			"async": true,
 			"cache": false,
-		})
-		.done(function(response){
-			if(response.status === "success")
-			{
-				resolve(response.success.data);
+			"onSuccess": function(response){
+				if(response.status === "success")
+				{
+					resolve(response.success.data);
+				}
+				else
+				{
+					reject(response.failure.message);
+				}
+			},
+			"onFailure": function(error){
+				reject(error);
 			}
-			else
-			{
-				reject(response.failure.message);
-			}
-		})
-		.fail(function(error){
-			reject(error);
 		});
 	});
 }
@@ -207,27 +207,27 @@ function saveBatch(id, name, startDate, endDate, fullDay, material, boardSize, s
 function downloadBatch(id, action = 1)
 {
 	return new Promise(function(resolve, reject){
-		$.ajax({
+		ajax.send({
 			"type": "POST",
 			"contentType": "application/json;charset=utf-8",
 			"url": ROOT_URL + "/sections/batch/actions/download.php",
 			"data": {"batchId": id, "action": action},
 			"dataType": "json",
 			"async": true,
-			"cache": false
-		})
-		.done(function(response){
-			if(response.status === "success")
-			{
-				resolve(response.success.data);
+			"cache": false,
+			"onSuccess": function(response){
+				if(response.status === "success")
+				{
+					resolve(response.success.data);
+				}
+				else
+				{
+					reject(response.failure.message);
+				}
+			},
+			"onFailure": function(error){
+				reject(error);
 			}
-			else
-			{
-				reject(response.failure.message);
-			}
-		})
-		.fail(function(error){
-			reject(error);
 		});
 	});
 }
@@ -241,7 +241,7 @@ function downloadBatch(id, action = 1)
 function deleteBatch(id)
 {
 	return new Promise(function(resolve, reject){
-		$.ajax({
+		ajax.send({
 			"type": "POST",
 			"contentType": "application/json;charset=utf-8",
 			"url": ROOT_URL + "/sections/batch/actions/delete.php",
@@ -249,19 +249,19 @@ function deleteBatch(id)
 			"dataType": "json",
 			"async": true,
 			"cache": false,
-		})
-		.done(function(response){
-			if(response.status === "success")
-			{
-				resolve(response.success.data);
+			"onSuccess": function(response){
+				if(response.status === "success")
+				{
+					resolve(response.success.data);
+				}
+				else
+				{
+					reject(response.failure.message);
+				}
+			},
+			"onFailure": function(error){
+				reject(error);
 			}
-			else
-			{
-				reject(response.failure.message);
-			}
-		})
-		.fail(function(error){
-			reject(error);
 		});
 	});
 }

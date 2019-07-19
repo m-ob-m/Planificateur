@@ -12,7 +12,7 @@ function validateInformation(id, description, copyParametersFrom)
 {
 		let err = "";
 		
-		if(!isPositiveInteger(id) && id !== "" && id!== null)
+		if(!isPositiveInteger(id, true, true) && id !== "" && id!== null)
 		{
 			err += "L'identificateur unique doit être un entier positif. ";
 		}
@@ -22,7 +22,7 @@ function validateInformation(id, description, copyParametersFrom)
 			err += "Description manquante. ";
 		}
 		
-		if(!isPositiveInteger(copyParametersFrom) && copyParametersFrom && copyParametersFrom.length !== 0)
+		if(!isPositiveInteger(copyParametersFrom, true, true) && copyParametersFrom && copyParametersFrom.length !== 0)
 		{
 			err += "Un modèle invalide a été choisi pour la copie des paramètres. ";
 		}

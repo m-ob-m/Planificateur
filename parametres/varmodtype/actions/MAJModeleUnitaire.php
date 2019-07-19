@@ -173,7 +173,7 @@
         $generic = $type->getGeneric();
         
         // Créer le fichier mpr.
-        $mpr = new \mprCutrite($_SERVER['DOCUMENT_ROOT'] . "\\" . _GENERICPROGRAMSDIRECTORY . $generic->getFilename());
+        $mpr = new \mprCutrite(__DIR__ . "/../../../lib/" . $generic->getFilename());
         $mpr->extractMprBlocks();
         try 
         {

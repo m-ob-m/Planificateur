@@ -2,187 +2,242 @@
 
 /** A class that handles the machining program viewer */
 
-export class MachiningProgramViewer
+class MachiningProgramViewer
 {
+    /**
+	 * MachiningProgramViewer constructor.
+     * 
+     * @return {MachiningProgramViewer} This MachiningProgramViewer
+	 */
 	constructor()
 	{
-        if (!!MachiningProgramViewer.instance) 
+        if (!MachiningProgramViewer.instance) 
         {
-            return MachiningProgramViewer.instance;
+            MachiningProgramViewer.instance = Object.seal(this.goToFirst());
         }
-        else
-        {
-            MachiningProgramViewer.instance = this;
-            this.goToFirst();
-            Object.seal(this);
-            return this;
-        }
+        return MachiningProgramViewer.instance;
 	}
 
+    /**
+	 * Initializes the MachiningProgramViewer.
+     * 
+     * @return {MachiningProgramViewer} This MachiningProgramViewer
+	 */
     initialize()
     {
-        let elements = document.getElementsByClassName("pannelContainer");
-        if(elements.length > 0)
-        {
-            let viewer = this;
-            this.currentPannel = elements[0];
-            [...elements].forEach(function(element){
-                viewer.hidePannel(element);
-            });
-        }
-        else
-        {
-            this.currentPannel = null;
-        }
+        this.hideAllPannels();
+        let element = document.getElementsByClassName("pannelContainer")[0];
+        this.currentPannel = element ? element : null;
+        return this;
     }
 
 	/**
 	 * Goes to the first pannel in the collection.
-	 * 
+     * 
+     * @return {MachiningProgramViewer} This MachiningProgramViewer
 	 */
 	goToFirst()
 	{
-        if(typeof(this.currentPannel) === "undefined" || this.currentPannel === null)
+        if(!(this.currentPannel instanceof Element) && !(this.initialize().currentPannel instanceof Element))
         {
-            this.initialize() === null
+            return this;
         }
 
-        this.goTo(this.currentPannel.parentElement.firstElementChild)
+        return this.goTo(this.currentPannel.parentElement.firstElementChild)
 	}
 
 	/**
 	 * Goes to the last pannel in the collection.
-	 * 
+     * 
+     * @return {MachiningProgramViewer} This MachiningProgramViewer
 	 */
 	goToLast()
 	{
-        if(typeof(this.currentPannel) === "undefined" || this.currentPannel === null)
+        if(!(this.currentPannel instanceof Element) && !(this.initialize().currentPannel instanceof Element))
         {
-            this.initialize() === null
+            return this;
         }
 
-		this.goTo(this.currentPannel.parentElement.lastElementChild)
+		return this.goTo(this.currentPannel.parentElement.lastElementChild)
 	}
 
 	/**
 	 * Goes to the previous pannel in the collection.
-	 * 
+     * 
+     * @return {MachiningProgramViewer} This MachiningProgramViewer
 	 */
 	goToPrevious()
 	{
-        if(typeof(this.currentPannel) === "undefined" || this.currentPannel === null)
+        if(!(this.currentPannel instanceof Element) && !(this.initialize().currentPannel instanceof Element))
         {
-            this.initialize() === null
+            return this;
         }
 
-		this.goTo(this.currentPannel.previousElementSibling);
+		return this.goTo(this.currentPannel.previousElementSibling);
 	}
 
 	/**
 	 * Goes to the next pannel in the collection
-	 * 
+     * 
+     * @return {MachiningProgramViewer} This MachiningProgramViewer
 	 */
 	goToNext()
 	{
-        if(typeof(this.currentPannel) === "undefined" || this.currentPannel === null)
+        if(!(this.currentPannel instanceof Element) && !(this.initialize().currentPannel instanceof Element))
         {
-            this.initialize() === null
+            return this;
         }
 
-		this.goTo(this.currentPannel.nextElementSibling);
+        return this.goTo(this.currentPannel.nextElementSibling);
 	}
 
 	/**
 	 * Goes to the specified index in the collection
-	 * @param {Node} newPannel The new pannel to display 
+	 * @param {Element} newPannel The new pannel to display 
+     * 
+     * @return {MachiningProgramViewer} This MachiningProgramViewer
 	 */
-	goTo(newPannel)
+	goTo(pannel)
 	{
-        if(typeof(this.currentPannel) === "undefined" || this.currentPannel === null)
+        if(!(this.currentPannel instanceof Element) && !(this.initialize().currentPannel instanceof Element))
         {
-            this.initialize();
-            if(this.currentPannel == null)
-            {
-                return;
-            }
-        }
-        else if(newPannel === null)
-        {
-            return;
+            return this;
         }
 
-        this.hidePannel(this.currentPannel);
-        this.showPannel(newPannel);
-        this.currentPannel = newPannel;
+        if(!(pannel instanceof Element))
+        {
+            return this;
+        }
+
+        this.currentPannel = pannel;
+        return this.hideAllPannels().showPannel();
 	}
 
 	/**
 	 * Prints the current pannel
-	 * 
+	 * @param {Element|null} pannel The pannel to hide.
+     * 
+     * @return {MachiningProgramViewer} This MachiningProgramViewer
 	 */
-	printPannel()
+	printPannel(pannel = null)
 	{
-		window.print();
+        if(!(pannel instanceof Element) && !(this.currentPannel instanceof Element))
+        {
+            return this;
+        }
+        else if(!(pannel instanceof Element) && (this.currentPannel instanceof Element))
+        {
+            pannel = this.currentPannel;
+        }
+
+        /* Ensure the pannel on screen is the pannel to print. */
+        if(pannel !== this.currentPannel)
+        {
+            this.hidePannel().showPannel(pannel);
+        }
+
+        window.print();
+
+        /* Display the current pannel if the pannel on screen is not the current pannel. */
+        if(pannel !== this.currentPannel)
+        {
+            this.hidePannel(pannel).showPannel();
+        }
+        
+        return this;
 	}
 
 	/**
 	 * Prints all pannels
 	 * 
+     * @return {MachiningProgramViewer} This MachiningProgramViewer
 	 */
 	printAllPannels()
 	{
-        let viewer = this;
+        /* Back up the display status of all the pannels and make them all temporarily visible. */
 		let displayStatusArray = [...document.getElementsByClassName("pannelContainer")].map(function(element){
             let backedUpState = element.style.display;
-            viewer.showPannel(element);
+            this.showPannel(element);
             return backedUpState;
-        });
-		window.print();
-		displayStatusArray.forEach(function(status, index){
+        }, this);
+
+        window.print();
+        
+        /* Restore the display status of all the pannels. */
+		displayStatusArray.map(function(status, index){
             if(status === "none")
             {
-                viewer.hidePannel(document.getElementsByClassName("pannelContainer")[index]);
+                this.hidePannel(document.getElementsByClassName("pannelContainer")[index]);
             }
-        });
+        }, this);
+        return this;
     }
     
     /**
      * Shows the specified pannel
+     * @param {Element|null} pannel The pannel to hide.
      * 
+     * @return {MachiningProgramViewer} This MachiningProgramViewer
      */
-    showPannel(pannel)
+    showPannel(pannel = null)
     {
-        pannel.style.display = "block";
+        if(!(pannel instanceof Element) && !(this.currentPannel instanceof Element))
+        {
+            return this;
+        }
+        else if(!(pannel instanceof Element) && (this.currentPannel instanceof Element))
+        {
+            pannel = this.currentPannel;
+        }
+
+        pannel.style.display = null;
+        return this;
     }
 
     /**
      * Hides the specified pannel
+     * @param {Element|null} pannel The pannel to hide.
      * 
+     * @return {MachiningProgramViewer} This MachiningProgramViewer
      */
-    hidePannel(pannel)
+    hidePannel(pannel = null)
     {
+        if(!(pannel instanceof Element) && !(this.currentPannel instanceof Element))
+        {
+            return this;
+        }
+        else if(!(pannel instanceof Element) && (this.currentPannel instanceof Element))
+        {
+            pannel = this.currentPannel;
+        }
+
         pannel.style.display = "none";
+        return this;
     }
 
     /**
      * Shows all pannels (used for printing)
      * 
+     * @return {MachiningProgramViewer} This MachiningProgramViewer
      */
     showAllPannels()
     {
-        [...document.getElementsByClassName("pannelContainer")].forEach(function(pannel){
-            showPannel(pannel);
-        });
+        [...document.getElementsByClassName("pannelContainer")].map(function(pannel){
+            this.showPannel(pannel);
+        }, this);
+        return this;
     }
 
     /**
      * Hides all pannels (used for printing)
      * 
+     * @return {MachiningProgramViewer} This MachiningProgramViewer
      */
     hideAllPannels()
     {
-        [...document.getElementsByClassName("pannelContainer")].forEach(function(pannel){
-            hidePannel(pannel);
-        });
+        Array.from(document.getElementsByClassName("pannelContainer")).map(function(pannel){
+            this.hidePannel(pannel);
+        }, this);
+        return this;
     }
 }

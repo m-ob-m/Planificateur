@@ -92,14 +92,26 @@ class JobType extends \ModelTypeGeneric implements \JsonSerializable
         
         //Récupérer les paramètres
         $stmt = $db->getConnection()->prepare(
-            "SELECT `gp`.`parameter_key` AS `param_key`, 
-                IF(`jtp`.`param_value` IS NULL, `gp`.`parameter_value`, `jtp`.`param_value`) AS `param_value`
-            FROM `job_type_params` AS `jtp` 
-            INNER JOIN `job_type` AS `jt` ON `jt`.`id_job_type` = `jtp`.`job_type_id` AND `jt`.`id_job_type` = :id
+            "SELECT `gp`.`key` AS `key`, 
+                IF (`jtp`.`value` IS NULL, `gp`.`value`, `jtp`.`value`) AS `value`,
+                `gp`.`description` AS `description`
+            FROM  `job_type` AS `jt`
             INNER JOIN `door_types` AS `dt` ON `dt`.`importNo` = `jt`.`type_no`
             INNER JOIN `generics` AS `g` ON `g`.`id` = `dt`.`generic_id`
-            RIGHT JOIN `generic_parameters` AS `gp` 
-                ON `gp`.`generic_id` = `g`.`id` AND `gp`.`parameter_key` = `jtp`.`param_key`
+            INNER JOIN LATERAL (
+                SELECT `gp`.`id` AS `id`, 
+                    `gp`.`parameter_key` AS `key`, 
+                    `gp`.`parameter_value` AS `value`, 
+                    `gp`.`description` AS `description`
+                FROM `generic_parameters` AS `gp` 
+                WHERE `gp`.`generic_id` = `g`.`id`
+            ) AS `gp`
+            LEFT JOIN LATERAL (
+                SELECT `jtp`.`param_key` AS `key`, `jtp`.`param_value` AS `value` 
+                FROM `job_type_params` AS `jtp` 
+                WHERE `jt`.`id_job_type` = `jtp`.`job_type_id`
+            ) AS `jtp` ON `jtp`.`key` = `gp`.`key`
+            WHERE `jt`.`id_job_type` = :id
             ORDER BY `gp`.`id` ASC " . 
             (new \MYSQLDatabaseLockingReadTypes($databaseConnectionLockingReadType))->toLockingReadString() . ";"
         );
@@ -108,7 +120,7 @@ class JobType extends \ModelTypeGeneric implements \JsonSerializable
         
         while($row = $stmt->fetch())	// Récupération des paramètres
         {
-            $parameter = (new \JobTypeParameter($id, $row["param_key"], $row["param_value"]));
+            $parameter = (new \JobTypeParameter($id, $row["key"], $row["value"]));
             array_push($instance->_parameters, $parameter);
         }
         

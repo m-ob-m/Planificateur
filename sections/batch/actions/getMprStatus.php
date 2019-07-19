@@ -39,7 +39,7 @@ try
     
     // Retour au javascript
     $responseArray["status"] = "success";
-    $responseArray["success"]["data"] = $batch->getStatus();
+    $responseArray["success"]["data"] = $batch->getMprStatus();
 }
 catch(Exception $e)
 {

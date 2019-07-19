@@ -76,7 +76,7 @@ $batchId = $_GET["batchId"] ?? null;
 							<h3>Commande #<?= $job->getName(); ?></h3>
 							<label for="deliveryDate">Date de livraison : 
 								<input type="date" id="date_livraison" style="width:200px; height:24px;" 
-									value="<?= $job->getDeliveryDate(); ?>" onchange="dataHasChanged(true);">
+									value="<?= $job->getDeliveryDate(); ?>" onchange="hasChanged(true);">
 							</label>
 						</div>
 					</div>
@@ -148,8 +148,7 @@ $batchId = $_GET["batchId"] ?? null;
 						<tr id="parametersEditorMprFileSelectionRow" style="display: none;">
 							<td class="firstVisibleColumn" style="width: 10%;">Fichier mpr</td>
 							<td class="lastVisibleColumn">
-								<input type="file" value=""
-									onchange="readMpr.apply($(this).prop('files')[0], $('#parametersEditionTextArea'));">
+								<input id="mprFileSelectionInputBox" type="file" value="">
 							</td>
 						</tr>
 						<tr>
@@ -179,10 +178,10 @@ $batchId = $_GET["batchId"] ?? null;
 		</div>
 		
 		<!--  Fenêtre modale pour changement de bloc -->
-		<div id="moveBetweenBlocksModal" class="modal" onclick='this.style.display = "none";' >
+		<div id="partOperationsModal" class="modal" onclick='this.style.display = "none";' >
 			<div class="modal-content" style='color:#FF0000;'>
 				<h4>Déplacer vers un autre bloc</h4>
-				<div id="blocksList"></div>
+				<div id="jobTypeBlocksList"></div>
 				<h1>Cliquer sur cette fenêtre pour la fermer</h1>
 			</div>
 		</div>
@@ -203,18 +202,17 @@ $batchId = $_GET["batchId"] ?? null;
 		</div>	
 	
 		<!-- Scripts -->
+		<script type="text/javascript" src="../../assets/js/ajax.js"></script>
+		<script type="text/javascript" src="../../assets/js/docReady.js"></script>
 		<script type="text/javascript" src="../../assets/js/moment.min.js"></script>
 		<script type="text/javascript" src="../../assets/js/moment-timezone.js"></script>
-		<script type="text/javascript" src="../../assets/js/jquery.min.js"></script>
-		<script type="text/javascript" src="../../assets/js/jquery.dropotron.min.js"></script>
-		<script type="text/javascript" src="../../assets/js/skel.min.js"></script>
-		<script type="text/javascript" src="../../assets/js/util.js"></script>
-		<script type="text/javascript" src="../../assets/js/main.js"></script>
 		<script type="text/javascript" src="../../js/main.js"></script>
 		<script type="text/javascript" src="../../js/toolbox.js"></script>
 		<script type="text/javascript" src="js/index.js"></script>
 		<script type="text/javascript" src="js/job.js"></script>
-		<script type="text/javascript" src="js/jobType.js"></script>
+		<script type="text/javascript" src="js/jobTypeBlock.js"></script>
+		<script type="text/javascript" src="js/jobTypePartRow.js"></script>
+		<script type="text/javascript" src="js/jobTypeParameterRow.js"></script>
 		<script type="text/javascript" src="js/main.js"></script>
 		<script type="text/javascript" src="js/parameterEditor.js"></script>
 	</body>

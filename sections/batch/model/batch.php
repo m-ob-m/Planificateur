@@ -839,14 +839,14 @@ class Batch implements JsonSerializable
         	            
         	            $Act_PK_C = \MprExpression\Evaluator::evaluate($parameters["Act_PK_C"] ?? 0, null, $parameters);
         	            $tool = \MprExpression\Evaluator::evaluate("_T_PCKT", null, $parameters);
-        	            if(!$this->_carrousel->toolExists($tool))
+        	            if(intval($Act_PK_C) !== 0 && !$this->_carrousel->toolExists($tool))
         	            {
         	                $this->_carrousel->addTool($tool);
         	            }
         	            
-        	            $A_Clean = \MprExpression\Evaluator::evaluate($parameters["A_Clean"] ?? 0, null, $parameters);
+						$A_Clean = \MprExpression\Evaluator::evaluate($parameters["A_Clean"] ?? 0, null, $parameters);
         	            $tool = \MprExpression\Evaluator::evaluate($parameters["T_CLEAN"] ?? 0, null, $parameters);
-        	            if(!$this->_carrousel->toolExists($tool))
+        	            if(intval($A_Clean) !== 0 && !$this->_carrousel->toolExists($tool))
         	            {
         	                $this->_carrousel->addTool($tool);
         	            }

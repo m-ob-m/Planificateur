@@ -98,9 +98,8 @@ function buildJob(\FabPlanConnection $db, \stdClass $inputJob) : \Job
             {
                 foreach($inputJobType->parts as $inputPart)
                 {
-                    $part = new \JobTypePorte($inputPart->id, $inputJobType->id, $inputPart->quantityToProduce,
-                        $inputPart->producedQuantity ?? 0, $inputPart->length, $inputPart->width, $inputPart->grain,
-                        $inputPart->done ?? "N", null);
+                    $part = new \JobTypePorte($inputPart->id, $inputJobType->id, $inputPart->quantity, 0, $inputPart->length, 
+                        $inputPart->width, $inputPart->grain, $inputPart->done ?? "N", null);
                     array_push($parts, $part);
                 }
             }
@@ -109,11 +108,11 @@ function buildJob(\FabPlanConnection $db, \stdClass $inputJob) : \Job
             $mprFile = null;
             if($model->getId() !== 2)
             {
-                foreach($generic->getGenericParameters() as $genericParameter)
+                foreach($generic->getParameters() as $genericParameter)
                 {
                     $key = $genericParameter->getKey();
                     $genericValue = $genericParameter->getValue();
-                    $value = $inputJobType->jobTypeParameters->{$key};
+                    $value = $inputJobType->parameters->$key;
                     if($value !== $genericValue && $value !== null && $value !== "")
                     {
                         $parameter = new \JobTypeParameter($inputJobType->id, $key, $value);
@@ -132,11 +131,13 @@ function buildJob(\FabPlanConnection $db, \stdClass $inputJob) : \Job
         }
     }
     
-    $status = null;
     $job = \Job::withID($db, $inputJob->id, MYSQLDatabaseLockingReadTypes::FOR_UPDATE);
     if($job === null)
     {
         throw new \Exception("La création de job n'a pas encore été implémentée.");
     }
-    return $job->setDeliveryDate($inputJob->deliveryDate)->setJobTypes($jobTypes);
+    return $job
+        ->setName($inputJob->name ?? $job->getName())
+        ->setDeliveryDate($inputJob->deliveryDate ?? $job->getDeliveryDate())
+        ->setJobTypes($jobTypes);
 }

@@ -79,7 +79,7 @@
         $databaseJob = \Job::withName($db, $jobName, \MYSQLDatabaseLockingReadTypes::FOR_UPDATE);
         if($databaseJob === null)
         {
-            $job = new \Job(null, $jobName, $inputJob->deliveryDate ?? null, "E");
+            $job = new \Job(null, $jobName, $inputJob->deliveryDate ?? null, $inputJob->customerPO ?? null, "E");
         }
         else
         {

@@ -48,7 +48,7 @@ try
     {
         $db->getConnection()->beginTransaction();
         $generic = \Generic::withID($db, $genericId, \MYSQLDatabaseLockingReadTypes::FOR_UPDATE);
-        $generic->setGenericParameters($parametersArray)->save($db, true);
+        $generic->setParameters($parametersArray)->save($db, true);
         $db->getConnection()->commit();
     }
     catch(\Exception $e)

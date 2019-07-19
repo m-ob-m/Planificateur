@@ -56,7 +56,7 @@ ajax.send = function (options) {
                 try{
                     responseData = (dataType === "json") ? JSON.parse(x.responseText) : x.responseText;
                 }
-                catch
+                catch(e)
                 {
                     onFailure(x.responseText);
                     return;

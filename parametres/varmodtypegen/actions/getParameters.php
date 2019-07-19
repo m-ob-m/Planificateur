@@ -14,6 +14,7 @@ include_once __DIR__ . '/../controller/modelTypeGenericController.php'; // Contr
 include_once __DIR__ . '/../../generic/controller/genericController.php'; // Contrôleur de Générique
 include_once __DIR__ . '/../../model/controller/modelController.php'; // Contrôleur de Modèle
 include_once __DIR__ . '/../../type/controller/typeController.php'; // Contrôleur de Type
+include_once __DIR__ . '/../../../lib/numberFunctions/numberFunctions.php';	// Fonctions sur les nombres
 include_once __DIR__ . '/../../../lib/config.php';	// Fichier de configuration
 include_once __DIR__ . '/../../../lib/connect.php';	// Classe de connection à la base de données
 
@@ -22,8 +23,8 @@ $responseArray = array("status" => null, "success" => array("data" => null), "fa
 
 try
 {    
-    $modelId = $_GET["modelId"] ?? null;
-    $typeNo = $_GET["typeNo"] ?? null;
+    $modelId = is_positive_integer_or_equivalent_string($_GET["modelId"], true, true) ? intval($_GET["modelId"]) : null;
+    $typeNo = is_positive_integer_or_equivalent_string($_GET["typeNo"], true, true) ? intval($_GET["typeNo"]) : null;
     
     // Get the information
     $parameters = array();
@@ -100,7 +101,7 @@ function createModelTypeGenericParametersView(int $modelId, int $typeNo) : array
                 "description" => $modelTypeGenericParameter->getDescription(),
                 "defaultValue" => $modelTypeGenericParameter->getDefaultValue(),
                 "specificValue" => $modelTypeGenericParameter->getSpecificValue(),
-                "quickEdit" => $modelTypeGeneric->getType()->getGeneric()->getGenericParameterByKey($key)->getQuickEdit()
+                "quickEdit" => $modelTypeGeneric->getType()->getGeneric()->getParameterByKey($key)->getQuickEdit()
             )
         );
     }

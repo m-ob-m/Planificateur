@@ -112,7 +112,7 @@
     function getParametersDescriptionsTable(Generic $generic) : array
     {
         $descriptionTable = array();
-        foreach($generic->getGenericParameters() as $parameter)
+        foreach($generic->getParameters() as $parameter)
         {
             $descriptionTable[$parameter->getKey()] = $parameter->getDescription();
         }

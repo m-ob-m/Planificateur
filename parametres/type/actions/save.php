@@ -27,7 +27,7 @@
         $description = (isset($input->description) ? $input->description : null);
         $genericId = (isset($input->genericId) ? $input->genericId : null);
         $copyParametersFrom = null;
-        if(is_positive_integer_or_equivalent_string($input->copyParametersFrom ?? null))
+        if(is_positive_integer_or_equivalent_string($input->copyParametersFrom ?? null, true, true))
         {
             $copyParametersFrom = intval($input->copyParametersFrom);
         }
