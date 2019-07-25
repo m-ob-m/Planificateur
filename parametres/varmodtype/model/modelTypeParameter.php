@@ -1,5 +1,5 @@
 <?php
-include_once __DIR__ . "/../../parameter/parameter.php";
+require_once __DIR__ . "/../../parameter/parameter.php";
 
 /**
  * \name		ModelTypeParameter

@@ -1,53 +1,71 @@
 <?php
-/**
- * \name		Planificateur de porte
-* \author    	Mathieu Grenier
-* \version		1.0
-* \date       	2017-01-18
-*
-* \brief 		Menu de validation des jobs
-* \details 		Ce menu permet de visualiser une job et d'en faire la validation
-*
-* Licence pour la vue :
-* 	Verti by HTML5 UP
-html5up.net | @ajlkn
-Free for personal and commercial use under the CCA 3.0 license (html5up.net/license)
-*/
+	/**
+	 * \name		Planificateur de porte
+	* \author    	Mathieu Grenier
+	* \version		1.0
+	* \date       	2017-01-18
+	*
+	* \brief 		Menu de validation des jobs
+	* \details 		Ce menu permet de visualiser une job et d'en faire la validation
+	*
+	* Licence pour la vue :
+	* 	Verti by HTML5 UP
+	html5up.net | @ajlkn
+	Free for personal and commercial use under the CCA 3.0 license (html5up.net/license)
+	*/
 
-/* INCLUDE */
-include_once __DIR__ . "/controller/jobController.php";		// Classe contrôleur de la classe Job
-include_once __DIR__ . "/../../parametres/model/controller/modelController.php";		// Classe contrôleur de la classe Modèle
-include_once __DIR__ . "/../../parametres/type/controller/typeController.php";		// Classe contrôleur de la classe Type
+	/* INCLUDE */
+	require_once __DIR__ . "/controller/jobController.php";		// Classe contrôleur de la classe Job
+	require_once __DIR__ . "/../../parametres/model/controller/modelController.php";		// Classe contrôleur de la classe Modèle
+	require_once __DIR__ . "/../../parametres/type/controller/typeController.php";		// Classe contrôleur de la classe Type
 
-$db = new \FabPlanConnection();
-$job = null;
-try
-{
-    $db->getConnection()->beginTransaction();
-    if(isset($_GET["jobId"]))
-    {
-        $job = \Job::withID($db, $_GET["jobId"]);
-        $models = (new \ModelController())->getModels();
-        $types = (new TypeController())->getTypes();
-    }
-    else
-    {
-        $job = new \Job();
-    }
-    $db->getConnection()->commit();
-}
-catch(\Exception $e)
-{
-    $db->getConnection()->rollback();
-    throw $e;
-}
-finally
-{
-    $db = null;
-}
+    // Initialize the session
+	session_start();
+                                                                        
+	// Check if the user is logged in, if not then redirect him to login page
+	if(!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true){
+		if(!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest')
+		{
+			throw new \Exception("You are not logged in.");
+		}
+		else
+		{
+			header("location: /Planificateur/lib/account/logIn.php");
+		}
+		exit;
+	}
 
-$batchId = $_GET["batchId"] ?? null;
+	// Closing the session to let other scripts use it.
+	session_write_close();
+    
+	$db = new \FabPlanConnection();
+	$job = null;
+	try
+	{
+		$db->getConnection()->beginTransaction();
+		if(isset($_GET["jobId"]))
+		{
+			$job = \Job::withID($db, $_GET["jobId"]);
+			$models = (new \ModelController())->getModels();
+			$types = (new TypeController())->getTypes();
+		}
+		else
+		{
+			$job = new \Job();
+		}
+		$db->getConnection()->commit();
+	}
+	catch(\Exception $e)
+	{
+		$db->getConnection()->rollback();
+		throw $e;
+	}
+	finally
+	{
+		$db = null;
+	}
 
+	$batchId = $_GET["batchId"] ?? "";
 ?>
 
 <!DOCTYPE HTML>
@@ -91,7 +109,8 @@ $batchId = $_GET["batchId"] ?? null;
 									Sauvegarder</a>
 								</li>
 								<li>
-									<a href="javascript: void(0);" onclick="goToBatch(<?= $batchId; ?>);" class="imageButton">
+									<a href="javascript: void(0);" onclick="goToBatch(document.getElementById('batch_id').value);" 
+										class="imageButton">
 										<img src="../../images/exit.png">
 									Sortir</a>
 								</li>

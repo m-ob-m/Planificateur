@@ -14,8 +14,27 @@
     Free for personal and commercial use under the CCA 3.0 license (html5up.net/license)
     */
     
-    include_once __DIR__ . "/controller/batchController.php";
-    include_once __DIR__ . "/../../parametres/materiel/controller/materielCtrl.php";
+    require_once __DIR__ . "/controller/batchController.php";
+    require_once __DIR__ . "/../../parametres/materiel/controller/materielCtrl.php";
+    
+    // Initialize the session
+	session_start();
+                                                                        
+	// Check if the user is logged in, if not then redirect him to login page
+	if(!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true){
+		if(!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest')
+		{
+			throw new \Exception("You are not logged in.");
+		}
+		else
+		{
+			header("location: /Planificateur/lib/account/logIn.php");
+		}
+		exit;
+	}
+
+	// Closing the session to let other scripts use it.
+	session_write_close();
     
     $batch = null;
     $materials = null;
@@ -271,9 +290,12 @@
         							</td>
         						</tr>
         						<tr>
-        							<td class="firstVisibleColumn" style="background-color: #c6e0b4;">Optimisation</td>
+									<td class="firstVisibleColumn" style="background-color: #c6e0b4;">Optimisation</td>
+									<td style="display: none;">
+										<input id="mprStatus" value=<?= $batch->getMprStatus(); ?>>
+									</td>
         							<?php if($batch->getMprStatus() === "N"): ?>
-										<td id="mprStatus" class="etatRouge lastVisibleColumn">
+										<td class="etatRouge lastVisibleColumn">
 											<div style="width: max-content; float: left;">
 												<p style="margin-bottom: 0px;">Non téléchargé</p>
 											</div>
@@ -283,13 +305,13 @@
 											Télécharger</a>
 										</td>
 									<?php elseif($batch->getMprStatus() === "A"): ?>
-										<td id="mprStatus" class="etatJaune lastVisibleColumn">En attente</td>
+										<td class="etatJaune lastVisibleColumn">En attente</td>
 									<?php elseif($batch->getMprStatus() === "P"): ?>
-										<td id="mprStatus" class="etatBleu lastVisibleColumn">En cours</td>
+										<td class="etatBleu lastVisibleColumn">En cours</td>
 									<?php elseif($batch->getMprStatus() === "E"): ?>
-										<td id="mprStatus" class="etatRouge lastVisibleColumn">Erreur</td>
+										<td class="etatRouge lastVisibleColumn">Erreur</td>
 									<?php elseif($batch->getMprStatus() === "G"): ?>
-										<td id="mprStatus" class="etatVert lastVisibleColumn">
+										<td class="etatVert lastVisibleColumn">
 											<p style="float: left; width: min-content;">Prêt</p>
 											<a class="imageButton" href="#" onclick="viewPrograms(<?= $id; ?>); return false;" 
 												style="float: right; color: black; text-decoration: underline; width: auto;">
@@ -297,7 +319,7 @@
 											Visualiser</a>
 										</td>
 									<?php else: ?>
-										<td id="mprStatus" class="etatRouge lastVisibleColumn">
+										<td class="etatRouge lastVisibleColumn">
 											<div style="width: max-content; float: left;">
 												<p style="margin-bottom: 0px;">Non téléchargé</p>
 											</div>

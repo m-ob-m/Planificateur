@@ -5,16 +5,22 @@
     * \version		1.0
     * \date       	2017-02-07
     *
-    * \brief 		Menu qui visualise les panneaux de Nest
-    * \details 		Menu qui visualise les panneaux de Nest
+    * \brief 		Menu pour imprimer des étiquettes
+    * \details 		Menu pour imprimer des étiquettes
     */
     
-    include_once __DIR__ . "/../batch/controller/batchController.php";
-    include_once __DIR__ . "/model/collectionPanneaux.php";
-    include_once __DIR__ . "/../../lib/clientInformation/clientInformation.php";
-    
+    require_once __DIR__ . "/../batch/controller/batchController.php";
+    require_once __DIR__ . "/model/collectionPanneaux.php";
+    require_once __DIR__ . "/../../lib/clientInformation/clientInformation.php";
+
+    /* 
+     * No session required to open this page! Be careful concerning what you put here. 
+     * Advanced user account control might become available in a later release.
+     */
+
     $error = null;
     $batch = null;
+
     $db = new \FabPlanConnection();
     try
     {
@@ -116,8 +122,16 @@
 		<link rel="stylesheet" href="../../assets/css/imageButton.css">
         <link rel="stylesheet" href="css/labelling.css">
 	</head>
-	<body style="background-image: none; background-color: #FFFFFF;">
-		<div id="mainView" style="display: flex; flex-flow: row;">
+    <body style="background-image: none; background-color: #FFFFFF;">
+        <div class="no-print" style="padding: 5px;">
+                <label for="findBatchName">Nom de batch : </label>
+                <input id="batchName" value="">
+                <button id="findBatch">Trouver</button>
+                <button class="no-print" onclick="window.close();" style="float: right; margin-right: 2px;">
+                    <img src="../../images/exit.png" style="width: 16px; height: 16px;">
+                Sortir</button>
+        </div>
+		<div style="display: flex; flex-flow: row;">
 			<div style="flex: 1 1 auto;">
 			<?php if($collection !== null && !empty($collection->getPanneaux())): ?>
             	<?php foreach($collection->getPanneaux() as $index => $panneau): ?>
@@ -131,15 +145,13 @@
                             ?></div>
                             <button title="Suivant" class="no-print goToNext">&gt;</button>
                             <button title="Dernier" class="no-print goToLast">&gt;&gt;</button>
+                            <button class="no-print printAll">Imprimer tout</button> 
                     		<div id="quantity" style="display: inline-block; border: 1px black solid; padding: 2px;">Qté : <?= 
                                 $panneau->getQuantite(); 
                             ?></div>
                     		<div id="batchName" style="display: inline-block; border: 1px black solid;  padding: 2px;"><?= 
                                 $batch->getName(); 
                              ?></div>
-                    		<button class="no-print" onclick="window.close();" style="float: right; margin-right: 2px;">
-                    			<img src="../../images/exit.png" style="width: 16px; height: 16px;">
-                    		Sortir</button>
                     	</div>
                     	
                     	<div style="display: flex; flex-flow: row;">
@@ -162,7 +174,7 @@
     									<div class="porte no-print" data-id="<?= $idjtp; ?>" 
     										style="left: <?= $l; ?>px; top: <?= $t; ?>px; width: <?= $w; ?>px; height: <?= $h; ?>px;">
                         					<?= $porte->getNoCommande(); ?><br>
-                        					<?= $porte->getModele(); ?><br>
+                        					<?= \Model::withID(new \FabplanConnection(), $porte->getModele())->getDescription(); ?><br>
                         					<?= $porte->getHauteurPo() . " X " . $porte->getLargeurPo(); ?>
                         				</div>
                         			<?php endforeach; ?>
@@ -177,24 +189,6 @@
                 <?php endif;?>
             </div>
     	</div>
-        <div id="labelView" style="width: 4in; height: 2in; display: none;">
-            <div style="left: 0px; top: 0px;">
-                <label for="productionNumber" style="font-family: Courrier new, font-size: 25px;"># production : </label>
-                <input id="productionNumber" style="font-family: Courrier new, font-size: 25px; border: none;" value="#Prod">
-            </div>
-            <div style="left: 0px; top: 35px;">
-                <label for="dimensions" style="font-family: Courrier new, font-size: 25px;">Dimensions : </label>
-                <input id="dimensions" style="font-family: Courrier new, font-size: 25px; border: none;" value="Dimension1 X Dimension2">
-            </div>
-            <div style="left: 0px; top: 65px;">
-                <label for="modelNumber" style="font-family: Courrier new, font-size: 25px;">Modèle : </label>
-                <input id="modelNumber" style="font-family: Courrier new, font-size: 25px; border: none;" value="Modèle">
-            </div>
-            <div style="left: 0px; top: 95px;">
-                <label for="customerPO" style="font-family: Courrier new, font-size: 25px;">PO client : </label>
-                <input id="customerPO" style="font-family: Courrier new, font-size: 25px; border: none;" value="#PO">
-            </div>
-        </div>
     	
     	<!--  Fenêtre modale pour messages d'erreur -->
 		<div id="errMsgModal" class="modal" onclick='this.style.display = "none";'>

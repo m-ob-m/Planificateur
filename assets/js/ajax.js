@@ -105,6 +105,7 @@ ajax.send = function (options) {
     }
 
     x.open(type, url, async);
+    x.setRequestHeader("X-Requested-With", "XMLHttpRequest");
     if(type === "POST" && contentType !== null && contentType !== "")
     {
         x.setRequestHeader('Content-type', contentType);

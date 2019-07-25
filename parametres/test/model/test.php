@@ -9,11 +9,11 @@
  * \details 	Modele de testType
  */
 
-include_once __DIR__ . '/testParameter.php';
-include_once __DIR__ . '/../../type/controller/typeController.php';
-include_once __DIR__ . '/../../model/controller/modelController.php';
-include_once __DIR__ . '/../../varmodtype/model/modeltype.php';
-include_once __DIR__ . '/../../varmodtypegen/model/modelTypeGeneric.php';
+require_once __DIR__ . '/testParameter.php';
+require_once __DIR__ . '/../../type/controller/typeController.php';
+require_once __DIR__ . '/../../model/controller/modelController.php';
+require_once __DIR__ . '/../../varmodtype/model/modeltype.php';
+require_once __DIR__ . '/../../varmodtypegen/model/modelTypeGeneric.php';
 
 class Test extends ModelTypeGeneric implements JsonSerializable
 {

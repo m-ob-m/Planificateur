@@ -8,8 +8,8 @@
  * \brief 		Modele de générique
  * \details 	Modele de générique
  */
-include_once __DIR__ . '/genericparameter.php';
-include_once __DIR__ . '/../../type/controller/typeController.php';
+require_once __DIR__ . '/genericparameter.php';
+require_once __DIR__ . '/../../type/controller/typeController.php';
 
 class Generic implements \JsonSerializable
 {

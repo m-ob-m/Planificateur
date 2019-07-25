@@ -23,7 +23,20 @@ async function fillJobsList(jobs, isName = false)
 async function addJob(identifier, isName = false)
 {
 	return new Promise(async function(resolve, reject){
-		if(identifier !== null && identifier !== "")
+		let ordersTable = document.getElementById("orders");
+		let currentJobIdentifiers = [...ordersTable.getElementsByClassName(isName ? "jobNameCell" : "jobIdCell")].map(function(cell){
+			return cell.textContent;
+		});
+		if(identifier === null || identifier === "")
+		{
+			reject("Le nom de la job ne peut pas être vide.");
+		}
+		else if(currentJobIdentifiers.includes(identifier))
+		{
+			let identifierString = (isName ? "le nom " : "l'identifiant numérique unique ") + identifier;
+			reject("La job identifiée par " + identifierString + " se trouve déjà dans le tableau des jobs de la batch en cours.");
+		}
+		else
 		{
 			try{
 				let job = await getJobSummary(identifier, isName);
@@ -43,10 +56,6 @@ async function addJob(identifier, isName = false)
 			catch(error){
 				reject(error);
 			}
-		}
-		else
-		{
-			reject("Le nom de la job ne peut pas être vide.");
 		}
 	});
 }
@@ -100,6 +109,7 @@ function newJob(job)
 	idCell.textContent = job.id;
 
 	let nameCell = document.createElement("td");
+	nameCell.classList.add("jobNameCell");
 	nameCell.textContent = job.name;
 	nameCell.addEventListener("click", async function(){
 		await openJob.apply(this.parentElement, [job.id, document.getElementById("batchId").value]);

@@ -2,8 +2,8 @@
 
 docReady(function(){
 	let viewer = new MachiningProgramViewer();
-	Array.from(document.getElementsByClassName("pannelContainer")).forEach(function(pannelContainer){
-		Array.from(pannelContainer.getElementsByTagName("button")).forEach(function(button){
+	[...document.getElementsByClassName("pannelContainer")].forEach(function(pannelContainer){
+		[...pannelContainer.getElementsByTagName("button")].forEach(function(button){
 			if(button.classList.contains("goToFirst"))
 			{
 				button.onclick = function(){viewer.goToFirst()};;
@@ -20,43 +20,108 @@ docReady(function(){
 			{
 				button.onclick = function(){viewer.goToLast();};
 			}
+			else if(button.classList.contains("printAll"))
+			{
+				button.onclick = async function(){
+					let ids = [...viewer.getCurrentPannel().getElementsByClassName("porte")].map(function(part){
+						return parseInt(part.dataset.id);
+					});
+					try
+					{
+						await downloadPartLabelsCsvFileToLocalPrintServer(ids);
+					}
+					catch(error)
+					{
+						showError("La génération du fichier d'étiquettes a échouée", error);
+					}
+				};
+			}
 		});
-		Array.from(document.getElementsByClassName("porte")).forEach(function(part){
-			part.onclick = function(){printPartLabel(parseInt(part.dataset.id));};
+		[...document.getElementsByClassName("porte")].forEach(function(part){
+			part.onclick = async function(){
+				try
+				{
+					await downloadPartLabelsCsvFileToLocalPrintServer(parseInt(part.dataset.id));
+				}
+				catch(error)
+				{
+					showError("La génération du fichier d'étiquettes a échouée", error);
+				}
+			};
 		});
+	});
+	document.getElementById("findBatch").addEventListener("click", async function(){
+		let name = document.getElementById("batchName").value;
+		if(name.trim() !== "")
+		{
+			await openBatchByName(name);
+		}
+	});
+	document.getElementById("batchName").addEventListener("keyup", function(event){
+		if (event.keyCode === 13){
+			document.getElementById("findBatch").click();
+		}
 	});
 });
 
-/**
- * Prints the label of a given part
- * @param {int} id The id of the door
- */
-function printPartLabel(id)
+async function openBatchByName()
 {
-	fetchLabelInformationForPart(id)
-	.then(function(part){
-		document.getElementById("productionNumber").value = part.orderName;
-		document.getElementById("dimensions").value = part.height + "\" X " + part.width + "\"";
-		document.getElementById("modelNumber").value = part.modelName;
-		document.getElementById("customerPO").value = part.customerPO
-		window.print();
-	});
+	let name = document.getElementById("batchName").value;
+	try{
+		let id = await getBatchIdFromBatchName(name);
+		window.location.href = [window.location.protocol, '//', window.location.host, window.location.pathname].join('') + "?id=" + id;
+	}
+	catch(error){
+		showError("Le projet n'a pas été trouvé.", error);
+	}
 }
 
 /**
- * Fetches the information to print on the label of a given part
- * @param {int} id The id of the door
- * 
+ * Downloads a CSV file dirrectly into the Print_Server shared folder of this computer. A print server will handle the printing part.
+ * @param {int|int[]} id The unique identifier of the parts to print labels for
  * @return {Promise}
  */
-function fetchLabelInformationForPart(id)
+function downloadPartLabelsCsvFileToLocalPrintServer(id)
+{
+	return new Promise(function(resolve, reject){
+		ajax.send({
+			"type": "POST",
+			"contentType": "application/json;charset=utf-8",
+			"url": ROOT_URL + "/sections/visualiseur/actions/downloadPartLabelsCsvFileToLocalPrintServer.php",
+			"data": JSON.stringify({"id": id}),
+			"dataType": "json",
+			"async": true,
+			"cache": false,
+			"onSuccess": function(response){
+				if(response.status === "success")
+				{
+					resolve(response.success.data);
+				}
+				else
+				{
+					reject(response.failure.message);
+				}
+			},
+			"onFailure": function(error){
+				reject(error);
+			}
+		});
+	});	
+}
+
+/**
+ * Gets the id of a batch by batch name.
+ * @param {string} batchName The name of a batch
+ * @return {Promise}
+ */
+function getBatchIdFromBatchName(name)
 {
 	return new Promise(function(resolve, reject){
 		ajax.send({
 			"type": "GET",
 			"contentType": "application/json;charset=utf-8",
-			"url": ROOT_URL + "/sections/visualiseur/actions/getLabelInformationForPart.php",
-			"data": {"id": id},
+			"url": ROOT_URL + "/sections/batch/actions/getBatchIdByName.php",
+			"data": {"name": name},
 			"dataType": "json",
 			"async": true,
 			"cache": false,

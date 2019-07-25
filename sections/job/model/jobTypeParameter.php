@@ -9,7 +9,7 @@
      * \details 	Modèle de JobTypeParameter
      */
     
-    include_once __DIR__ . "/../../../parametres/parameter/parameter.php";
+    require_once __DIR__ . "/../../../parametres/parameter/parameter.php";
     
     class JobTypeParameter extends \Parameter implements \JsonSerializable
     {

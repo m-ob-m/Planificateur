@@ -1,19 +1,39 @@
 <?php
-/**
- * \name		linearize.php
- * \author    	Marc-Olivier Bazin-Maurice
- * \version		1.0
- * \date       	2018-12-18
- *
- * \brief 		Interface de linéarisation des programmes mpr
- * \details 	Cette interface permet de linéariser (simplifier) un fichier mpr.
- *
- * Licence pour la vue :
- * 	Verti by HTML5 UP
- html5up.net | @ajlkn
- Free for personal and commercial use under the CCA 3.0 license (html5up.net/license)
- */
+	/**
+	 * \name		linearize.php
+	 * \author    	Marc-Olivier Bazin-Maurice
+	 * \version		1.0
+	 * \date       	2018-12-18
+	 *
+	 * \brief 		Interface de linéarisation des programmes mpr
+	 * \details 	Cette interface permet de linéariser (simplifier) un fichier mpr.
+	 *
+	 * Licence pour la vue :
+	 * 	Verti by HTML5 UP
+	 html5up.net | @ajlkn
+	Free for personal and commercial use under the CCA 3.0 license (html5up.net/license)
+	*/
+
+    // Initialize the session
+	session_start();
+                                                                        
+	// Check if the user is logged in, if not then redirect him to login page
+	if(!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true){
+		if(!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest')
+		{
+			throw new \Exception("You are not logged in.");
+		}
+		else
+		{
+			header("location: /Planificateur/lib/account/logIn.php");
+		}
+		exit;
+	}
+
+	// Closing the session to let other scripts use it.
+	session_write_close();
 ?>
+
 <!DOCTYPE HTML>
 <html>
 	<head>

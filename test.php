@@ -1,7 +1,7 @@
 <?php 
-include_once __DIR__ . "/lib/mpr/mprExpressionEvaluator.php";
-include_once __DIR__ . "/lib/fileFunctions/fileFunctions.php";
-include_once __DIR__ . "/lib/numberFunctions/numberFunctions.php";
+require_once __DIR__ . "/lib/mpr/mprExpressionEvaluator.php";
+require_once __DIR__ . "/lib/fileFunctions/fileFunctions.php";
+require_once __DIR__ . "/lib/numberFunctions/numberFunctions.php";
 
 //echo \FileFunctions\PathSanitizer::sanitize("C:\allo\moo.mpr") . "<br>";
 //echo \FileFunctions\PathSanitizer::sanitize("\\\\192.168.0.1\allo\moo.mpr") . "<br>";
@@ -10,7 +10,7 @@ include_once __DIR__ . "/lib/numberFunctions/numberFunctions.php";
 echo \MprExpression\Evaluator::evaluate("IF thermo=1 THEN 2 ELSE 0", null, ["thermo" => "1"]) . "<br>";
 //echo \MprExpression\Evaluator::evaluate("IF 1 + 0 THEN 0 ELSE 1", null, ["moo" => "30"]) . "<br>";
 
-// include_once __DIR__ . '/lib/PhpSpreadsheet/autoload.php';
+// require_once __DIR__ . '/lib/PhpSpreadsheet/autoload.php';
 
 // use PhpOffice\PhpSpreadsheet\Spreadsheet;
 // use PhpOffice\PhpSpreadsheet\Writer\Xlsx;

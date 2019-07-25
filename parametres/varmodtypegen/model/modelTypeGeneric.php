@@ -10,15 +10,15 @@
 * du type et du générique sans discrimination sur la source des paramètres. Cette classe sert à faciliter la génération des objets 
 * JobType et TestType)
 * \details Représente toutes les valeurs d'un modèle/type/générique (paramétrie finale de l'objet après combinaison du modèle, 
-* du type et du générique sans discrimination sur la source des paramètres. Cette classe sert à faciliter la génération d'objets appliqués 
+* du type et du générique sans discrimination sur la source des paramètres. Cette classe sert à faciliter la génération d'objets appliqués
 * tels les JobType et TestType)
 */
 
-include_once __DIR__ . '/../../../lib/config.php';	// Fichier de configuration
-include_once __DIR__ . '/../../../lib/connect.php';	// Classe de connection à la base de données
-include_once __DIR__ . '/modelTypeGenericParameter.php'; // Classe de paramètres pour cet objet
-include_once __DIR__ . '/../../varmodtype/model/modelType.php'; // Classe de combinaison modèle-type
-include_once __DIR__ . '/../../type/controller/typeController.php'; // Classe de combinaison modèle-type
+require_once __DIR__ . '/../../../lib/config.php';	// Fichier de configuration
+require_once __DIR__ . '/../../../lib/connect.php';	// Classe de connection à la base de données
+require_once __DIR__ . '/modelTypeGenericParameter.php'; // Classe de paramètres pour cet objet
+require_once __DIR__ . '/../../varmodtype/model/modelType.php'; // Classe de combinaison modèle-type
+require_once __DIR__ . '/../../type/controller/typeController.php'; // Classe de combinaison modèle-type
 
 class ModelTypeGeneric extends \ModelType implements \JsonSerializable
 {    
