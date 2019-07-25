@@ -10,10 +10,10 @@
  * \details 	Modele de la table job_type
  */
 
-include_once __DIR__ . "/../../../parametres/varmodtypegen/model/modelTypeGeneric.php";
-include_once __DIR__ . "/../../../parametres/model/model/model.php";
-include_once __DIR__ . "/../../../parametres/type/model/type.php";
-include_once __DIR__ . "/jobTypeParameter.php";
+require_once __DIR__ . "/../../../parametres/varmodtypegen/model/modelTypeGeneric.php";
+require_once __DIR__ . "/../../../parametres/model/model/model.php";
+require_once __DIR__ . "/../../../parametres/type/model/type.php";
+require_once __DIR__ . "/jobTypeParameter.php";
 
 class JobType extends \ModelTypeGeneric implements \JsonSerializable
 {

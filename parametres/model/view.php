@@ -1,52 +1,70 @@
 <?php
-/**
- * \name		Planificateur de porte
-* \author    	Mathieu Grenier
-* \version		1.0
-* \date       	2017-01-27
-*
-* \brief 		Visualisation d'un Model
-* \details 		Visualisation d'un Model
-*
-* Licence pour la vue :
-* 	Verti by HTML5 UP
-html5up.net | @ajlkn
-Free for personal and commercial use under the CCA 3.0 license (html5up.net/license)
-*/
+	/**
+	 * \name		Planificateur de porte
+	* \author    	Mathieu Grenier
+	* \version		1.0
+	* \date       	2017-01-27
+	*
+	* \brief 		Visualisation d'un Model
+	* \details 		Visualisation d'un Model
+	*
+	* Licence pour la vue :
+	* 	Verti by HTML5 UP
+	html5up.net | @ajlkn
+	Free for personal and commercial use under the CCA 3.0 license (html5up.net/license)
+	*/
 
-/* INCLUDE */
-include 'controller/modelController.php';		// Classe contrôleur de cette vue
+	/* INCLUDE */
+	require_once __DIR__ . '/controller/modelController.php';		// Classe contrôleur de cette vue
 
-$exists = null;
-$thisModel = null;
-$models = array();
-$db = new \FabPlanConnection();
-try
-{
-    $db->getConnection()->beginTransaction();
-    $models = (new \ModelController())->getModels();
-    if(isset($_GET["id"]))
-    {
-        $thisModel = \Model::withID($db, $_GET["id"]);
-        $exists = true;
-    }
-    else
-    {
-        $thisModel = new \Model();
-        $exists = false;
-    }
-    $db->getConnection()->commit();
-}
-catch(\Exception $e)
-{
-    $db->getConnection()->rollback();
-    throw $e;
-}
-finally
-{
-    $db = null;
-}
+	// Initialize the session
+	session_start();
+        
+	// Check if the user is logged in, if not then redirect him to login page
+	if(!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true){
+		if(!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest')
+		{
+			throw new \Exception("You are not logged in.");
+		}
+		else
+		{
+			header("location: /Planificateur/lib/account/logIn.php");
+		}
+		exit;
+	}
 
+	// Closing the session to let other scripts use it.
+	session_write_close();
+    
+	$exists = null;
+	$thisModel = null;
+	$models = array();
+	$db = new \FabPlanConnection();
+	try
+	{
+		$db->getConnection()->beginTransaction();
+		$models = (new \ModelController())->getModels();
+		if(isset($_GET["id"]))
+		{
+			$thisModel = \Model::withID($db, $_GET["id"]);
+			$exists = true;
+		}
+		else
+		{
+			$thisModel = new \Model();
+			$exists = false;
+		}
+		$db->getConnection()->commit();
+	}
+	catch(\Exception $e)
+	{
+		$db->getConnection()->rollback();
+		throw $e;
+	}
+	finally
+	{
+		$db = null;
+	}
 ?>
 
 <!DOCTYPE HTML>

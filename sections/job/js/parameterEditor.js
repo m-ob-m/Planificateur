@@ -177,7 +177,8 @@ class ParameterEditor{
 
 	/**
 	 * Changes edition mode
-	 * @param {int} [mode=0] When mode is 0, edition is made possible by using the parameters table. Otherwise, edition uses the custom file textarea.
+	 * @param {int} [mode=0] When mode is 0, edition is made possible by using the parameters table. Otherwise, edition uses the custom 
+	 * 						 file textarea.
 	 * @return {ParameterEditor} This ParameterEditor
 	 */
 	switchEditionMode(mode = 0){

@@ -50,7 +50,7 @@ docReady(async function(){
 			{
 				let id = document.getElementById("batchId").value;
 				if(id !== null && id !== ""){
-					await verifyStatus(id);
+					await verifyMprStatus(id);
 				}
 			}
 		}, 
@@ -100,10 +100,12 @@ async function initializeFields()
 	*/
 
 	let sessionData = window.sessionStorage;
-	if(typeof sessionData.batch !== "undefined" && document.getElementById("batchId").value === sessionData.batch.id)
+	if(typeof sessionData.batch !== "undefined" && document.getElementById("batchId").value === JSON.parse(sessionData.batch).id)
 	{
 		try{
+			let mprStatus = document.getElementById("mprStatus").value;
 			await restoreSessionStorage();
+			document.getElementById("mprStatus").value = mprStatus;
 			initializeDates();
 			updateSessionStorage();
 		}
@@ -164,11 +166,12 @@ function extrapolateMaxEndDate()
  * If the status of the Batch has changed, reloads the page.
  * @param {int} id The id of the current Batch
  */
-async function verifyStatus(id)
+async function verifyMprStatus(id)
 {
 	try{
-		let status = await retrieveBatchMprStatus(id);
-		if(status !== null && typeof window.sessionStorage.batch !== "undefined" && status !== JSON.parse(window.sessionStorage.batch).status)
+		let mprStatus = await retrieveBatchMprStatus(id);
+		let sessionBatch = window.sessionStorage.batch;
+		if(typeof sessionBatch !== "undefined" && ![JSON.parse(sessionBatch).mprStatus, null, ""].includes(mprStatus))
 		{
 			window.location.reload();
 		}

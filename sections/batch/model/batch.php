@@ -1,8 +1,8 @@
 <?php
 
-include_once __DIR__ . "/carrousel.php";
-include_once __DIR__ . "/../../job/model/job.php";
-include_once __DIR__ . "/../../../lib/mpr/mprExpressionEvaluator.php";
+require_once __DIR__ . "/carrousel.php";
+require_once __DIR__ . "/../../job/model/job.php";
+require_once __DIR__ . "/../../../lib/mpr/mprExpressionEvaluator.php";
 
 /**
 * \name		Batch
@@ -118,6 +118,61 @@ class Batch implements JsonSerializable
             (new \MYSQLDatabaseLockingReadTypes($databaseConnectionLockingReadType))->toLockingReadString() . ";"
         );
 	    $stmt->bindValue(':batchId', $id, PDO::PARAM_INT);
+	    $stmt->execute();
+	    
+	    while($row = $stmt->fetch())	// Récupération de l'instance Job
+	    {
+	        $instance->addJob(Job::withID($db, $row["jobId"]));
+	    }
+	    
+	    $instance->setDatabaseConnectionLockingReadType($databaseConnectionLockingReadType);
+	    return $instance;
+	}
+
+	/**
+	 * Batch constructor using name of existing record
+	 *
+	 * @param FabPlanConnection $db The database in which the record exists
+	 * @param int $name The name of the record in the database
+	 *
+	 * @throws
+	 * @author Marc-Olivier Bazin-Maurice
+	 * @return \Batch The Batch associated to the specified ID in the specified database
+	 */
+	public static function withName(\FabPlanConnection $db, ?string $name, int $databaseConnectionLockingReadType = 0) : ?\Batch
+	{
+	    // Récupérer le test
+	    $stmt = $db->getConnection()->prepare(
+            "SELECT `b`.`id_batch` AS `id`, `b`.`materiel_id` AS `materialId`, `b`.`panneaux` AS `boardSize`, 
+                `b`.`nom_batch` AS `name`, `b`.`date_debut` AS `startDate`, `b`.`date_fin` AS `endDate`, 
+                `b`.`jour_complet` AS `fullDay`, `b`.`commentaire` AS `comments`, `b`.`etat` AS `status`, 
+                `b`.`etat_mpr` AS `mprStatus`, `b`.`carrousel` AS `carrousel`, `b`.`estampille` AS `timestamp`
+            FROM `batch` AS `b` 
+            WHERE `b`.`nom_batch` = :name " . 
+	        (new \MYSQLDatabaseLockingReadTypes($databaseConnectionLockingReadType))->toLockingReadString() . ";"
+        );
+	    $stmt->bindValue(':name', $name, PDO::PARAM_INT);
+	    $stmt->execute();
+	    
+	    if ($row = $stmt->fetch())	// Récupération de l'instance de Batch
+	    {
+	        $instance = new self(
+	            $row["id"], $row["materialId"], $row["boardSize"], $row["name"], $row["startDate"], $row["endDate"], 
+	            $row["fullDay"], $row["comments"], $row["status"], $row["mprStatus"], $row["carrousel"], $row["timestamp"]
+	        );
+	    }
+	    else
+	    {
+	        return null;
+	    }
+	    
+	    //Récupérer les Jobs
+	    $stmt = $db->getConnection()->prepare(
+            "SELECT `bj`.`job_id` AS `jobId` FROM `batch_job` AS `bj` 
+            WHERE `bj`.`batch_id` = :batchId " . 
+            (new \MYSQLDatabaseLockingReadTypes($databaseConnectionLockingReadType))->toLockingReadString() . ";"
+        );
+	    $stmt->bindValue(':batchId', $instance->getId(), PDO::PARAM_INT);
 	    $stmt->execute();
 	    
 	    while($row = $stmt->fetch())	// Récupération de l'instance Job

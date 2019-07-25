@@ -1,6 +1,6 @@
 <?php
-include_once __DIR__ . "/../../varmodtype/model/modelTypeParameter.php";
-include_once __DIR__ . "/../../generic/model/generic.php";
+require_once __DIR__ . "/../../varmodtype/model/modelTypeParameter.php";
+require_once __DIR__ . "/../../generic/model/generic.php";
 
 /**
  * \name		type.php

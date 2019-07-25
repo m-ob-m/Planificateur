@@ -9,8 +9,27 @@
     * \details 		Menu qui visualise les panneaux de Nest
     */
     
-    include_once __DIR__ . "/../batch/controller/batchController.php";
-    include_once __DIR__ . "/model/collectionPanneaux.php";
+    require_once __DIR__ . "/../batch/controller/batchController.php";
+    require_once __DIR__ . "/model/collectionPanneaux.php";
+   
+    // Initialize the session
+    session_start();
+                                                                            
+    // Check if the user is logged in, if not then redirect him to login page
+    if(!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true){
+        if(!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest')
+        {
+            throw new \Exception("You are not logged in.");
+        }
+        else
+        {
+            header("location: /Planificateur/lib/account/logIn.php");
+        }
+        exit;
+    }
+
+    // Closing the session to let other scripts use it.
+    session_write_close();
     
     $error = null;
     $batch = null;
@@ -163,7 +182,7 @@
     									<div class="porte no-print" data-id="<?= $idjtp; ?>" 
     										style="left: <?= $l; ?>px; top: <?= $t; ?>px; width: <?= $w; ?>px; height: <?= $h; ?>px;">
                         					<?= $porte->getNoCommande(); ?><br>
-                        					<?= $porte->getModele(); ?><br>
+                        					<?= \Model::withID(new \FabplanConnection(), $porte->getModele())->getDescription(); ?><br>
                         					<?= $porte->getHauteurPo() . " X " . $porte->getLargeurPo(); ?>
                         				</div>
                         			<?php endforeach; ?>

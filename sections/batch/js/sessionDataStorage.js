@@ -15,6 +15,7 @@ async function restoreSessionStorage()
 		document.getElementById("status").value = batch.status;
 		document.getElementById("comments").value = batch.comments;
 		document.getElementById("material").value = batch.material;
+		document.getElementById("mprStatus").value = batch.mprStatus;
 		await updatePannelsList();
 		document.getElementById("boardSize").value = batch.boardSize;
 		await fillJobsList(batch.jobIds, false);
@@ -40,6 +41,7 @@ function updateSessionStorage()
 		"material": document.getElementById("material").value, 
 		"boardSize": boardSizeSelect[boardSizeSelect.selectedIndex].value, 
 		"status": document.getElementById("status").value, 
+		"mprStatus": document.getElementById("mprStatus").value,
 		"comments": document.getElementById("comments").value, 
 		"jobIds": jobIds
 	});
@@ -70,5 +72,6 @@ function compareWithSessionStorage()
 		sessionBatch.boardSize === document.getElementById("boardSize").value && 
 		sessionBatch.status === document.getElementById("status").value &&
 		sessionBatch.comments === document.getElementById("comments").value && 
+		sessionBatch.mprStatus === document.getElementById("mprStatus").value && 
 		comparedJobs;
 }

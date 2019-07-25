@@ -13,10 +13,9 @@
 /*
  * Includes
  */
-include_once __DIR__ . '/../../../lib/config.php';	// Fichier de configuration
-include_once __DIR__ . '/../../../lib/connect.php';	// Classe de connection � la base de donn�es
-
-include_once __DIR__ . '/../model/testParameter.php';	// Classe d'un test
+require_once __DIR__ . '/../../../lib/config.php';	// Fichier de configuration
+require_once __DIR__ . '/../../../lib/connect.php';	// Classe de connection à la base de données
+require_once __DIR__ . '/../model/testParameter.php';	// Classe d'un test
 
 class TestParameterController
 {
@@ -31,15 +30,15 @@ class TestParameterController
     {
         if(func_num_args() == 1)
         {
-            return TestParameter::withID($this->_db, func_get_arg(0));
+            return TestParameter::withID($this->_db, func_get_arg(0), func_get_arg(1));
         }
-        elseif(isset($_GET["id"]))
+        elseif(isset($_GET["id"]) && isset($_GET["key"]))
         {
-            return TestParameter::withID($this->_db, $_GET["id"]);
+            return TestParameter::withID($this->_db, $_GET["id"], $_GET["key"]);
         }
         else
         {
-            return new TestParameter();
+            return new TestParameter($_GET["id"] ?? null, $_GET["key"] ?? null);
         }
     }
     

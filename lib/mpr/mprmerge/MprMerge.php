@@ -1,6 +1,6 @@
 <?php 
-    include_once __DIR__ . "/MprMergeInputFile.php";
-    include_once __DIR__ . "/MprVariable.php";
+    require_once __DIR__ . "/MprMergeInputFile.php";
+    require_once __DIR__ . "/MprVariable.php";
     
     /**
      * \MprMerge

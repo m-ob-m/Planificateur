@@ -15,9 +15,28 @@
      */
     
     /* INCLUDE */
-    include_once __DIR__ . '/../type/controller/typeController.php';		// Classe contrôleur la Type
-    include_once __DIR__ . '/../model/controller/modelController.php';		// Classe contrôleur de Model
-    include_once __DIR__ . '/../test/controller/testController.php';        // Classe contrôleur de Test
+    require_once __DIR__ . '/../type/controller/typeController.php';		// Classe contrôleur la Type
+    require_once __DIR__ . '/../model/controller/modelController.php';		// Classe contrôleur de Model
+	require_once __DIR__ . '/../test/controller/testController.php';        // Classe contrôleur de Test
+	
+	// Initialize the session
+	session_start();
+        
+	// Check if the user is logged in, if not then redirect him to login page
+	if(!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true){
+		if(!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest')
+		{
+			throw new \Exception("You are not logged in.");
+		}
+		else
+		{
+			header("location: /Planificateur/lib/account/logIn.php");
+		}
+		exit;
+	}
+
+	// Closing the session to let other scripts use it.
+	session_write_close();
     
     $types = array();
     $models = array();

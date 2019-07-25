@@ -240,4 +240,14 @@ class MachiningProgramViewer
         }, this);
         return this;
     }
+
+    /**
+     * Gets current pannel
+     * 
+     * @return {Node} The current pannelContainer node
+     */
+    getCurrentPannel()
+    {
+        return this.currentPannel;
+    }
 }

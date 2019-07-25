@@ -1,7 +1,7 @@
 <?php
-include_once __DIR__ . "/../../parametres/varmodtypegen/controller/modelTypeGenericController.php";
-include_once __DIR__ . "/../../sections/batch/model/Carrousel.php";
-include_once __DIR__ . "/mprExpressionEvaluator.php";
+require_once __DIR__ . "/../../parametres/varmodtypegen/controller/modelTypeGenericController.php";
+require_once __DIR__ . "/../../sections/batch/model/Carrousel.php";
+require_once __DIR__ . "/mprExpressionEvaluator.php";
 
 /**
  * \name		mprCutrite
@@ -181,7 +181,7 @@ class mprCutrite
 				
 				foreach($bloc->getChilds() as $child)
 				{
-				    $condition = boolval(\MprExpression\Evaluator::evaluate($child->getCondition(), null, $parameters));
+				    $condition = boolval(\MprExpression\Evaluator::evaluate($child->getCondition() ?? "1", null, $parameters));
 				    if($condition)
 					{
 						$child_text .= $child->getText();
@@ -276,12 +276,12 @@ class mprCutrite
 	            $child_count = 0;
 	            
 	            //Identify the external profile section in order to skip condition evaluation.
-	            $filter = '/(*ANYCRLF)^MNM="(?=.*profil.*extérieur.*)"$/im';
-	            $isExternalProfile = preg_match($filter, $bloc->getText(), $array);
-	            
+				$filter = '/^MNM=".*profil.*extérieur.*"\r$/im';
+				$isExternalProfile = preg_match($filter, $bloc->getText());
+				
 	            foreach($bloc->getChilds() as $child)
 	            {
-	                $condition = boolval(\MprExpression\Evaluator::evaluate($child->getCondition(), null, $parameters));
+	                $condition = boolval(\MprExpression\Evaluator::evaluate($child->getCondition() ?? "1", null, $parameters));
 	                if($condition || $isExternalProfile)
 	                {
 	                    $child_text .= $child->getText();

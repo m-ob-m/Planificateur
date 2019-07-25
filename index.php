@@ -15,12 +15,28 @@
      */
     
     /* INCLUDE */
-    include_once __DIR__ . '/lib/config.php';	// Fichier de configuration
-    include_once __DIR__ . '/lib/connect.php';	// Classe de connection à la base de données
+    require_once __DIR__ . '/lib/config.php';	// Fichier de configuration
+    require_once __DIR__ . '/lib/connect.php';	// Classe de connection à la base de données
     
-    include_once __DIR__ . '/sections/batch/model/batch.php';	// Modèle d'une batch
-    include_once __DIR__ . '/sections/job/model/job.php';		// Modèle d'une job
-    include_once __DIR__ . '/controller/planificateur.php';		// Classe controleur de cette vue
+    require_once __DIR__ . '/sections/batch/model/batch.php';	// Modèle d'une batch
+    require_once __DIR__ . '/sections/job/model/job.php';		// Modèle d'une job
+	require_once __DIR__ . '/controller/planificateur.php';		// Classe controleur de cette vue
+	
+	// Initialize the session
+	session_start();
+                                                                        
+	// Check if the user is logged in, if not then redirect him to login page
+	if(!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true){
+		if(!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest')
+		{
+			throw new \Exception("You are not logged in.");
+		}
+		else
+		{
+			header("location: /Planificateur/lib/account/logIn.php");
+		}
+		exit;
+	}
 ?>
 
 <!DOCTYPE HTML>
@@ -51,7 +67,7 @@
 						<span>Planificateur de production</span>
 					</div>
 					<!-- Navigation menu -->
-					<div style="display:inline-block;float:right;">
+					<div style="float:right;">
     					<nav id="nav" style="display: block;">
     						<ul>									
     							<li>
@@ -59,9 +75,8 @@
     									<img src="images/cal16.png">
     								Planifier un nest</a>
     							</li>
-    							
     							<li  class="current">
-    								<a href="#" class="imageButton"  class="imageButton">
+    								<a href="#" class="imageButton">
     									<img src="images/config16.png">
     								Paramètres</a>
     								<ul>
@@ -128,10 +143,28 @@
             										Combiner des programmes</a>
         										</li>
     										</ul>
-    									</li>
+										</li>
+										<li>
+											<a href="#" class="imageButton">
+            									<img src="images/user.png">
+            								<?= htmlspecialchars($_SESSION["username"]); ?></a>
+											<ul>
+												<li>
+													<a href="lib/account/reset-password.php" class="imageButton">
+														<img src="images/user.png">
+														Changer mot de passe
+													</a>
+												</li>
+												<li>
+													<a href="lib/account/logOut.php" class="imageButton">
+														<img src="images/exit.png">
+													Déconnexion</a>
+												</li>
+											</ul>
+										</li>
     								</ul>
-    							</li>
-    							<li  class="current">
+								</li>
+								<li  class="current">
     								<a href="#" class="imageButton">
     									<img src="images/help16.png">
     								Légende</a>
@@ -145,7 +178,7 @@
     									<li class="state" style='background-color: #3B3131;'>Terminée</li>
     								</ul>
     							</li>
-    						</ul>
+							</ul>
     					</nav>
     					<div style="float: right; margin-bottom: 5px;">
     						<form id="findBatchByJobNumberForm" action="javascript: void(0);" 
@@ -197,3 +230,8 @@
 		</div>
 	</body>
 </html>
+
+<?php 
+	// Closing the session to let other scripts use it.
+	session_write_close();
+?>

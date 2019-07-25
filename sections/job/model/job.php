@@ -9,9 +9,9 @@
  * \details 	Modele de la table job
  */
 
-include_once __DIR__ . '/job_type.php';	// Classe d'un type de job
-include_once __DIR__ . '/job_type_porte.php';	// Classe d'une porte de type
-include_once __DIR__ . "/../../batch/model/batch.php"; // Classe d'une batch
+require_once __DIR__ . '/job_type.php';	// Classe d'un type de job
+require_once __DIR__ . '/job_type_porte.php';	// Classe d'une porte de type
+require_once __DIR__ . "/../../batch/model/batch.php"; // Classe d'une batch
 
 class Job implements \JsonSerializable
 {	

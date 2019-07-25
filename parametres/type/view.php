@@ -15,8 +15,27 @@
     */
     
     /* INCLUDE */
-    include_once __DIR__ . '/../type/controller/typeController.php';		// Classe contrôleur de cette vue
-    include_once __DIR__ . '/../generic/controller/genericController.php'; //Contrôleur de générique
+    require_once __DIR__ . '/../type/controller/typeController.php';		// Classe contrôleur de cette vue
+    require_once __DIR__ . '/../generic/controller/genericController.php'; //Contrôleur de générique
+	
+    // Initialize the session
+	session_start();
+        
+	// Check if the user is logged in, if not then redirect him to login page
+	if(!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true){
+		if(!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest')
+		{
+			throw new \Exception("You are not logged in.");
+		}
+		else
+		{
+			header("location: /Planificateur/lib/account/logIn.php");
+		}
+		exit;
+	}
+
+	// Closing the session to let other scripts use it.
+	session_write_close();
     
     $generics = array();
     $type = null;

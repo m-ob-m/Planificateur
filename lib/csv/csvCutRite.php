@@ -1,5 +1,5 @@
 <?php
-    include_once __DIR__ . "/../../parametres/generic/controller/genericController.php";
+    require_once __DIR__ . "/../../parametres/generic/controller/genericController.php";
     
     /**
     * \name		   CsvCutrite
