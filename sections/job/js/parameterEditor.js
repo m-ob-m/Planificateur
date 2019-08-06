@@ -231,7 +231,6 @@ class ParameterEditor{
 		}
 
 		let row = document.createElement("tr");
-		row.style.height = "40px";
 		
 		let keyCell = document.createElement("td");
 		keyCell.classList.add("firstVisibleColumn");
@@ -250,6 +249,7 @@ class ParameterEditor{
 
 		let valueTextArea = document.createElement("textarea");
 		valueTextArea.classList.add("nonResizable");
+		valueTextArea.style.position = "relative";
 		valueTextArea.style.width = "100%";
 		valueTextArea.style.fontSize = "1em";
 		valueTextArea.style.lineHeight = "1.25em";
@@ -263,6 +263,7 @@ class ParameterEditor{
 		let descriptionTextArea = document.createElement("textarea");
 		descriptionTextArea.classList.add("nonResizable");
 		descriptionTextArea.disabled = true;
+		descriptionTextArea.style.position = "relative";
 		descriptionTextArea.style.width = "100%";
 		descriptionTextArea.style.fontSize = "1em";
 		descriptionTextArea.style.lineHeight = "1.25em";

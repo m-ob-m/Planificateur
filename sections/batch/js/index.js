@@ -56,7 +56,8 @@ docReady(async function(){
 		}, 
 		10000
 	);
-
+	
+	document.getElementById("jobNumber").focus();
 	hasChanged(false);
 });
 

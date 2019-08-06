@@ -78,9 +78,9 @@
                 throw new \Exception("Impossible de créer le fichier de destination {$programName}.");
             }
             
-            $mpr = fread($sourceFileHandle, filesize(CR_FABRIDOR . "SYSTEM_DATA/mpr/{$programName}"));
+            $mpr = utf8_encode(fread($sourceFileHandle, filesize(CR_FABRIDOR . "SYSTEM_DATA/mpr/{$programName}")));
             $mpr = applyDimensionsToMpr($mpr, strval($jobTypePorte->getLength()), strval($jobTypePorte->getWidth()));
-            fwrite($destinationFileHandle, $mpr);
+            fwrite($destinationFileHandle, utf8_decode($mpr));
             
             if(!fclose($destinationFileHandle))
             {

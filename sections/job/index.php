@@ -132,7 +132,7 @@
 		
 		<!--  Fenêtre modale pour l'édition des paramètres -->
 		<div id="parametersEditor" class="modal">
-			<div class="modal-content" style="width: 70%; flex-flow: column;">
+			<div class="modal-content" style="width: 90%; flex-flow: column;">
 				<span class="editMenu">
                     <img id="acceptEdit" src="../../images/ok16.png" class="editIcon">
                     <img id="cancelEdit" src="../../images/cancel16.png" class="editIcon">
