@@ -24,8 +24,8 @@ if ($helper->isCli()) {
     <link rel="stylesheet" href="/bootstrap/css/bootstrap.min.css"/>
     <link rel="stylesheet" href="/bootstrap/css/font-awesome.min.css"/>
     <link rel="stylesheet" href="/bootstrap/css/phpspreadsheet.css"/>
-    <script src="/bootstrap/js/jquery.min.js"></script>
-    <script src="/bootstrap/js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="/bootstrap/js/jquery.min.js"></script>
+    <script type="text/javascript" src="/bootstrap/js/bootstrap.min.js"></script>
 </head>
 <body>
     <div class="container">

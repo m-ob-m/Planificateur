@@ -4,11 +4,13 @@
  * Fills the list of Jobs of this Batch
  * @param {job[]} jobs An array of job identidfiers
  * @param {bool} [IsName=false] Set to false if identifiers are IDs. If they are names, this must be set to true.
+ * 
+ * @return {Promise}
  */
 async function fillJobsList(jobs, isName = false)
 {
-	return await Promise.all(jobs.map(async function(job){
-		return addJob(job, false);
+	return Promise.all(jobs.map(async function(job){
+		return await addJob(job, isName);
 	}));
 }
 
@@ -16,37 +18,46 @@ async function fillJobsList(jobs, isName = false)
  * Adds a job to the Batch's orders
  * @param {mixed} identfier The name or the id of a Job
  * @param {bool} [IsName=false] Set to false if identifier is an ID. If it is a name, this must be set to true.
- * @return {bool} True if the job was added to the table, false otherwise. 
+ * @return {Promise}
  */
 async function addJob(identifier, isName = false)
 {
-	if(identifier !== null && identifier !== "")
-	{
-		try{
-			let job = await getJobSummary(identifier, isName);
-			if(job.belongsToBatch === null || job.belongsToBatch === window.sessionStorage.getItem("name"))
-			{
-				$("table#orders > tbody").append(newJob(job));
-				$("input#jobNumber").val("");
+	return new Promise(async function(resolve, reject){
+		let ordersTable = document.getElementById("orders");
+		let currentJobIdentifiers = [...ordersTable.getElementsByClassName(isName ? "jobNameCell" : "jobIdCell")].map(function(cell){
+			return cell.textContent;
+		});
+		if(identifier === null || identifier === "")
+		{
+			reject("Le nom de la job ne peut pas être vide.");
+		}
+		else if(currentJobIdentifiers.includes(identifier))
+		{
+			let identifierString = (isName ? "le nom " : "l'identifiant numérique unique ") + identifier;
+			reject("La job identifiée par " + identifierString + " se trouve déjà dans le tableau des jobs de la batch en cours.");
+		}
+		else
+		{
+			try{
+				let job = await getJobSummary(identifier, isName);
+				if(job.belongsToBatch === null || job.belongsToBatch === document.getElementById("batchName").value)
+				{
+					document.getElementById("orders").getElementsByTagName("tbody")[0].appendChild(newJob(job));
+					document.getElementById("jobNumber").value = "";
+					resolve();
+				}
+				else
+				{
+					let identifierString = (isName ? "le nom " : "l'identifiant numérique unique ") + identifier;
+					let batch = job.belongsToBatch;
+					reject("La job identifiée par " + identifierString + " appartient déjà à la batch nommée \"" + batch + "\".");
+				}
 			}
-			else
-			{
-				let title = "L'ajout de la job a échoué";
-				showError(title, "Cette job appartient déjà à la batch nommée \"" + job.belongsToBatch + "\".");
-				return false;
+			catch(error){
+				reject(error);
 			}
 		}
-		catch(error){
-			showError("La récupération d'un résumé de la job a échouée", error);
-			return false;
-		}
-	}
-	else
-	{
-		showError("L'ajout de la job a échoué", "Le nom de la job ne peut pas être vide.");
-		return false;
-	}
-	return true;
+	});
 }
 
 /**
@@ -54,16 +65,21 @@ async function addJob(identifier, isName = false)
  */
 async function addJobButtonPressed()
 {
-	let jobName = $('#jobNumber').val();
-	if(await addJob(jobName, true))
-	{
+	let jobName = document.getElementById("jobNumber").value;
+	try{
+		await addJob(jobName, true)
 		initializeDates();
-		if($("input#batchName").val() === null || $("input#batchName").val() === "")
+		let batchName = document.getElementById("batchName").value;
+		if(batchName === null || batchName === "")
 		{
-			$("input#batchName").val(jobName);
+			document.getElementById("batchName").value = jobName;
 		}
 		updateSessionStorage();
+		hasChanged(true);
 	}
+	catch(error){
+		showError("L'ajout de la job a échoué.", error);
+	};
 }
 
 /**
@@ -72,23 +88,58 @@ async function addJobButtonPressed()
  */
 function newJob(job)
 {
-	let row = $("<tr></tr>").css({"cursor": "pointer"})
-	.on("click", ":not(>td:first-child)", {"jobId": job.id, "batchId": window.sessionStorage.getItem("id")}, openJobEvent);
-	let deleteTool = $("<div></div>").css({"display": "inline-block", "width": "100%"})
-	.append(imageButton("/Planificateur/images/cancel16.png", "", removeJob, [row]));
-	let toolsContainer = $("<div></div>").css({"height": "min-content"}).append(deleteTool);	
-	let toolsCell = $("<td></td>").addClass("firstVisibleColumn").append(toolsContainer);
-	let idCell = $("<td></td>").addClass("jobIdCell").prop("hidden", true).text(job.id);
-	let nameCell = $("<td></td>").text(job.name);
-	let deliveryDateCell = $("<td></td>").text((job.deliveryDate !== null) ? job.deliveryDate : "");
-	let partsAmountCell = $("<td></td>").addClass("lastVisibleColumn").text(job.partsAmount);
-	row.append(toolsCell).append(idCell).append(nameCell).append(deliveryDateCell).append(partsAmountCell);
+	let row = document.createElement("tr");
+
+	let deleteTool = document.createElement("div");
+	deleteTool.style.display = "inline-block";
+	deleteTool.style.width = "100%";
+	deleteTool.appendChild(imageButton(ROOT_URL + "/images/cancel16.png", "", removeJob, [row]));
+
+	let toolsContainer = document.createElement("div");
+	toolsContainer.style.height = "min-content";
+	toolsContainer.appendChild(deleteTool);
+
+	let toolsCell = document.createElement("td");
+	toolsCell.classList.add("firstVisibleColumn");
+	toolsCell.appendChild(toolsContainer);
+
+	let idCell = document.createElement("td");
+	idCell.classList.add("jobIdCell");
+	idCell.style.display = "none";
+	idCell.textContent = job.id;
+
+	let nameCell = document.createElement("td");
+	nameCell.classList.add("jobNameCell");
+	nameCell.textContent = job.name;
+	nameCell.addEventListener("click", async function(){
+		await openJob.apply(this.parentElement, [job.id, document.getElementById("batchId").value]);
+	});
+
+	let deliveryDateCell = document.createElement("td");
+	deliveryDateCell.textContent = (job.deliveryDate !== null) ? job.deliveryDate : "";
+	deliveryDateCell.addEventListener("click", async function(){
+		await openJob.apply(this.parentElement, [job.id, document.getElementById("batchId").value]);
+	});
+
+	let partsAmountCell = document.createElement("td");
+	partsAmountCell.classList.add("lastVisibleColumn");
+	partsAmountCell.textContent = job.partsAmount;
+	partsAmountCell.addEventListener("click", async function(){
+		await openJob.apply(this.parentElement, [job.id, document.getElementById("batchId").value]);
+	});
+
+	row.style.cursor = "pointer";
+	row.appendChild(toolsCell);
+	row.appendChild(idCell);
+	row.appendChild(nameCell);
+	row.appendChild(deliveryDateCell);
+	row.appendChild(partsAmountCell);
 	return row;
 }
 
 /**
  * Removes a job from job list
- * @param {jquery} row A row ro remove
+ * @param {Element} row A row ro remove
  */
 function removeJob(row)
 {

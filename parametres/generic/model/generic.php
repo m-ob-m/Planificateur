@@ -8,8 +8,8 @@
  * \brief 		Modele de générique
  * \details 	Modele de générique
  */
-include_once __DIR__ . '/genericparameter.php';
-include_once __DIR__ . '/../../type/controller/typeController.php';
+require_once __DIR__ . '/genericparameter.php';
+require_once __DIR__ . '/../../type/controller/typeController.php';
 
 class Generic implements \JsonSerializable
 {
@@ -17,7 +17,7 @@ class Generic implements \JsonSerializable
     private $_filename;
     private $_description;
     private $_heightParameter;
-    private $_genericParameters; // tableau de GenericParameters
+    private $_parameters; // tableau de GenericParameters
     private $_timestamp;
     private $__database_connection_locking_read_type = \MYSQLDatabaseLockingReadTypes::NONE;
     
@@ -29,21 +29,21 @@ class Generic implements \JsonSerializable
      * @param string $description The description of this generic
      * @param string $heightParameter The height parameter of this generic
      * @param string $timestamp The last modification timestamp of this object.
-     * @param GenericParameter array $genericParameters an array of GenericParameters objects that belong to this Generic
+     * @param GenericParameter[] $parameters an array of GenericParameters objects that belong to this Generic
      *
      * @throws
      * @author Marc-Olivier Bazin-Maurice
      * @return Test
      */
     function __construct(?int $id = null, ?string $filename = null, ?string $description = null, ?string $heightParameter = null, 
-        ?string $timestamp = null, ?array $genericParameters = array())
+        ?string $timestamp = null, ?array $parameters = array())
     {
         $this->_id = $id;
         $this->_filename = $filename;
         $this->_description = $description;
         $this->_heightParameter = $heightParameter;
         $this->_timestamp = $timestamp;
-        $this->_genericParameters = $genericParameters;
+        $this->_parameters = $parameters;
     }
     
     /**
@@ -60,7 +60,7 @@ class Generic implements \JsonSerializable
     {
         // Récupérer le Generic
         $stmt = $db->getConnection()->prepare(
-            "SELECT `g`.* FROM `fabplan`.`generics` AS `g` WHERE `g`.`id` = :id " . 
+            "SELECT `g`.* FROM `generics` AS `g` WHERE `g`.`id` = :id " . 
             (new \MYSQLDatabaseLockingReadTypes($databaseConnectionLockingReadType))->toLockingReadString() . ";"
         );
         $stmt->bindValue(':id', $id, PDO::PARAM_INT);
@@ -77,7 +77,7 @@ class Generic implements \JsonSerializable
         }
         
         $stmt= $db->getConnection()->prepare(
-            "SELECT `gp`.* FROM `fabplan`.`generic_parameters` AS `gp` 
+            "SELECT `gp`.* FROM `generic_parameters` AS `gp` 
             WHERE `gp`.`generic_id` = :genericId 
             ORDER BY `gp`.`id` ASC " . 
             (new \MYSQLDatabaseLockingReadTypes($databaseConnectionLockingReadType))->toLockingReadString() . ";"
@@ -85,7 +85,7 @@ class Generic implements \JsonSerializable
         $stmt->bindValue(':genericId', $id, PDO::PARAM_INT);
         $stmt->execute();
         
-        $instance->setGenericParameters(array());
+        $instance->setParameters(array());
         while($row = $stmt->fetch())
         {
             $parameter = new \GenericParameter(
@@ -96,7 +96,7 @@ class Generic implements \JsonSerializable
                 $row["description"], 
                 $row["quick_edit"]
             );
-            $instance->addGenericParameter($parameter);
+            $instance->addParameter($parameter);
         }
         
         $instance->setDatabaseConnectionLockingReadType($databaseConnectionLockingReadType);
@@ -172,11 +172,11 @@ class Generic implements \JsonSerializable
         
         if($overwriteParameters)
         {
-            $this->deleteGenericParametersFromDatabase($db);
+            $this->deleteParametersFromDatabase($db);
             
-            foreach($this->_genericParameters as $genericParameter)
+            foreach($this->parameters as $parameter)
             {
-                $genericParameter->save($db);
+                $parameter->save($db);
             }
         }
         
@@ -197,11 +197,11 @@ class Generic implements \JsonSerializable
     {
         // Mise à jour d'un test
         $stmt = $db->getConnection()->prepare("
-            UPDATE `fabplan`.`generics` 
-            SET `fabplan`.`generics`.`filename` = :filename, 
-                `fabplan`.`generics`.`description` = :description, 
-                `fabplan`.`generics`.`heightParameter` = :heightParameter
-            WHERE `fabplan`.`generics`.`id` = :id;
+            UPDATE `generics` 
+            SET `generics`.`filename` = :filename, 
+                `generics`.`description` = :description, 
+                `generics`.`heightParameter` = :heightParameter
+            WHERE `generics`.`id` = :id;
         ");
         $stmt->bindValue(':filename', $this->_filename, PDO::PARAM_STR);
         $stmt->bindValue(':description', $this->_description, PDO::PARAM_STR);
@@ -211,11 +211,11 @@ class Generic implements \JsonSerializable
         
         if($overwriteParameters)
         {
-            $this->deleteGenericParametersFromDatabase($db);
+            $this->deleteParametersFromDatabase($db);
             
-            foreach($this->_genericParameters as $genericParameter)
+            foreach($this->_parameters as $parameter)
             {
-                $genericParameter->save($db);
+                $parameter->save($db);
             }
         }
         
@@ -244,7 +244,7 @@ class Generic implements \JsonSerializable
         else
         {
             $stmt = $db->getConnection()->prepare("
-                DELETE FROM `fabplan`.`generics` WHERE `fabplan`.`generics`.`id` = :id;
+                DELETE FROM `generics` WHERE `generics`.`id` = :id;
             ");
             $stmt->bindValue(':id', $this->_id, PDO::PARAM_INT);
             $stmt->execute();
@@ -265,7 +265,7 @@ class Generic implements \JsonSerializable
     public function getTimestampFromDatabase(\FabPlanConnection $db) : ?string
     {
         $stmt= $db->getConnection()->prepare("
-            SELECT `g`.`timestamp` FROM `fabplan`.`generics` AS `g` WHERE `g`.`id` = :id;
+            SELECT `g`.`timestamp` FROM `generics` AS `g` WHERE `g`.`id` = :id;
         ");
         $stmt->bindValue(':id', $this->getId(), PDO::PARAM_INT);
         $stmt->execute();
@@ -355,9 +355,9 @@ class Generic implements \JsonSerializable
      * @author Marc-Olivier Bazin-Maurice
      * @return \GenericParameter[] The parameters of this Generic
      */
-    public function getGenericParameters() : array
+    public function getParameters() : array
     {
-        return $this->_genericParameters;
+        return $this->_parameters;
     }
     
     /**
@@ -368,13 +368,13 @@ class Generic implements \JsonSerializable
      * @author Marc-Olivier Bazin-Maurice
      * @return \GenericParameter|null A GenericParameter object
      */
-    public function getGenericParameterByKey(string $key) : ?\GenericParameter
+    public function getParameterByKey(string $key) : ?\GenericParameter
     {
-        foreach($this->_genericParameters as $genericParameter)
+        foreach($this->_parameters as $parameter)
         {
-            if($genericParameter->getKey() === $key)
+            if($parameter->getKey() === $key)
             {
-                return $genericParameter;
+                return $parameter;
             }
         }
         return null;
@@ -390,18 +390,6 @@ class Generic implements \JsonSerializable
     public function getTimestamp() : ?string
     {
         return $this->_timestamp;
-    }
-    
-    /**
-     * Gets the array of \GenericParameter of this object.
-     *
-     * @throws
-     * @author Marc-Olivier Bazin-Maurice
-     * @return array The array of \GenericParameter of this object.
-     */
-    public function getParameters() : array
-    {
-        return $this->_genericParameters;
     }
     
     /**
@@ -452,15 +440,15 @@ class Generic implements \JsonSerializable
     /**
      * Set the GenericParameter array of this Generic
      *
-     * @param GenericParameter array $genericParameters The new generic parameters array of the Generic object
+     * @param \GenericParameter[] $parameters The new generic parameters array of the Generic object
      *
      * @throws
      * @author Marc-Olivier Bazin-Maurice
      * @return Generic This Generic (for method chaining)
      */
-    public function setGenericParameters(array $genericParameters) : Generic
+    public function setParameters(array $parameters) : Generic
     {
-        $this->_genericParameters = $genericParameters;
+        $this->_parameters = $parameters;
         return $this;
     }
     
@@ -480,21 +468,6 @@ class Generic implements \JsonSerializable
     }
     
     /**
-     * Sets the array of \GenericParameter of this Generic
-     *
-     * @param array $parameters An array of \GenericParameters
-     *
-     * @throws
-     * @author Marc-Olivier Bazin-Maurice
-     * @return \Generic This \Generic (for method chaining)
-     */
-    public function setParameters(array $parameters) : \Generic
-    {
-        $this->_parameters = $parameters;
-        return $this;
-    }
-    
-    /**
      * Get a JSON compatible representation of this object.
      *
      * @throws
@@ -509,30 +482,30 @@ class Generic implements \JsonSerializable
     /**
      * Add a parameter to this Generic
      *
-     * @param GenericParameter $genericParameter The new GenericParameter
+     * @param \GenericParameter $parameter The new GenericParameter
      *
      * @throws
      * @author Marc-Olivier Bazin-Maurice
      * @return Generic This Generic (for method chaining)
      */
-    public function addGenericParameter(GenericParameter $genericParameter) : Generic
+    public function addParameter(\GenericParameter $parameter) : \Generic
     {
-        array_push($this->_genericParameters, $genericParameter);
+        array_push($this->_parameters, $parameter);
         return $this;
     }
     
     /**
      * Remove a parameter to this Generic
      *
-     * @param GenericParameter $genericParameter The GenericParameter to remove
+     * @param \GenericParameter $parameter The GenericParameter to remove
      *
      * @throws
      * @author Marc-Olivier Bazin-Maurice
      * @return Generic This Generic (for method chaining)
      */
-    public function removeGenericParameter(string $genericParameter) : Generic
+    public function removeParameter(string $parameter) : \Generic
     {
-        unset($this->_genericParameters[array_search($genericParameter, $this->_genericParameters, true)]);
+        unset($this->_parameters[array_search($parameter, $this->_parameters, true)]);
         return $this;
     }
     
@@ -547,7 +520,7 @@ class Generic implements \JsonSerializable
      * @author Marc-Olivier Bazin-Maurice
      * @return Generic This Generic (for method chaining)
      */
-    private function deleteGenericParametersFromDatabase(FabPlanConnection $db) : Generic
+    private function deleteParametersFromDatabase(FabPlanConnection $db) : Generic
     {
         $stmt = $db->getConnection()->prepare("
             DELETE FROM `generic_parameters`
@@ -569,7 +542,7 @@ class Generic implements \JsonSerializable
     public function getParametersAsKeyValuePairs() : array
     {
         $parametersArray = array();
-        foreach($this->getGenericParameters() as $parameter)
+        foreach($this->getParameters() as $parameter)
         {
             $parametersArray[$parameter->getKey()] = $parameter->getValue();
         }
@@ -586,7 +559,7 @@ class Generic implements \JsonSerializable
     public function getParametersAsKeyDescriptionPairs() : array
     {
         $parametersArray = array();
-        foreach($this->getGenericParameters() as $parameter)
+        foreach($this->getParameters() as $parameter)
         {
             $parametersArray[$parameter->getKey()] = $parameter->getDescription();
         }

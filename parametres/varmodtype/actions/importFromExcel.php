@@ -7,27 +7,46 @@
      *
      * \brief 		Importe les paramètres spécifiques des combinaisons modèle-type-générique à partir d'un fichier au format Excel.
      */
-    
-    include_once __DIR__ . "/../../varmodtypegen/controller/modelTypeGenericController.php"; /* Modèle-type-générique */
-    include_once __DIR__ . "/../../generic/controller/genericController.php"; // Contrôleur de générique
-    include_once __DIR__ . "/../../model/controller/modelController.php"; // Contrôleur de modèle
-    include_once __DIR__ . "/../../../lib/PhpSpreadsheet/autoload.php"; // PHPSpreadsheet
-    include_once __DIR__ . "/../../../lib/fileFunctions/fileFunctions.php"; // Fonctions sur les fichiers
-    
-    use \PhpOffice\PhpSpreadsheet\Spreadsheet as PHPSpreadSheetWorkBook;
-    use \PhpOffice\PhpSpreadsheet\Worksheet\Worksheet as PHPSpreadSheetWorkSheet;
-    use \PhpOffice\PhpSpreadsheet\Cell as PHPSpreadSheetCell;
-    use \PhpOffice\PhpSpreadsheet\Cell\Coordinate as PHPSpreadSheetCoordinate;
 
     // Structure de retour vers javascript
-    $responseArray = array("status" => null, "success" => array("data" => null), "failure" => array("message" => null));
     
+    require_once __DIR__ . "/../../../lib/PhpSpreadsheet/autoload.php"; // PHPSpreadsheet
+    
+    use \PhpOffice\PhpSpreadsheet\Cell\Coordinate as PHPSpreadSheetCoordinate;
+    use \PhpOffice\PhpSpreadsheet\Reader\Xlsx as PHPSpreadSheetXlsxReader;
+
     const KEEP_FILES_FOR_X_DAYS = 1;
     const FIRST_PARAMETER_ROW = 5;
     const FIRST_TYPE_COLUMN = 2;
     
+    $responseArray = array("status" => null, "success" => array("data" => null), "failure" => array("message" => null));
+    
     try
     {  
+        require_once __DIR__ . "/../../varmodtypegen/controller/modelTypeGenericController.php"; /* Modèle-type-générique */
+        require_once __DIR__ . "/../../generic/controller/genericController.php"; // Contrôleur de générique
+        require_once __DIR__ . "/../../model/controller/modelController.php"; // Contrôleur de modèle
+        require_once __DIR__ . "/../../../lib/fileFunctions/fileFunctions.php"; // Fonctions sur les fichiers
+        
+        // Initialize the session
+        session_start();
+                            
+        // Check if the user is logged in, if not then redirect him to login page
+        if(!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true){
+            if(!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest')
+            {
+                throw new \Exception("You are not logged in.");
+            }
+            else
+            {
+                header("location: /Planificateur/lib/account/logIn.php");
+            }
+            exit;
+        }
+    
+        // Closing the session to let other scripts use it.
+        session_write_close();
+
         // Clean or create the temporary directory and copy the uploaded file into it.
         $temporaryFolderPath = __DIR__ . "\\temp";
         (new \FileFunctions\TemporaryFolder($temporaryFolderPath))->clean(KEEP_FILES_FOR_X_DAYS * 24 * 60 * 60, true);
@@ -89,7 +108,7 @@
      */
     function extractDataFromExcelFile(string $filePath) : \StdClass
     {
-        $reader = new \PhpOffice\PhpSpreadsheet\Reader\Xlsx();
+        $reader = new PHPSpreadSheetXlsxReader();
         $workbook = $reader->load("{$filePath}");
 
         $data = new \stdClass();

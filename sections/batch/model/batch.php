@@ -1,8 +1,8 @@
 <?php
 
-include_once __DIR__ . "/carrousel.php";
-include_once __DIR__ . "/../../job/model/job.php";
-include_once __DIR__ . "/../../../lib/mpr/mprExpressionEvaluator.php";
+require_once __DIR__ . "/carrousel.php";
+require_once __DIR__ . "/../../job/model/job.php";
+require_once __DIR__ . "/../../../lib/mpr/mprExpressionEvaluator.php";
 
 /**
 * \name		Batch
@@ -92,7 +92,7 @@ class Batch implements JsonSerializable
                 `b`.`nom_batch` AS `name`, `b`.`date_debut` AS `startDate`, `b`.`date_fin` AS `endDate`, 
                 `b`.`jour_complet` AS `fullDay`, `b`.`commentaire` AS `comments`, `b`.`etat` AS `status`, 
                 `b`.`etat_mpr` AS `mprStatus`, `b`.`carrousel` AS `carrousel`, `b`.`estampille` AS `timestamp`
-            FROM `fabplan`.`batch` AS `b` 
+            FROM `batch` AS `b` 
             WHERE `b`.`id_batch` = :id " . 
 	        (new \MYSQLDatabaseLockingReadTypes($databaseConnectionLockingReadType))->toLockingReadString() . ";"
         );
@@ -113,11 +113,66 @@ class Batch implements JsonSerializable
 	    
 	    //Récupérer les Jobs
 	    $stmt = $db->getConnection()->prepare(
-            "SELECT `bj`.`job_id` AS `jobId` FROM `fabplan`.`batch_job` AS `bj` 
+            "SELECT `bj`.`job_id` AS `jobId` FROM `batch_job` AS `bj` 
             WHERE `bj`.`batch_id` = :batchId " . 
             (new \MYSQLDatabaseLockingReadTypes($databaseConnectionLockingReadType))->toLockingReadString() . ";"
         );
 	    $stmt->bindValue(':batchId', $id, PDO::PARAM_INT);
+	    $stmt->execute();
+	    
+	    while($row = $stmt->fetch())	// Récupération de l'instance Job
+	    {
+	        $instance->addJob(Job::withID($db, $row["jobId"]));
+	    }
+	    
+	    $instance->setDatabaseConnectionLockingReadType($databaseConnectionLockingReadType);
+	    return $instance;
+	}
+
+	/**
+	 * Batch constructor using name of existing record
+	 *
+	 * @param FabPlanConnection $db The database in which the record exists
+	 * @param int $name The name of the record in the database
+	 *
+	 * @throws
+	 * @author Marc-Olivier Bazin-Maurice
+	 * @return \Batch The Batch associated to the specified ID in the specified database
+	 */
+	public static function withName(\FabPlanConnection $db, ?string $name, int $databaseConnectionLockingReadType = 0) : ?\Batch
+	{
+	    // Récupérer le test
+	    $stmt = $db->getConnection()->prepare(
+            "SELECT `b`.`id_batch` AS `id`, `b`.`materiel_id` AS `materialId`, `b`.`panneaux` AS `boardSize`, 
+                `b`.`nom_batch` AS `name`, `b`.`date_debut` AS `startDate`, `b`.`date_fin` AS `endDate`, 
+                `b`.`jour_complet` AS `fullDay`, `b`.`commentaire` AS `comments`, `b`.`etat` AS `status`, 
+                `b`.`etat_mpr` AS `mprStatus`, `b`.`carrousel` AS `carrousel`, `b`.`estampille` AS `timestamp`
+            FROM `batch` AS `b` 
+            WHERE `b`.`nom_batch` = :name " . 
+	        (new \MYSQLDatabaseLockingReadTypes($databaseConnectionLockingReadType))->toLockingReadString() . ";"
+        );
+	    $stmt->bindValue(':name', $name, PDO::PARAM_INT);
+	    $stmt->execute();
+	    
+	    if ($row = $stmt->fetch())	// Récupération de l'instance de Batch
+	    {
+	        $instance = new self(
+	            $row["id"], $row["materialId"], $row["boardSize"], $row["name"], $row["startDate"], $row["endDate"], 
+	            $row["fullDay"], $row["comments"], $row["status"], $row["mprStatus"], $row["carrousel"], $row["timestamp"]
+	        );
+	    }
+	    else
+	    {
+	        return null;
+	    }
+	    
+	    //Récupérer les Jobs
+	    $stmt = $db->getConnection()->prepare(
+            "SELECT `bj`.`job_id` AS `jobId` FROM `batch_job` AS `bj` 
+            WHERE `bj`.`batch_id` = :batchId " . 
+            (new \MYSQLDatabaseLockingReadTypes($databaseConnectionLockingReadType))->toLockingReadString() . ";"
+        );
+	    $stmt->bindValue(':batchId', $instance->getId(), PDO::PARAM_INT);
 	    $stmt->execute();
 	    
 	    while($row = $stmt->fetch())	// Récupération de l'instance Job
@@ -576,7 +631,7 @@ class Batch implements JsonSerializable
 	{
 	    // Création d'un type de test
 	    $stmt = $db->getConnection()->prepare("
-            INSERT INTO `fabplan`.`batch` (`materiel_id`, `panneaux`, `nom_batch`, `date_debut`, `date_fin`, `jour_complet`, 
+            INSERT INTO `batch` (`materiel_id`, `panneaux`, `nom_batch`, `date_debut`, `date_fin`, `jour_complet`, 
                 `commentaire`, `etat`, `etat_mpr`, `carrousel`) 
             VALUES (:materialId, :boardSize, :name, :start, :end, :fullDay, :comments, :status, :mprStatus, :carrousel);
         ");
@@ -616,7 +671,7 @@ class Batch implements JsonSerializable
 	{
 	    // Mise à jour d'un Batch
 	    $stmt = $db->getConnection()->prepare("
-            UPDATE `fabplan`.`batch` AS `b`
+            UPDATE `batch` AS `b`
             SET `materiel_id` = :materialId, `panneaux` = :boardSize, `nom_batch` = :name, `date_debut` = :start, 
                 `date_fin` = :end, `jour_complet` = :fullDay, `commentaire` = :comments, `etat` = :status, 
                 `etat_mpr` = :mprStatus, `carrousel` = :carrousel
@@ -667,7 +722,7 @@ class Batch implements JsonSerializable
     	        $this->unlinkJob($job, $db);
     	    }
     	    
-    	    $stmt = $db->getConnection()->prepare("DELETE FROM `fabplan`.`batch` WHERE `id_batch` = :id;");
+    	    $stmt = $db->getConnection()->prepare("DELETE FROM `batch` WHERE `id_batch` = :id;");
     	    $stmt->bindValue(':id', $this->getId(), PDO::PARAM_INT);
     	    $stmt->execute();
 	    }
@@ -687,7 +742,7 @@ class Batch implements JsonSerializable
 	public function getTimestampFromDatabase(\FabPlanConnection $db) : ?string
 	{
 	    $stmt= $db->getConnection()->prepare("
-            SELECT `b`.`estampille` FROM `fabplan`.`batch` AS `b` WHERE `b`.`id_batch` = :id;
+            SELECT `b`.`estampille` FROM `batch` AS `b` WHERE `b`.`id_batch` = :id;
         ");
 	    $stmt->bindValue(':id', $this->getId(), PDO::PARAM_INT);
 	    $stmt->execute();
@@ -713,7 +768,7 @@ class Batch implements JsonSerializable
 	 */
 	private function unlinkAllJobs(FabPlanConnection $db) : Batch
 	{
-	    $stmt = $db->getConnection()->prepare("DELETE FROM `fabplan`.`batch_job` WHERE `batch_id` = :batchId;");
+	    $stmt = $db->getConnection()->prepare("DELETE FROM `batch_job` WHERE `batch_id` = :batchId;");
 	    $stmt->bindValue(':batchId', $this->getId(), PDO::PARAM_INT);
 	    $stmt->execute();
 	    
@@ -732,7 +787,7 @@ class Batch implements JsonSerializable
 	 */
 	private function unlinkJob(Job $job, FabPlanConnection $db) : Batch
 	{
-	    $stmt = $db->getConnection()->prepare("DELETE FROM `fabplan`.`batch_job` WHERE `batch_id` = :batchId AND `job_id`= :jobId;");
+	    $stmt = $db->getConnection()->prepare("DELETE FROM `batch_job` WHERE `batch_id` = :batchId AND `job_id`= :jobId;");
 	    $stmt->bindValue(':batchId', $this->getId(), PDO::PARAM_INT);
 	    $stmt->bindValue(':jobId', $job->getId(), PDO::PARAM_INT);
 	    $stmt->execute();
@@ -752,7 +807,7 @@ class Batch implements JsonSerializable
 	 */
 	private function linkJob(\Job $job, \FabPlanConnection $db) : \Batch
 	{
-	    $stmt = $db->getConnection()->prepare("INSERT INTO `fabplan`.`batch_job`(`batch_id`, `job_id`) VALUES(:batchId, :jobId);");
+	    $stmt = $db->getConnection()->prepare("INSERT INTO `batch_job`(`batch_id`, `job_id`) VALUES(:batchId, :jobId);");
 	    $stmt->bindValue(':batchId', $this->getId(), PDO::PARAM_INT);
 	    $stmt->bindValue(':jobId', $job->getId(), PDO::PARAM_INT);
 	    $stmt->execute();
@@ -795,7 +850,7 @@ class Batch implements JsonSerializable
     	        {
         	        foreach($job->getJobTypes() as $jobType)
         	        {
-        	            $parameters = $jobType->getParametersAsKeyValuePairs();
+						$parameters = $jobType->getParametersAsKeyValuePairs();
         	            $parameters = array_merge($parameters, $this->_carrousel->getSymbolicToolNamesArray());
         	            $NpasInt = \MprExpression\Evaluator::evaluate($parameters["NpasInt"] ?? 0, null, $parameters);
         	            for($i = 1; $i <= $NpasInt; $i++)
@@ -839,14 +894,14 @@ class Batch implements JsonSerializable
         	            
         	            $Act_PK_C = \MprExpression\Evaluator::evaluate($parameters["Act_PK_C"] ?? 0, null, $parameters);
         	            $tool = \MprExpression\Evaluator::evaluate("_T_PCKT", null, $parameters);
-        	            if(!$this->_carrousel->toolExists($tool))
+        	            if(intval($Act_PK_C) !== 0 && !$this->_carrousel->toolExists($tool))
         	            {
         	                $this->_carrousel->addTool($tool);
         	            }
         	            
-        	            $A_Clean = \MprExpression\Evaluator::evaluate($parameters["A_Clean"] ?? 0, null, $parameters);
+						$A_Clean = \MprExpression\Evaluator::evaluate($parameters["A_Clean"] ?? 0, null, $parameters);
         	            $tool = \MprExpression\Evaluator::evaluate($parameters["T_CLEAN"] ?? 0, null, $parameters);
-        	            if(!$this->_carrousel->toolExists($tool))
+        	            if(intval($A_Clean) !== 0 && !$this->_carrousel->toolExists($tool))
         	            {
         	                $this->_carrousel->addTool($tool);
         	            }

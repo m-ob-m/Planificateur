@@ -10,10 +10,10 @@
  * \details 	Modele de la table job_type
  */
 
-include_once __DIR__ . "/../../../parametres/varmodtypegen/model/modelTypeGeneric.php";
-include_once __DIR__ . "/../../../parametres/model/model/model.php";
-include_once __DIR__ . "/../../../parametres/type/model/type.php";
-include_once __DIR__ . "/jobTypeParameter.php";
+require_once __DIR__ . "/../../../parametres/varmodtypegen/model/modelTypeGeneric.php";
+require_once __DIR__ . "/../../../parametres/model/model/model.php";
+require_once __DIR__ . "/../../../parametres/type/model/type.php";
+require_once __DIR__ . "/jobTypeParameter.php";
 
 class JobType extends \ModelTypeGeneric implements \JsonSerializable
 {
@@ -70,7 +70,7 @@ class JobType extends \ModelTypeGeneric implements \JsonSerializable
         $stmt = $db->getConnection()->prepare(
             "SELECT `jt`.`job_id` AS `jobId`, `jt`.`door_model_id` AS `modelId`, `jt`.`type_no` AS `typeNo`, 
                 `jt`.`fichier_mpr` AS `mprFile`, `jt`.`estampille` AS `timestamp`
-            FROM `fabplan`.`job_type` AS `jt` WHERE `jt`.`id_job_type` = :id " . 
+            FROM `job_type` AS `jt` WHERE `jt`.`id_job_type` = :id " . 
             (new \MYSQLDatabaseLockingReadTypes($databaseConnectionLockingReadType))->toLockingReadString() . ";"
         );
         $stmt->bindValue(':id', $id, PDO::PARAM_INT);
@@ -92,13 +92,25 @@ class JobType extends \ModelTypeGeneric implements \JsonSerializable
         
         //Récupérer les paramètres
         $stmt = $db->getConnection()->prepare(
-            "SELECT `jtp`.* 
-            FROM `fabplan`.`job_type_params` AS `jtp` 
-            INNER JOIN `fabplan`.`job_type` AS `jt` ON `jt`.`id_job_type` = `jtp`.`job_type_id`
-            INNER JOIN `fabplan`.`door_types` AS `dt` ON `dt`.`importNo` = `jt`.`type_no`
-            INNER JOIN `fabplan`.`generics` AS `g` ON `g`.`id` = `dt`.`generic_id`
-        	INNER JOIN `fabplan`.`generic_parameters` AS `gp` 
-                ON `gp`.`generic_id` = `g`.`id` AND `gp`.`parameter_key` = `jtp`.`param_key`
+            "SELECT `gp`.`key` AS `key`, 
+                IF (`jtp`.`value` IS NULL, `gp`.`value`, `jtp`.`value`) AS `value`,
+                `gp`.`description` AS `description`
+            FROM  `job_type` AS `jt`
+            INNER JOIN `door_types` AS `dt` ON `dt`.`importNo` = `jt`.`type_no`
+            INNER JOIN `generics` AS `g` ON `g`.`id` = `dt`.`generic_id`
+            INNER JOIN LATERAL (
+                SELECT `gp`.`id` AS `id`, 
+                    `gp`.`parameter_key` AS `key`, 
+                    `gp`.`parameter_value` AS `value`, 
+                    `gp`.`description` AS `description`
+                FROM `generic_parameters` AS `gp` 
+                WHERE `gp`.`generic_id` = `g`.`id`
+            ) AS `gp`
+            LEFT JOIN LATERAL (
+                SELECT `jtp`.`param_key` AS `key`, `jtp`.`param_value` AS `value` 
+                FROM `job_type_params` AS `jtp` 
+                WHERE `jt`.`id_job_type` = `jtp`.`job_type_id`
+            ) AS `jtp` ON `jtp`.`key` = `gp`.`key`
             WHERE `jt`.`id_job_type` = :id
             ORDER BY `gp`.`id` ASC " . 
             (new \MYSQLDatabaseLockingReadTypes($databaseConnectionLockingReadType))->toLockingReadString() . ";"
@@ -108,13 +120,13 @@ class JobType extends \ModelTypeGeneric implements \JsonSerializable
         
         while($row = $stmt->fetch())	// Récupération des paramètres
         {
-            $parameter = (new \JobTypeParameter($id, $row["param_key"], $row["param_value"]));
+            $parameter = (new \JobTypeParameter($id, $row["key"], $row["value"]));
             array_push($instance->_parameters, $parameter);
         }
         
         //Récupérer les pièces
         $stmt = $db->getConnection()->prepare(
-            "SELECT `jtp`.* FROM `fabplan`.`job_type_porte` AS `jtp` WHERE `jtp`.`job_type_id` = :id " . 
+            "SELECT `jtp`.* FROM `job_type_porte` AS `jtp` WHERE `jtp`.`job_type_id` = :id " . 
             (new \MYSQLDatabaseLockingReadTypes($databaseConnectionLockingReadType))->toLockingReadString() . ";"
         );
         $stmt->bindValue(':id', $id, PDO::PARAM_INT);
@@ -189,14 +201,14 @@ class JobType extends \ModelTypeGeneric implements \JsonSerializable
         if($this->getId() !== null)
         {
             $stmt = $db->getConnection()->prepare("
-                    DELETE FROM `fabplan`.`job_type_params`
+                    DELETE FROM `job_type_params`
                     WHERE `job_type_id` = :id;
                 ");
             $stmt->bindValue(':id', $this->getId(), \PDO::PARAM_INT);
             $stmt->execute();
             
             $stmt = $db->getConnection()->prepare("
-                    DELETE FROM `fabplan`.`job_type_porte`
+                    DELETE FROM `job_type_porte`
                     WHERE `job_type_id` = :id;
                 ");
             $stmt->bindValue(':id', $this->getId(), PDO::PARAM_INT);
@@ -218,7 +230,7 @@ class JobType extends \ModelTypeGeneric implements \JsonSerializable
     private function insert(FabPlanConnection $db) : JobType
     {
         $stmt = $db->getConnection()->prepare("
-            INSERT INTO `fabplan`.`job_type` (`id_job_type`, `job_id`, `door_model_id`, `type_no`, `fichier_mpr`)
+            INSERT INTO `job_type` (`id_job_type`, `job_id`, `door_model_id`, `type_no`, `fichier_mpr`)
             VALUES (:jobTypeId, :jobId, :modelId, :typeNo, :mprFile);
         ");
         $stmt->bindValue(':jobTypeId', $this->getId(), PDO::PARAM_INT);
@@ -255,7 +267,7 @@ class JobType extends \ModelTypeGeneric implements \JsonSerializable
     private function update(FabPlanConnection $db) : JobType
     {
         $stmt = $db->getConnection()->prepare("
-            UPDATE `fabplan`.`job_type`
+            UPDATE `job_type`
             SET `job_id` = :jobId, `door_model_id` = :modelId, `type_no` = :typeNo, `fichier_mpr` = :mprFile
             WHERE `id_job_type` = :id;
         ");
@@ -298,7 +310,7 @@ class JobType extends \ModelTypeGeneric implements \JsonSerializable
         {
             $this->emptyInDatabase($db);
             
-            $stmt = $db->getConnection()->prepare("DELETE FROM `fabplan`.`job_type` WHERE `id_job_type` = :id;");
+            $stmt = $db->getConnection()->prepare("DELETE FROM `job_type` WHERE `id_job_type` = :id;");
             $stmt->bindValue(':id', $this->getId(), PDO::PARAM_INT);
             $stmt->execute();
         }
@@ -318,7 +330,7 @@ class JobType extends \ModelTypeGeneric implements \JsonSerializable
     public function getTimestampFromDatabase(\FabPlanConnection $db) : ?string
     {
         $stmt= $db->getConnection()->prepare("
-            SELECT `jt`.`estampille` FROM `fabplan`.`job_type` AS `jt` WHERE `jt`.`id_job_type` = :id;
+            SELECT `jt`.`estampille` FROM `job_type` AS `jt` WHERE `jt`.`id_job_type` = :id;
         ");
         $stmt->bindValue(':id', $this->getId(), PDO::PARAM_INT);
         $stmt->execute();

@@ -15,8 +15,27 @@
     */
     
     /* INCLUDE */
-    include_once __DIR__ . '/../type/controller/typeController.php';		// Classe contrôleur de cette vue
-    include_once __DIR__ . '/../generic/controller/genericController.php'; //Contrôleur de générique
+    require_once __DIR__ . '/../type/controller/typeController.php';		// Classe contrôleur de cette vue
+    require_once __DIR__ . '/../generic/controller/genericController.php'; //Contrôleur de générique
+	
+    // Initialize the session
+	session_start();
+        
+	// Check if the user is logged in, if not then redirect him to login page
+	if(!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true){
+		if(!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest')
+		{
+			throw new \Exception("You are not logged in.");
+		}
+		else
+		{
+			header("location: /Planificateur/lib/account/logIn.php");
+		}
+		exit;
+	}
+
+	// Closing the session to let other scripts use it.
+	session_write_close();
     
     $generics = array();
     $type = null;
@@ -45,11 +64,11 @@
 		<title>Fabridor - Liste des types de porte</title>
 		<meta charset="utf-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1" />
-		<link rel="stylesheet" href="/Planificateur/assets/css/responsive.css" />
-		<link rel="stylesheet" href="/Planificateur/assets/css/fabridor.css" />
-		<link rel="stylesheet" href="/Planificateur/assets/css/loader.css" />
-		<link rel="stylesheet" href="/Planificateur/assets/css/parametersTable.css"/>
-		<link rel="stylesheet" href="/Planificateur/assets/css/imageButton.css">
+		<link rel="stylesheet" href="../../assets/css/responsive.css" />
+		<link rel="stylesheet" href="../../assets/css/fabridor.css" />
+		<link rel="stylesheet" href="../../assets/css/loader.css" />
+		<link rel="stylesheet" href="../../assets/css/parametersTable.css"/>
+		<link rel="stylesheet" href="../../assets/css/imageButton.css">
 	</head>
 	<body class="homepage">
 		<div id="page-wrapper">
@@ -61,31 +80,31 @@
 						<div id="logo">
 							<h1>
 								<a href="index.php">
-									<img src="/Planificateur/images/fabridor.jpg">
+									<img src="../../images/fabridor.jpg">
 								</a>
 							</h1>
 							<span>Liste des types de porte</span>
 						</div>
 						
-						<div style="display:inline-block;float:right;">
+						<div style="float:right;">
     					    <!-- Nav -->
-    						<nav id="nav">
+    						<nav id="nav" style="display: block;">
     							<ul>
     								<li>
     									<a href="javascript: void(0);" onclick="saveConfirm();" class="imageButton">
-    										<img src="/Planificateur/images/save.png">
+    										<img src="../../images/save.png">
     									Sauvegarder</a>
     								</li>
     								<?php if($type->getId() !== null): ?>
     									<li>
     										<a href="javascript: void(0);" onclick="deleteConfirm();" class="imageButton">
-    											<img src="/Planificateur/images/cancel16.png">
+    											<img src="../../images/cancel16.png">
     										Supprimer</a>
     									</li>
     								<?php endif; ?>
     								<li>
     									<a href="index.php" class="imageButton">
-    										<img src="/Planificateur/images/exit.png">
+    										<img src="../../images/exit.png">
     									Sortir</a>
     								</li>
     							</ul>
@@ -112,7 +131,9 @@
 					<tbody>
 						<tr>
 							<td class="firstVisibleColumn" style="width:200px;">Identificateur</td>
-							<td class="lastVisibleColumn disabled" id="id"><?= $type->getId(); ?></td>
+							<td class="lastVisibleColumn disabled">
+								<input type="text" id="id" value="<?= $type->getId(); ?>" disabled>
+							</td>
 						</tr>
 						<tr>
 							<td class="firstVisibleColumn">Numéro SIA</td>
@@ -131,7 +152,7 @@
 						<tr>
 							<td class="firstVisibleColumn">Générique</td>
 							<td class="lastVisibleColumn">
-								<select id="generic" onchange="updateCopyParametersFrom.apply($(this));"
+								<select id="generic" onchange="updateCopyParametersFrom();"
 									style="text-align-last:center;">
                                 	<?php if(!empty($generics)):?>
 										<?php foreach($generics as $generic): ?>
@@ -161,12 +182,12 @@
 		</div>
 
 		<!--  Fenetre Modal pour message d'erreurs -->
-		<div id="errMsgModal" class="modal" onclick='$(this).css({"display": "none"});'>
+		<div id="errMsgModal" class="modal" onclick='this.style.display = "none";'>
 			<div id="errMsg" class="modal-content" style='color:#FF0000;'></div>
 		</div>
 		
 		<!--  Fenetre Modal pour message de validation -->
-		<div id="validationMsgModal" class="modal" onclick='$(this).css({"display": "none"});'>
+		<div id="validationMsgModal" class="modal" onclick='this.style.display = "none";'>
 			<div id="validationMsg" class="modal-content" style='color:#FF0000;'></div>
 		</div>
 		
@@ -176,14 +197,11 @@
 		</div>
 		
 		<!-- Scripts -->
-		<script src="/Planificateur/assets/js/jquery.min.js"></script>
-		<script src="/Planificateur/assets/js/jquery.dropotron.min.js"></script>
-		<script src="/Planificateur/assets/js/skel.min.js"></script>
-		<script src="/Planificateur/assets/js/util.js"></script>
-		<script src="/Planificateur/assets/js/main.js"></script>
-		<script src="/Planificateur/js/main.js"></script>
-		<script src="/Planificateur/js/toolbox.js"></script>
-		<script src="js/main.js"></script>
-		<script src="js/view.js"></script>
+		<script type="text/javascript" src="../../assets/js/ajax.js"></script>
+		<script type="text/javascript" src="../../assets/js/docReady.js"></script>
+		<script type="text/javascript" src="../../js/main.js"></script>
+		<script type="text/javascript" src="../../js/toolbox.js"></script>
+		<script type="text/javascript" src="js/main.js"></script>
+		<script type="text/javascript" src="js/view.js"></script>
 	</body>
 </html>

@@ -1,7 +1,7 @@
 <?php
-include_once __DIR__ . "/../../parametres/varmodtypegen/controller/modelTypeGenericController.php";
-include_once __DIR__ . "/../../sections/batch/model/Carrousel.php";
-include_once __DIR__ . "/mprExpressionEvaluator.php";
+require_once __DIR__ . "/../../parametres/varmodtypegen/controller/modelTypeGenericController.php";
+require_once __DIR__ . "/../../sections/batch/model/Carrousel.php";
+require_once __DIR__ . "/mprExpressionEvaluator.php";
 
 /**
  * \name		mprCutrite
@@ -25,7 +25,7 @@ class mprCutrite
 		$this->_header = "";
 		
 		$myfile = fopen($genericFilePath, "r") or die("Unable to open generic MPR file!");
-		$this->_generic = fread($myfile,filesize($genericFilePath));
+		$this->_generic = utf8_encode(fread($myfile,filesize($genericFilePath)));
 		fclose($myfile);
 		
 	}
@@ -163,19 +163,17 @@ class mprCutrite
 	        }
 	        
 	        $this->extractMprBlocks();
-	        $this->_mpr = preg_replace("/(?<=\[001\r\n).{0}(?=\r\n\r\n)/s", $variables, $this->_header);
-	        $this->_mpr = str_replace("**var_token**\r\n", $variables, $this->_header, $count);
+			$this->_mpr = preg_replace("/(?<=\[001\r\n).{0}(?=\r\n\r\n)/s", $variables, $this->_header);
 		}
 		
 	    $parameters = array_merge($parameters, (new Carrousel())->getSymbolicToolNamesArray());
-		$count = 1;
 				
 		$child_count = 0;	// Nombre d'enfants d'un parent;
 		$child_text = "";	// Texte des enfants;
 		
 		foreach($this->getBlocks() as $bloc)
 		{	
-		    $condition = boolval(\MprExpression\Evaluator::evaluate($bloc->getCondition(), null, $parameters));
+			$condition = boolval(\MprExpression\Evaluator::evaluate($bloc->getCondition() ?? "1", null, $parameters));
 		    if($condition)
 		    {
 				$child_text = "";
@@ -183,7 +181,7 @@ class mprCutrite
 				
 				foreach($bloc->getChilds() as $child)
 				{
-				    $condition = boolval(\MprExpression\Evaluator::evaluate($child->getCondition(), null, $parameters));
+				    $condition = boolval(\MprExpression\Evaluator::evaluate($child->getCondition() ?? "1", null, $parameters));
 				    if($condition)
 					{
 						$child_text .= $child->getText();
@@ -199,11 +197,8 @@ class mprCutrite
 		//Si le fichier mpr n'a pas de marque de fin (un !), on en ajoute une.
         $this->_mpr .= ((preg_match("/^.*!\s*$/s", $this->_mpr)) ? "" : "!");
 		
-        if($jobType->getModel()->getId() === 2)
-        {
-    		//Remettre l'encodage des caractères en ISO-8859-1
-    		$this->_mpr = utf8_decode($this->_mpr);
-        }
+		//Remettre l'encodage des caractères en ISO-8859-1
+		$this->_mpr = utf8_decode($this->_mpr);
 	}
 	
 	
@@ -217,7 +212,7 @@ class mprCutrite
 	 * \details    	Permet de générer le texte d'un fichier CSV à partir d'un Test
 	 *
 	 */
-	public function makeMprFromTest(Test $test, array $paramDescription)
+	public function makeMprFromTest(Test $test)
 	{
 	    $var_token = "";
 	    $parameters = [];
@@ -250,39 +245,43 @@ class mprCutrite
         }
 	    else
 	    {
+			$generic = $test->getType()->getGeneric();
+	        $defaultKeyDescriptionindex = $generic->getParametersAsKeyDescriptionPairs();
+			$defaultKeyValueindex = $generic->getParametersAsKeyValuePairs();
+			$specificKeyValueIndex = $test->getParametersAsKeyValuePairs();
+			
 			$variables = "";
-	        foreach ($test->getParameters() as $parameter)
-    	    {
-    	        $parameters[$parameter->getKey()] = $parameter->getValue();
-    	        
-    	        $var_token .= "{$parameter->getKey()}=\"{$parameter->getValue()}\"\r\n";
-    	        $var_token .= "KM=\"{$parameter->getDescription()}\"\r\n";
-    	    }
-    	    
-    	    $this->extractMprBlocks();
-    	    $this->_mpr = preg_replace("/(?<=\[001\r\n).{0}(?=\r\n\r\n)/s", $variables, $this->_header);
+	        foreach ($defaultKeyDescriptionindex as $key => $description)
+	        {
+	            $value = $specificKeyValueIndex[$key] ?? $defaultKeyValueindex[$key];
+	            $parameters[$key] = $value;
+	            
+	            $variables .= "{$key}=\"{$value}\"\r\nKM=\"{$description}\"\r\n";
+	        }
+	        
+	        $this->extractMprBlocks();
+			$this->_mpr = preg_replace("/(?<=\[001\r\n).{0}(?=\r\n\r\n)/s", $variables, $this->_header);
 	    }
 	    $parameters = array_merge($parameters, (new Carrousel())->getSymbolicToolNamesArray());
-	    $count = 1;
 	    
 	    $child_count = 0;	// Nombre d'enfants d'un parent;
 	    $child_text = "";	// Texte des enfants;
 	    
 	    foreach($this->getBlocks() as $bloc)
 	    {
-	        $condition = boolval(\MprExpression\Evaluator::evaluate($bloc->getCondition(), null, $parameters));
+	        $condition = boolval(\MprExpression\Evaluator::evaluate($bloc->getCondition() ?? "1", null, $parameters));
 	        if($condition)
 	        {
 	            $child_text = "";
 	            $child_count = 0;
 	            
 	            //Identify the external profile section in order to skip condition evaluation.
-	            $filter = '/(*ANYCRLF)^MNM="(?=.*profil.*extérieur.*)"$/im';
-	            $isExternalProfile = preg_match($filter, $bloc->getText(), $array);
-	            
+				$filter = '/^MNM=".*profil.*extérieur.*"\r$/im';
+				$isExternalProfile = preg_match($filter, $bloc->getText());
+				
 	            foreach($bloc->getChilds() as $child)
 	            {
-	                $condition = boolval(\MprExpression\Evaluator::evaluate($child->getCondition(), null, $parameters));
+	                $condition = boolval(\MprExpression\Evaluator::evaluate($child->getCondition() ?? "1", null, $parameters));
 	                if($condition || $isExternalProfile)
 	                {
 	                    $child_text .= $child->getText();

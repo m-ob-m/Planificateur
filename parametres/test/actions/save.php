@@ -8,18 +8,37 @@
      * \brief 		Sauvegarde un test
      * \details     Sauvegarde un test
      */
-    
-    // INCLUDE
-    include_once __DIR__ . '/../../../lib/config.php';	// Fichier de configuration
-    include_once __DIR__ . '/../../../lib/connect.php';	// Classe de connection à la base de données
-    include_once __DIR__ . '/../controller/testController.php';
-    include_once __DIR__ . "/../../../lib/fileFunctions/fileFunctions.php";	// Classe de fonctions liées aux fichiers
-    
-    //Structure de retour vers javascript
+
+    // Structure de retour vers javascript
     $responseArray = array("status" => null, "success" => array("data" => null), "failure" => array("message" => null));
-    
+
     try
     {
+        // INCLUDE
+        require_once __DIR__ . '/../../../lib/config.php';	// Fichier de configuration
+        require_once __DIR__ . '/../../../lib/connect.php';	// Classe de connection à la base de données
+        require_once __DIR__ . '/../controller/testController.php';
+        require_once __DIR__ . "/../../../lib/fileFunctions/fileFunctions.php";	// Classe de fonctions liées aux fichiers
+        
+        // Initialize the session
+        session_start();
+                                                    
+        // Check if the user is logged in, if not then redirect him to login page
+        if(!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true){
+            if(!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest')
+            {
+                throw new \Exception("You are not logged in.");
+            }
+            else
+            {
+                header("location: /Planificateur/lib/account/logIn.php");
+            }
+            exit;
+        }
+
+        // Closing the session to let other scripts use it.
+        session_write_close();
+        
         $input =  json_decode(file_get_contents("php://input"));
         
         // Vérification des paramètres

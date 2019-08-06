@@ -2,7 +2,7 @@
 
 function openModelTypeParameters(modelId = null, typeNo = null)
 {
-	let next_page = ["/Planificateur/parametres/varmodtype/index.php"];
+	let next_page = [ROOT_URL + "/parametres/varmodtype/index.php"];
 	let parameters = [];
 	if(modelId !== null && modelId !== "")
 	{

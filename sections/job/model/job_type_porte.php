@@ -70,7 +70,7 @@ class JobTypePorte implements JsonSerializable
             "SELECT `jtp`.`job_type_id` AS `jobTypeId`, `jtp`.`longueur` AS `length`, `jtp`.`largeur` AS `width`, 
                 `jtp`.`quantite` AS `quantityToProduce`, `jtp`.`qte_produite` AS `producedQuantity`, `jtp`.`grain` AS `grain`, 
                 `jtp`.`terminer` AS `done`, `jtp`.`estampille` AS `timestamp`
-            FROM `fabplan`.`job_type_porte` AS `jtp`
+            FROM `job_type_porte` AS `jtp`
             WHERE `jtp`.`id_job_type_porte` = :id " . 
             (new \MYSQLDatabaseLockingReadTypes($databaseConnectionLockingReadType))->toLockingReadString() . ";"
         );
@@ -148,7 +148,7 @@ class JobTypePorte implements JsonSerializable
     private function insert(\FabPlanConnection $db) : \JobTypePorte
     {
         $stmt = $db->getConnection()->prepare("
-            INSERT INTO `fabplan`.`job_type_porte` (`job_type_id`, `quantite`, `qte_produite`, 
+            INSERT INTO `job_type_porte` (`job_type_id`, `quantite`, `qte_produite`, 
                 `longueur`, `largeur`, `grain`, `terminer`)
             VALUES (:jobTypeId, :quantityToProduce, :producedQuantity, :length, :width, :grain, :done);
         ");
@@ -177,7 +177,7 @@ class JobTypePorte implements JsonSerializable
     private function update(\FabPlanConnection $db) : \JobTypePorte
     {
         $stmt = $db->getConnection()->prepare("
-            UPDATE `fabplan`.`job_type_porte`
+            UPDATE `job_type_porte`
             SET `job_type_id` = :jobTypeId, `quantite` = :quantityToProduce, `qte_produite` = :produceQuantity, 
                 `longueur` = :length, `largeur` = :width, `grain`= :grain, `terminer` = :done
             WHERE `id_job_type_porte` = :id;
@@ -213,7 +213,7 @@ class JobTypePorte implements JsonSerializable
         else
         {
             $stmt = $db->getConnection()->prepare("
-                    DELETE FROM `fabplan`.`job_type_porte`
+                    DELETE FROM `job_type_porte`
                     WHERE `id_job_type_porte` = :id;
                 ");
             $stmt->bindValue(':id', $this->getId(), PDO::PARAM_INT);
@@ -235,7 +235,7 @@ class JobTypePorte implements JsonSerializable
     public function getTimestampFromDatabase(\FabPlanConnection $db) : ?string
     {
         $stmt= $db->getConnection()->prepare("
-            SELECT `jtp`.`estampille` FROM `fabplan`.`job_type_porte` AS `jtp` WHERE `jtp`.`id_job_type_porte` = :id;
+            SELECT `jtp`.`estampille` FROM `job_type_porte` AS `jtp` WHERE `jtp`.`id_job_type_porte` = :id;
         ");
         $stmt->bindValue(':id', $this->getId(), PDO::PARAM_INT);
         $stmt->execute();

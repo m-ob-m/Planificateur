@@ -1,5 +1,5 @@
 <?php
-include_once __DIR__ . "/../../../lib/mpr/GlobalVariablesFile.php";
+require_once __DIR__ . "/../../../lib/mpr/GlobalVariablesFile.php";
 
 use \MprGlobalParameters\MprGlobalParametersFile as MprGlobalParametersFile;
 

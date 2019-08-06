@@ -1,49 +1,112 @@
 "use strict";
 
-$(document).ready(async function()
-{	
-	$("input#fullDay").change(function(){
-		let startDate = moment.tz($("input#startDate").val(), getExpectedMomentFormat(), "America/Montreal");
-		let endDate = moment.tz($("input#startDate").val(), getExpectedMomentFormat(), "America/Montreal");
-		toogleCheckBox.apply(this);
-		let type = ($(this).val() === "Y") ? "date" : "datetime-local";
-		$("input#startDate").attr({"type": type}).val(startDate.format(getExpectedMomentFormat()));
-		$("input#endDate").attr({"type": type}).val(endDate.format(getExpectedMomentFormat()));
+docReady(async function(){
+	document.getElementById("fullDay").addEventListener("change", function(){
+		let checkBox = new CheckBox(this);
+		let type = checkBox.getState() ? "date" : "datetime-local";
+		let startDate = moment.tz(document.getElementById("startDate").value, getExpectedMomentFormat(), "America/Montreal");
+		let endDate = moment.tz(document.getElementById("endDate").value, getExpectedMomentFormat(), "America/Montreal");
+
+		let startDateInput = document.getElementById("startDate");
+		startDateInput.value = "";
+		startDateInput.type = type;
+		startDateInput.value = startDate.format(getExpectedMomentFormat());
+
+		let endDateInput = document.getElementById("endDate");
+		endDateInput.value = "";
+		endDateInput.type = type;
+		endDateInput.value = endDate.format(getExpectedMomentFormat());
 	});
 	
 	await initializeFields();
 	
-	$('input#batchName').keyup(
-		function(key){(key.keyCode === 13) ? $('input#jobNumber').focus() : false;
+	document.getElementById("batchName").addEventListener("keyup", function(key){
+		if(key.keyCode === 13){
+			document.getElementById("jobNumber").focus();
+		}
 	});
 
-	$('input#jobNumber').keyup(
-		function(key){(key.keyCode === 13) ? $("button#addJobButton").click() : false;
+	document.getElementById("jobNumber").addEventListener("keyup", function(key){
+		if(key.keyCode === 13){
+			document.getElementById("addJobButton").click();
+		}
 	});
-	
+
+	document.getElementById("batchName").addEventListener("change", () => {hasChanged(true);});
+	document.getElementById("startDate").addEventListener("change", () => {hasChanged(true);});
+	document.getElementById("endDate").addEventListener("change", () => {hasChanged(true);});
+	document.getElementById("fullDay").addEventListener("change", () => {hasChanged(true);});
+	document.getElementById("material").addEventListener("change", () => {hasChanged(true);});
+	document.getElementById("boardSize").addEventListener("change", () => {hasChanged(true);});
+	document.getElementById("status").addEventListener("change", () => {hasChanged(true);});
+
 	// When the status of the Batch changes, the page must reload.
 	window.setInterval(
 		async function(){
-			let id = $("input#batchId").val();
-			if(id !== null && id !== "")
+			let noError = ["", "none"].includes(document.getElementById("errMsgModal").style.display);
+			let noValidation = ["", "none"].includes(document.getElementById("validationMsgModal").style.display);
+			let noDownload = ["", "none"].includes(document.getElementById("downloadMsgModal").style.display);
+			if(!hasChanged() && noError && noValidation && noDownload)
 			{
-				await verifyStatus(id);
+				let id = document.getElementById("batchId").value;
+				if(id !== null && id !== ""){
+					await verifyMprStatus(id);
+				}
 			}
 		}, 
 		10000
 	);
+	
+	document.getElementById("jobNumber").focus();
+	hasChanged(false);
 });
+
+/**
+ * If status is a boolean, sets the status of hasChanged. Otherwise, returns the status of hasChanged.
+ * @param {Boolean|null} [status=null] The new status of hasChanged when setting the status, null when getting the status of hasChanged.
+ * @return {Boolean|null} Null when setting the status of hasChanged, the staus of hasChanged when getting the status
+ */
+function hasChanged(status = null)
+{
+	if ([true, false].includes(status))
+	{
+		hasChanged.status = status;
+		return null;
+	}
+	else
+	{
+		hasChanged.status = typeof hasChanged.status === "undefined" ? false : hasChanged.status;
+		return hasChanged.status;
+	}
+}
 
 /**
  * Initializes some fields on the page.
  */
 async function initializeFields()
 {
+	/*	
+		Pour pouvoir ajouter une job dans le tableau des jobs d'une batch, la job doit être liée à cette batch ou 
+		n'être liée à aucune batch. Lors de l'ouverture de la page d'édition des batchs avec un identifiant numérique unique entier 
+		positif de batch spécifié en paramètre, la page est chargée avec les données de la batch spécifiée directement incluses dans 
+		le html. Cependant, lors de l'ouverture de la page avec l'identifiant unique numérique -1, on indique à la page qu'on désire  
+		créer une nouvelle batch. Il arrive qu'on ait à modifier les données d'une job incluse dans une batch, ce qui requiert 
+		d'ouvrir la page d'édition des jobs. Normalement, si on ne sauvegarde pas la batch dans la base de données avant de changer de 
+		page, on perd toutes les modifications apportées à la batch, y compris le fait d'y avoir ajouté une job. Afin de permettre 
+		une meilleure fluiditié, on permet d'effectuer la sauvegarde de la batch une seule fois après avoir apporté toutes les 
+		modifications désirées à la batch et à ses jobs associées. Afin d'y parvenir, à chaque fois qu'on entre dans une job, on 
+		sauvegarde l'état actuel de la batch dans les données de session du navigateur. Lors du retour à la page de la batch en question, 
+		si les données de session n'ont pas été écrasées par une autre batch entre temps, elles sont restaurées et on peut continuer à 
+		modifier la batch là où on était rendu.
+	*/
+
 	let sessionData = window.sessionStorage;
-	if(sessionData.getItem("__type") === "batch" && $("input#batchId").val() === sessionData.getItem("id"))
+	if(typeof sessionData.batch !== "undefined" && document.getElementById("batchId").value === JSON.parse(sessionData.batch).id)
 	{
 		try{
+			let mprStatus = document.getElementById("mprStatus").value;
 			await restoreSessionStorage();
+			document.getElementById("mprStatus").value = mprStatus;
 			initializeDates();
 			updateSessionStorage();
 		}
@@ -53,19 +116,14 @@ async function initializeFields()
 	}
 	else
 	{
-		// Fill the list of jobs.
 		try{
-			/* IMPORTANT!!! Pour pouvoir insérer les jobs dans le tableau sans message d'erreur pour job déjà liée à une batch, 
-			on met à jour les données de session afin qu'elles contiennent le nom de la batch au minimum. Par la suite, on les 
-			remet à jour à la fin de l'initialisation de la page.*/
-			updateSessionStorage();
-			await getJobs($("input#batchId").val());
-			updatePannelsList();
+			await getJobs(document.getElementById("batchId").value);
+			await updatePannelsList();
 			initializeDates();
 			updateSessionStorage();
 		}
 		catch(error){
-			showError("La restauration des données pour cett batch a échouée", error);
+			showError("La restauration des données pour cette batch a échouée", error);
 		}
 	}
 }
@@ -77,31 +135,30 @@ function initializeDates()
 {
 	let maximumEndDate = extrapolateMaxEndDate();
 	let maximumStartDate = maximumEndDate.isValid() ? extrapolateMaxEndDate().subtract(1, "days") : extrapolateMaxEndDate();
-	let currentStartDate = moment.tz($("input#startDate").val(), getExpectedMomentFormat(), "America/Montreal");
-	let currentEndDate = moment.tz($("input#endDate").val(), getExpectedMomentFormat(), "America/Montreal");
+	let currentStartDate = moment.tz(document.getElementById("startDate").value, getExpectedMomentFormat(), "America/Montreal");
+	let currentEndDate = moment.tz(document.getElementById("endDate").value, getExpectedMomentFormat(), "America/Montreal");
 	
 	let chronologicalCheck = currentEndDate.isValid() && maximumStartDate.isBefore(currentEndDate);
 	if(!currentStartDate.isValid() && maximumStartDate.isValid() && (chronologicalCheck || !currentEndDate.isValid()))
 	{
-		$("input#startDate").val(maximumStartDate.format(getExpectedMomentFormat()));
+		document.getElementById("startDate").value = maximumStartDate.format(getExpectedMomentFormat());
 	}
 	
 	chronologicalCheck = currentStartDate.isValid() && maximumEndDate.isAfter(currentStartDate);
 	if(!currentEndDate.isValid() && maximumEndDate.isValid() && (chronologicalCheck || !currentStartDate.isValid()))
 	{
-		$("input#endDate").val(maximumEndDate.format(getExpectedMomentFormat()));
+		document.getElementById("endDate").value = maximumEndDate.format(getExpectedMomentFormat());
 	}
 }
 
 /**
  * Returns the maximum end date of this batch (based upon the delivery dates of its underlying jobs).
- * @return Moment The maximum end date of this batch (or an empty string).
+ * @return {Moment} The maximum end date of this batch (or an empty string).
  */
 function extrapolateMaxEndDate()
 {
-	let dates = [];
-	$("table#orders >tbody >tr >td:nth-child(4)").each(function(){
-		dates.push(moment.tz($(this).text(), getExpectedMomentFormat(), "America/Montreal"));
+	let dates = [...document.getElementById("orders").getElementsByTagName("tbody")[0].getElementsByTagName("tr")].map(function(row){
+		return moment.tz(row.getElementsByTagName("td")[3].textContent, getExpectedMomentFormat(), "America/Montreal");
 	});
 	return (dates.length > 0) ? moment.max(dates) : moment.tz("", getExpectedMomentFormat(), "America/Montreal");
 }
@@ -110,11 +167,12 @@ function extrapolateMaxEndDate()
  * If the status of the Batch has changed, reloads the page.
  * @param {int} id The id of the current Batch
  */
-async function verifyStatus(id)
+async function verifyMprStatus(id)
 {
 	try{
-		let status = await retrieveBatchStatus(id);
-		if(status !== null && status !== window.sessionStorage.getItem("status"))
+		let mprStatus = await retrieveBatchMprStatus(id);
+		let sessionBatch = window.sessionStorage.batch;
+		if(typeof sessionBatch !== "undefined" && ![JSON.parse(sessionBatch).mprStatus, null, ""].includes(mprStatus))
 		{
 			window.location.reload();
 		}
@@ -131,8 +189,7 @@ async function verifyStatus(id)
 async function getJobs(batchId)
 {
 	try{
-		let jobs = await retrieveJobs(batchId);
-		await fillJobsList(jobs, false);
+		await fillJobsList(await retrieveJobs(batchId), false);
 	}
 	catch(error){
 		showError("La récupération des jobs de la batch a échouée", error);
@@ -158,7 +215,7 @@ function validateInformation(id, name, startDate, endDate, fullDay, material, bo
 {
 	let err = "";
 	
-	if(!isPositiveInteger(id) && id !== "" && id !== null)
+	if(!isPositiveInteger(id, true, true) && id !== "" && id !== null)
 	{
 		err += "L'identificateur unique doit être un entier positif.\n";
 	}
@@ -209,8 +266,8 @@ function validateInformation(id, name, startDate, endDate, fullDay, material, bo
 		err += "Les commentaires doivent être une donnée de type \"chaîne de caractère\".\n";
 	}
 	
-	jobIds.forEach(function(element){
-		if(!isPositiveInteger(element) || !element)
+	jobIds.forEach(function(jobId){
+		if(!isPositiveInteger(jobId, true, true) || !jobId)
 		{
 			err += "Erreur interne : les identifiants uniques des jobs doivent être des entiers positifs.\n";
 		}
@@ -223,7 +280,7 @@ function validateInformation(id, name, startDate, endDate, fullDay, material, bo
 	}
 	else
 	{
-		showError("Les informations du modèle-type ne sont pas valides", err);
+		showError("Les informations de la Batch ne sont pas valides", err);
 		return false;
 	}
 }
@@ -233,7 +290,7 @@ function validateInformation(id, name, startDate, endDate, fullDay, material, bo
  */
 function downloadConfirm()
 {
-	$("#downloadMsgModal").show();
+	document.getElementById("downloadMsgModal").style.display = "block";
 }
 
 /**
@@ -241,43 +298,41 @@ function downloadConfirm()
  */
 async function saveConfirm()
 {
-	let jobIds = [];
-	$("table#orders >tbody >tr >td.jobIdCell").each(function(){
-		jobIds.push($(this).text());
+	let materialSelect = document.getElementById("material");
+	let boardSizeSelect = document.getElementById("boardSize");
+	let statusSelect = document.getElementById("status");
+	let jobIds = [...document.getElementById("orders").getElementsByTagName("tbody")[0].getElementsByTagName("tr")].map(function(row){
+		return row.getElementsByClassName("jobIdCell")[0].textContent;
 	});
-	let startDate = moment($("#startDate").val(), "YYYY-MM-DDTHH:mm:ss").tz("America/Montreal");
-	let endDate = moment($("#endDate").val(), "YYYY-MM-DDTHH:mm:ss").tz("America/Montreal");
 	let args = [
-		$("#batchId").val(), $("#batchName").val(), startDate, endDate, $("#fullDay").val(), 
-		$("#material").val(), $("#boardSize").val(), $("#status").val(), $("#comments").val(), jobIds
+		document.getElementById("batchId").value, 
+		document.getElementById("batchName").value, 
+		moment(document.getElementById("startDate").value, "YYYY-MM-DDTHH:mm:ss").tz("America/Montreal"), 
+		moment(document.getElementById("endDate").value, "YYYY-MM-DDTHH:mm:ss").tz("America/Montreal"), 
+		new CheckBox(document.getElementById("fullDay")).getState() ? "Y" : "N", 
+		materialSelect.options[materialSelect.selectedIndex].value, 
+		boardSizeSelect.options[boardSizeSelect.selectedIndex].value, 
+		statusSelect.options[statusSelect.selectedIndex].value, 
+		document.getElementById("comments").value, 
+		jobIds
 	];
 	
 	if(validateInformation.apply(null, args)){
 		if(await askConfirmation("Sauvegarde de batch", "Voulez-vous vraiment sauvegarder cette batch?"))
 		{
-			$("#loadingModal").css({"display": "block"});
+			document.getElementById("loadingModal").style.display = "block";
 			try{
-				let id = await saveBatch.apply(null, args);
-				goToBatch(id);
+				goToBatch(await saveBatch.apply(null, args));
+				hasChanged(false);
 			}
 			catch(error){
 				showError("La sauvegarde de la batch a échouée", error);
 			}
 			finally{
-				$("#loadingModal").css({"display": "none"});
+				document.getElementById("loadingModal").style.display = "none";
 			}
 		}
 	}
-}
-
-/**
- * Toogles the value of a checkbox between "Y" and "N" ("Y" ideally meaning the checkbox is checked). It is then possible to use 
- * $(this).val() to get the value of the checkbox (whereas when submitting a form, you only get a value for a checked checkbox).
- * @this {jquery} The checkbox
- */
-function toogleCheckBox()
-{
-	$(this).val(($(this).val() === 'Y') ? 'N' : 'Y');
 }
 
 /**
@@ -286,7 +341,7 @@ function toogleCheckBox()
  */
 async function generateConfirm(action = 1)
 {
-	await generatePrograms($("#batchId").val(), action);
+	await generatePrograms(document.getElementById("batchId").value, action);
 }
 
 /**
@@ -298,7 +353,7 @@ async function generatePrograms(id, action = 1)
 {
 	if(compareWithSessionStorage())
 	{
-		$("#loadingModal").css({"display": "block"});
+		document.getElementById("loadingModal").style.display = "block";
 		try{
 			let downloadableFile = await downloadBatch(id, action);
 			if (action === 1)
@@ -315,14 +370,16 @@ async function generatePrograms(id, action = 1)
 			showError("La génération du programme d'usinage a échouée", error);
 		}
 		finally{
-			$("#loadingModal").css({"display": "none"});
+			document.getElementById("loadingModal").style.display = "none";
 		}
 	}
 	else
 	{
-		let message = "Des différences ont été trouvées entre les dernières données sauvegardées et les données " +
-		"actuelles. Veuillez sauvegarder ou recharger la page, puis réessayer."
-		showError("La génération des programmes a échouée", message);
+		showError(
+			"La génération des programmes a échouée", 
+			"Des différences ont été trouvées entre les dernières données sauvegardées et les données actuelles. " + 
+			"Veuillez sauvegarder ou recharger la page, puis réessayer."
+		);
 	}
 }
 
@@ -333,16 +390,16 @@ async function deleteConfirm()
 {
 	if(await askConfirmation("Suppression de batch", "Voulez-vous vraiment supprimer cette batch?"))
 	{
-		$("#loadingModal").css({"display": "block"});
+		document.getElementById("loadingModal").style.display = "block";
 		try{
-			await deleteBatch($("#batchId").val());
+			await deleteBatch(document.getElementById("batchId").value);
 			goToIndex();
 		}
 		catch(error){
 			showError("La suppression de la batch a échouée", error);
 		}
 		finally{
-			$("#loadingModal").css({"display": "none"});
+			document.getElementById("loadingModal").style.display = "none";
 		}
 	}
 }
@@ -352,18 +409,37 @@ async function deleteConfirm()
  */
 async function updatePannelsList()
 {
-	let materialId = parseInt($("select#material >option:selected").val());
+	let materialSelect = document.getElementById("material");
+	let materialId = parseInt(materialSelect.options[materialSelect.selectedIndex].value);
 	if(materialId !== 0)
 	{
 		try{
-			let pannelCodes = await retrievePannels($("select#material").val());
-			let value = $("select#boardSize").val();
+			let boardSizeSelect = document.getElementById("boardSize");
+			let boardSizeValue = boardSizeSelect.options[boardSizeSelect.selectedIndex].value;
+			
+			while(boardSizeSelect.childElementCount > 0)
+			{
+				boardSizeSelect.firstElementChild.remove();
+			}
+
+			let emptyOption = document.createElement("option")
+			emptyOption.textContent = "";
+			emptyOption.value = "";
+
+			boardSizeSelect.appendChild(emptyOption);
+			boardSizeSelect.value = "";
+			
+			let pannels = await retrievePannels(materialId);
+			pannels.map(function(pannelCode){
+				let option = document.createElement("option")
+				option.textContent = pannelCode;
+				option.value = pannelCode;
 				
-			$("select#boardSize").empty().append($("<option></option>").text("").val(""));
-			pannelCodes.map(function(pannelCode){
-				$("select#boardSize").append($("<option></option>").text(pannelCode).val(pannelCode));
+				boardSizeSelect.appendChild(option);
+				if(boardSizeSelect.options[boardSizeSelect.selectedIndex].value === "" && boardSizeValue === pannelCode){
+					boardSizeSelect.value = pannelCode;
+				}
 			});
-			$("select#boardSize").val(($("select#boardSize >option[value='" + value + "']").length > 0) ? value : "");
 		}
 		catch(error){
 			showError("Échec de la récupération de la liste des panneaux disponibles", error);
@@ -377,7 +453,7 @@ async function updatePannelsList()
  */
 function getExpectedMomentFormat()
 {
-	return ($("input#fullDay").val() === "Y") ? "YYYY-MM-DD" : "YYYY-MM-DDTHH:mm:ss";
+	return new CheckBox(document.getElementById("fullDay")).getState() ? "YYYY-MM-DD" : "YYYY-MM-DDTHH:mm:ss";
 }
 
 /**
@@ -386,16 +462,16 @@ function getExpectedMomentFormat()
  */
 function viewPrograms(batchId)
 {
-	window.open("/Planificateur/sections/visualiseur/index.php?id=" + batchId, "_blank");
+	window.open(ROOT_URL + "/sections/visualiseur/index.php?id=" + batchId, "_blank");
 }
 
 /**
  * Opens a job
- * @param {object} event An event generated by a click on the job's summary row.
+ * @param {int} jobId The unique identifier of the job to reach.
+ * @param {int} batchId The unique identifier of the current batch.
  */
-function openJobEvent(event)
+async function openJob(jobId, batchId)
 {
-	updateSessionStorage();
-	let batchId = (event.data.batchId !== null) ? event.data.batchId : -1;
-	window.location.assign("/Planificateur/sections/job/index.php?jobId=" + event.data.jobId + "&batchId=" + batchId);
+	await updateSessionStorage();
+	window.location.assign(ROOT_URL + "/sections/job/index.php?jobId=" + jobId + "&batchId=" + batchId);
 }

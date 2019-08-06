@@ -6,30 +6,30 @@
  * @param {int} jobId The job for which JobTypes must be retrieved
  * @return {Promise}
  */
-function retrieveJobTypes(jobId)
+function retrieveJob(jobId)
 {
 	return new Promise(function(resolve, reject){
-		$.ajax({
+		ajax.send({
 			"type": "GET",
 			"contentType": "application/json;charset=utf-8",
-			"url": "/Planificateur/sections/job/actions/getJobTypes.php",
+			"url": ROOT_URL + "/sections/job/actions/getJob.php",
 			"data": {"jobId": jobId},
 			"dataType": "json",
 			"async": true,
 			"cache": false,
-		})
-		.done(function(response){
-			if(response.status === "success")
-			{
-				resolve(response.success.data);
+			"onSuccess": function(response){
+				if(response.status === "success")
+				{
+					resolve(response.success.data);
+				}
+				else
+				{
+					reject(response.failure.message);
+				}
+			},
+			"onFailure": function(error){
+				reject(error);
 			}
-			else
-			{
-				reject(response.failure.message);
-			}
-		})
-		.fail(function(error){
-			reject(error.responseText);
 		});
 	});
 }
@@ -38,48 +38,56 @@ function retrieveJobTypes(jobId)
  * Parses a job based on the data on the page
  * @return {object} The job
  */
-function parseJobFromMetaData()
+async function parseJob()
 {
-	let job = {
-		"id" : $("input#job_id").val(), 
-		"deliveryDate": moment.tz($("input#date_livraison").val(), "YYYY-MM-DD", "America/Montreal"), 
-		"jobTypes": []
+	let jobTypes = await Promise.all([...document.getElementsByClassName("blockContainer")].map(async (block) => {
+		(await JobTypeBlock.build(block)).toSessionStorage();
+		let jobType = JSON.parse(window.sessionStorage.jobType);
+		let parametersHashTable = {};
+		jobType.parameters.map(function(parameter){
+			parametersHashTable[parameter.key] = parameter.value;
+		});
+		jobType.parameters = parametersHashTable;
+		return jobType;
+	}));
+
+	return {
+		"id" : document.getElementById("job_id").value, 
+		"deliveryDate": moment.tz(document.getElementById("date_livraison").value, "YYYY-MM-DD", "America/Montreal"), 
+		"jobTypes": jobTypes
 	};
-	$("div.blockContainer").each(function(){
-		job.jobTypes.push(updateJobTypePartsMetaData.apply($(this)).data());
-	});
-	return job;
 }
 
 /**
  * Saves the Job
  * @param {object} job The job to save
+ * @return {Promise}
  */
 function saveJob(job)
 {	
 	job.deliveryDate = job.deliveryDate.format("YYYY-MM-DD");
 	return new Promise(function(resolve, reject){
-		$.ajax({
+		ajax.send({
 			"type": "POST",
 			"contentType": "application/json;charset=utf-8",
-			"url": "/Planificateur/sections/job/actions/save.php",
-			"data": JSON.stringify(job),
+			"url": ROOT_URL + "/sections/job/actions/save.php",
+			"data": job,
 			"dataType": "json",
 			"async": true,
 			"cache": false,
-		})
-		.done(function(response){
-			if(response.status === "success")
-			{
-				resolve(response.success.data);
+			"onSuccess": function(response){
+				if(response.status === "success")
+				{
+					resolve(response.success.data);
+				}
+				else
+				{
+					reject(response.failure.message);
+				}
+			},
+			"onFailure": function(error){
+				reject(error);
 			}
-			else
-			{
-				reject(response.failure.message);
-			}
-		})
-		.fail(function(error){
-			reject(error.responseText);
 		});
 	});
 }

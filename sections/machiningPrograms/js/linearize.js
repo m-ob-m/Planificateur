@@ -7,13 +7,13 @@ async function simplifyProgram()
 {
 	let args = null;
 	
-	$("#loadingModal").css({"display": "block"});
+	document.getElementById("loadingModal").style.display = "block";
 	try{
-		let inputFilePath = $("input#inputFile")[0].files[0];
+		let inputFilePath = document.getElementById("inputFile").files[0];
 		if(inputFilePath !== "" && inputFilePath !== null && inputFilePath !== undefined)
 		{
 			let inputFile = await readFile(inputFilePath, "iso88591");
-			args = [inputFile, $("input#outputFileName").val()];
+			args = [inputFile, document.getElementById("outputFileName").value];
 			if(validateInformation.apply(null, args))
 			{
 				await linearize.apply(null, args);
@@ -28,7 +28,7 @@ async function simplifyProgram()
 		showError("La simplification du programme a échouée", error);
 	}
 	finally{
-		$("#loadingModal").css({"display": "none"});
+		document.getElementById("loadingModal").style.display = "none";
 	}
 }
 
@@ -43,27 +43,27 @@ async function simplifyProgram()
 function linearize(inputFile, outputFileName)
 {
 	return new Promise(function(resolve, reject){
-		$.ajax({
+		ajax.send({
 			"type": "POST",
 			"contentType": "application/json;charset=utf-8",
-			"url": "/Planificateur/sections/machiningPrograms/actions/linearize.php",
-			"data": JSON.stringify({"inputFile": inputFile, "outputFileName": outputFileName}),
+			"url": ROOT_URL + "/sections/machiningPrograms/actions/linearize.php",
+			"data": {"inputFile": inputFile, "outputFileName": outputFileName},
 			"dataType": "json",
 			"async": true,
-			"cache": false
-		})
-		.done(function(response){
-			if(response.status === "success")
-			{
-				resolve(response.success.data);
+			"cache": false,
+			"onSuccess": function(response){
+				if(response.status === "success")
+				{
+					resolve(response.success.data);
+				}
+				else
+				{
+					reject(response.failure.message);
+				}
+			},
+			"onFailure": function(error){
+				reject(error);
 			}
-			else
-			{
-				reject(response.failure.message);
-			}
-		})
-		.fail(function(error){
-			reject(error.responseText);
 		});
 	});
 }
@@ -106,6 +106,6 @@ function validateInformation(inputFile, outputFileName)
  */
 function guessOutputFileName()
 {
-	let inputFileName = $("input#inputFile").val().split(/(\\|\/)/g).pop();
-	$("input#outputFileName").val(inputFileName)
+	let inputFileName = document.getElementById("inputFile").value.split(/(\\|\/)/g).pop();
+	document.getElementById("outputFileName").value = inputFileName;
 }

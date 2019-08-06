@@ -10,9 +10,9 @@
 * \details 		Représente toutes les valeurs d'un modèle/type
 */
 
-include_once __DIR__ . '/../../../lib/config.php';	// Fichier de configuration
-include_once __DIR__ . '/../../../lib/connect.php';	// Classe de connection à la base de données
-include_once __DIR__ . '/modelTypeParameter.php'; // Classe de paramètres pour cet objet
+require_once __DIR__ . '/../../../lib/config.php';	// Fichier de configuration
+require_once __DIR__ . '/../../../lib/connect.php';	// Classe de connection à la base de données
+require_once __DIR__ . '/modelTypeParameter.php'; // Classe de paramètres pour cet objet
 
 class ModelType implements \JsonSerializable
 {
@@ -108,8 +108,8 @@ class ModelType implements \JsonSerializable
 	{
 	    $stmt = $db->getConnection()->prepare(
             "SELECT `dmd`.`paramKey` AS `key`, `dmd`.`paramValue` AS `value`
-            FROM `fabplan`.`door_model` AS `dm` 
-            INNER JOIN `fabplan`.`door_model_data` AS `dmd` 
+            FROM `door_model` AS `dm` 
+            INNER JOIN `door_model_data` AS `dmd` 
             ON `dmd`.`fkDoorType` = :typeNo AND `dmd`.`fkDoorModel` = `dm`.`id_door_model` 
                 AND `dm`.`id_door_model` = :modelId;"
         );
@@ -143,8 +143,8 @@ class ModelType implements \JsonSerializable
 	private function emptyInDatabase(\FabPlanConnection $db) : \ModelType
 	{
 	    $stmt = $db->getConnection()->prepare(
-            "DELETE `fabplan`.`door_model_data` FROM `fabplan`.`door_model_data` 
-			WHERE `fabplan`.`door_model_data`.`fkDoorModel` = :modelId AND `fabplan`.`door_model_data`.`fkDoorType` = :typeNo;"
+            "DELETE `door_model_data` FROM `door_model_data` 
+			WHERE `door_model_data`.`fkDoorModel` = :modelId AND `door_model_data`.`fkDoorType` = :typeNo;"
         );
 	    $stmt->bindValue(':modelId', $this->getModel()->getId(), \PDO::PARAM_INT);
 	    $stmt->bindValue(':typeNo', $this->getType()->getImportNo(), \PDO::PARAM_INT);

@@ -1,53 +1,71 @@
 <?php
-/**
- * \name		Planificateur de porte
-* \author    	Mathieu Grenier
-* \version		1.0
-* \date       	2017-01-18
-*
-* \brief 		Menu de validation des jobs
-* \details 		Ce menu permet de visualiser une job et d'en faire la validation
-*
-* Licence pour la vue :
-* 	Verti by HTML5 UP
-html5up.net | @ajlkn
-Free for personal and commercial use under the CCA 3.0 license (html5up.net/license)
-*/
+	/**
+	 * \name		Planificateur de porte
+	* \author    	Mathieu Grenier
+	* \version		1.0
+	* \date       	2017-01-18
+	*
+	* \brief 		Menu de validation des jobs
+	* \details 		Ce menu permet de visualiser une job et d'en faire la validation
+	*
+	* Licence pour la vue :
+	* 	Verti by HTML5 UP
+	html5up.net | @ajlkn
+	Free for personal and commercial use under the CCA 3.0 license (html5up.net/license)
+	*/
 
-/* INCLUDE */
-include_once __DIR__ . "/controller/jobController.php";		// Classe contrôleur de la classe Job
-include_once __DIR__ . "/../../parametres/model/controller/modelController.php";		// Classe contrôleur de la classe Modèle
-include_once __DIR__ . "/../../parametres/type/controller/typeController.php";		// Classe contrôleur de la classe Type
+	/* INCLUDE */
+	require_once __DIR__ . "/controller/jobController.php";		// Classe contrôleur de la classe Job
+	require_once __DIR__ . "/../../parametres/model/controller/modelController.php";		// Classe contrôleur de la classe Modèle
+	require_once __DIR__ . "/../../parametres/type/controller/typeController.php";		// Classe contrôleur de la classe Type
 
-$db = new \FabPlanConnection();
-$job = null;
-try
-{
-    $db->getConnection()->beginTransaction();
-    if(isset($_GET["jobId"]))
-    {
-        $job = \Job::withID($db, $_GET["jobId"]);
-        $models = (new \ModelController())->getModels();
-        $types = (new TypeController())->getTypes();
-    }
-    else
-    {
-        $job = new \Job();
-    }
-    $db->getConnection()->commit();
-}
-catch(\Exception $e)
-{
-    $db->getConnection()->rollback();
-    throw $e;
-}
-finally
-{
-    $db = null;
-}
+    // Initialize the session
+	session_start();
+                                                                        
+	// Check if the user is logged in, if not then redirect him to login page
+	if(!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true){
+		if(!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest')
+		{
+			throw new \Exception("You are not logged in.");
+		}
+		else
+		{
+			header("location: /Planificateur/lib/account/logIn.php");
+		}
+		exit;
+	}
 
-$batchId = $_GET["batchId"] ?? null;
+	// Closing the session to let other scripts use it.
+	session_write_close();
+    
+	$db = new \FabPlanConnection();
+	$job = null;
+	try
+	{
+		$db->getConnection()->beginTransaction();
+		if(isset($_GET["jobId"]))
+		{
+			$job = \Job::withID($db, $_GET["jobId"]);
+			$models = (new \ModelController())->getModels();
+			$types = (new TypeController())->getTypes();
+		}
+		else
+		{
+			$job = new \Job();
+		}
+		$db->getConnection()->commit();
+	}
+	catch(\Exception $e)
+	{
+		$db->getConnection()->rollback();
+		throw $e;
+	}
+	finally
+	{
+		$db = null;
+	}
 
+	$batchId = $_GET["batchId"] ?? "";
 ?>
 
 <!DOCTYPE HTML>
@@ -56,11 +74,11 @@ $batchId = $_GET["batchId"] ?? null;
 		<title>Fabridor - Validation</title>
 		<meta charset="utf-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1" />
-		<link rel="stylesheet" href="/Planificateur/assets/css/responsive.css" />
-		<link rel="stylesheet" href="/Planificateur/assets/css/fabridor.css" />
-		<link rel="stylesheet" href="/Planificateur/assets/css/parametersTable.css"/>
-		<link rel="stylesheet" href="/Planificateur/assets/css/imageButton.css">
-		<link rel="stylesheet" href="/Planificateur/assets/css/loader.css" />
+		<link rel="stylesheet" href="../../assets/css/responsive.css" />
+		<link rel="stylesheet" href="../../assets/css/fabridor.css" />
+		<link rel="stylesheet" href="../../assets/css/parametersTable.css"/>
+		<link rel="stylesheet" href="../../assets/css/imageButton.css">
+		<link rel="stylesheet" href="../../assets/css/loader.css" />
 	</head>
 	<body class="homepage">
     	<div id="page-wrapper">
@@ -70,29 +88,30 @@ $batchId = $_GET["batchId"] ?? null;
 					<!-- Logo -->
 					<div id="logo">
 						<h1>
-							<a href="/Planificateur/index.php"><img src="/Planificateur/images/fabridor.jpg"></a>
+							<a href="../../index.php"><img src="../../images/fabridor.jpg"></a>
 						</h1>
 						<div class="AL" style="line-height: 25px;float:right;padding:20px;">
 							<h3>Commande #<?= $job->getName(); ?></h3>
 							<label for="deliveryDate">Date de livraison : 
 								<input type="date" id="date_livraison" style="width:200px; height:24px;" 
-									value="<?= $job->getDeliveryDate(); ?>" onchange="dataHasChanged(true);">
+									value="<?= $job->getDeliveryDate(); ?>" onchange="hasChanged(true);">
 							</label>
 						</div>
 					</div>
 					
-    				<div style="display:inline-block; float:right;">
+    				<div style="float:right;">
     					<!-- Nav -->
-						<nav id="nav">
+						<nav id="nav" style="display: block;">
 							<ul>
 								<li>
 									<a href="javascript: void(0);" onclick="saveConfirm();" class="imageButton">
-										<img src="/Planificateur/images/save.png"> 
+										<img src="../../images/save.png"> 
 									Sauvegarder</a>
 								</li>
 								<li>
-									<a href="javascript: void(0);" onclick="goToBatch(<?= $batchId; ?>);" class="imageButton">
-										<img src="/Planificateur/images/exit.png">
+									<a href="javascript: void(0);" onclick="goToBatch(document.getElementById('batch_id').value);" 
+										class="imageButton">
+										<img src="../../images/exit.png">
 									Sortir</a>
 								</li>
 							</ul>
@@ -113,12 +132,12 @@ $batchId = $_GET["batchId"] ?? null;
 		
 		<!--  Fenêtre modale pour l'édition des paramètres -->
 		<div id="parametersEditor" class="modal">
-			<div class="modal-content" style="width: 70%;">
+			<div class="modal-content" style="width: 90%; flex-flow: column;">
 				<span class="editMenu">
-                    <img id="acceptEdit" src="/Planificateur/images/ok16.png" class="editIcon">
-                    <img id="cancelEdit" src="/Planificateur/images/cancel16.png" class="editIcon">
+                    <img id="acceptEdit" src="../../images/ok16.png" class="editIcon">
+                    <img id="cancelEdit" src="../../images/cancel16.png" class="editIcon">
                 </span>
-				<table class="parametersTable hoverEffectDisabled" style="margin-bottom: 20px;">
+				<table class="parametersTable hoverEffectDisabled" style="margin-bottom: 20px; flex: 0 1 auto;">
 					<thead>
 						<tr>
 							<th class="firstVisibleColumn lastVisibleColumn" colspan=2>Modèle et type de porte</th>
@@ -148,8 +167,7 @@ $batchId = $_GET["batchId"] ?? null;
 						<tr id="parametersEditorMprFileSelectionRow" style="display: none;">
 							<td class="firstVisibleColumn" style="width: 10%;">Fichier mpr</td>
 							<td class="lastVisibleColumn">
-								<input type="file" value=""
-									onchange="readMpr.apply($(this).prop('files')[0], $('#parametersEditionTextArea'));">
+								<input id="mprFileSelectionInputBox" type="file" value="">
 							</td>
 						</tr>
 						<tr>
@@ -159,8 +177,8 @@ $batchId = $_GET["batchId"] ?? null;
 						</tr>
 					</tbody>
 				</table>
-				<div id="customFileTableBody" style="display: none;">
-					<textarea id=mprFileContents style="resize: none; width: 100%; height: 100%;"></textarea>
+				<div id="customFileTableBody" style="display: none; flex: 1 1 auto;">
+					<textarea id=mprFileContents style="resize: none; width: 100%; height: 100%; line-height: 1.5;"></textarea>
 				</div>
 				<table id="parametersArray" class="parametersTable hoverEffectDisabled">
 					<thead>
@@ -179,21 +197,21 @@ $batchId = $_GET["batchId"] ?? null;
 		</div>
 		
 		<!--  Fenêtre modale pour changement de bloc -->
-		<div id="moveBetweenBlocksModal" class="modal" onclick='$(this).css({"display": "none"});' >
+		<div id="partOperationsModal" class="modal" onclick='this.style.display = "none";' >
 			<div class="modal-content" style='color:#FF0000;'>
 				<h4>Déplacer vers un autre bloc</h4>
-				<div id="blocksList"></div>
+				<div id="jobTypeBlocksList"></div>
 				<h1>Cliquer sur cette fenêtre pour la fermer</h1>
 			</div>
 		</div>
 		
 		<!--  Fenêtre modale pour messages d'erreur -->
-		<div id="errMsgModal" class="modal" onclick='$(this).css({"display": "none"});' >
+		<div id="errMsgModal" class="modal" onclick='this.style.display = "none";' >
 			<div id="errMsg" class="modal-content" style='color:#FF0000;'></div>
 		</div>
 		
 		<!--  Fenêtre modale pour messages de validation -->
-		<div id="validationMsgModal" class="modal" onclick='$(this).css({"display": "none"});' >
+		<div id="validationMsgModal" class="modal" onclick='this.style.display = "none";' >
 			<div id="validationMsg" class="modal-content" style='color:#FF0000;'></div>
 		</div>
 		
@@ -203,19 +221,18 @@ $batchId = $_GET["batchId"] ?? null;
 		</div>	
 	
 		<!-- Scripts -->
-		<script src="/Planificateur/assets/js/moment.min.js"></script>
-		<script src="/Planificateur/assets/js/moment-timezone.js"></script>
-		<script src="/Planificateur/assets/js/jquery.min.js"></script>
-		<script src="/Planificateur/assets/js/jquery.dropotron.min.js"></script>
-		<script src="/Planificateur/assets/js/skel.min.js"></script>
-		<script src="/Planificateur/assets/js/util.js"></script>
-		<script src="/Planificateur/assets/js/main.js"></script>
-		<script src="/Planificateur/js/main.js"></script>
-		<script src="/Planificateur/js/toolbox.js"></script>
-		<script src="js/index.js"></script>
-		<script src="js/job.js"></script>
-		<script src="js/jobType.js"></script>
-		<script src="js/main.js"></script>
-		<script src="js/parameterEditor.js"></script>
+		<script type="text/javascript" src="../../assets/js/ajax.js"></script>
+		<script type="text/javascript" src="../../assets/js/docReady.js"></script>
+		<script type="text/javascript" src="../../assets/js/moment.min.js"></script>
+		<script type="text/javascript" src="../../assets/js/moment-timezone.js"></script>
+		<script type="text/javascript" src="../../js/main.js"></script>
+		<script type="text/javascript" src="../../js/toolbox.js"></script>
+		<script type="text/javascript" src="js/index.js"></script>
+		<script type="text/javascript" src="js/job.js"></script>
+		<script type="text/javascript" src="js/jobTypeBlock.js"></script>
+		<script type="text/javascript" src="js/jobTypePartRow.js"></script>
+		<script type="text/javascript" src="js/jobTypeParameterRow.js"></script>
+		<script type="text/javascript" src="js/main.js"></script>
+		<script type="text/javascript" src="js/parameterEditor.js"></script>
 	</body>
 </html>

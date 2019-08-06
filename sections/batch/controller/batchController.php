@@ -13,9 +13,9 @@
 /*
  * Includes
 */
-include_once __DIR__ . '/../../../lib/config.php';		// Fichier de configuration
-include_once __DIR__ . '/../../../lib/connect.php';	    // Classe de connection à la base de données
-include_once __DIR__ . '/../model/batch.php';			// Classe d'une batch
+require_once __DIR__ . '/../../../lib/config.php';		// Fichier de configuration
+require_once __DIR__ . '/../../../lib/connect.php';	    // Classe de connection à la base de données
+require_once __DIR__ . '/../model/batch.php';			// Classe d'une batch
 
 class BatchController
 {
@@ -62,7 +62,7 @@ class BatchController
     {
         $stmt = $this->getDBConnection()->getConnection()->prepare("
             SELECT `b`.`id`
-            FROM `fabplan`.`batch` AS `b`
+            FROM `batch` AS `b`
             ORDER BY `t`.`id` " . (($ascending === true) ? "ASC" : "DESC") .
             (($quantity === 0) ? "" : " LIMIT :quantity OFFSET :offset") .
             "FOR SHARE;"

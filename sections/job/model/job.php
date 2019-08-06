@@ -9,15 +9,16 @@
  * \details 	Modele de la table job
  */
 
-include_once __DIR__ . '/job_type.php';	// Classe d'un type de job
-include_once __DIR__ . '/job_type_porte.php';	// Classe d'une porte de type
-include_once __DIR__ . "/../../batch/model/batch.php"; // Classe d'une batch
+require_once __DIR__ . '/job_type.php';	// Classe d'un type de job
+require_once __DIR__ . '/job_type_porte.php';	// Classe d'une porte de type
+require_once __DIR__ . "/../../batch/model/batch.php"; // Classe d'une batch
 
-class Job implements JsonSerializable
+class Job implements \JsonSerializable
 {	
 	private $_id;
 	private $_name;
 	private $_deliveryDate;
+	private $_customerPurchaseOrderNumber;
 	private $_status;
 	private $_timestamp;
 	private $_jobTypes;	// Array de job types
@@ -27,22 +28,24 @@ class Job implements JsonSerializable
 	 * Job constructor
 	 *
 	 * @param int $id The id of the Job in the database
-	 * @param int $name The name of the Job (must be unique)
-	 * @param int $deliveryDate The delivery date of the job
-	 * @param int $status The status of the Job ("E" = Entered, "G" = Generated, "T" = Done)
+	 * @param string $name The name of the Job (must be unique)
+	 * @param string $deliveryDate The delivery date of the job
+	 * @param string $customerPurchaseOrderNumber The customer's purchase order number for this Job
+	 * @param string $status The status of the Job ("E" = Entered, "G" = Generated, "T" = Done)
 	 * @param string $timestamp A timestamp of the last modification applied to this Job (leave null)
 	 * @param string $parameters An array containing the JobTypeParameters objects associated with this JobType.
 	 *
 	 * @throws
 	 * @author Marc-Olivier Bazin-Maurice
-	 * @return JobType
+	 * @return \Job
 	 */
-	public function __construct(?int $id = null, ?string $name = null, ?string $deliveryDate = null, ?string $status = null,
-	    ?string $timestamp = null, array $jobTypes = array())
+	public function __construct(?int $id = null, ?string $name = null, ?string $deliveryDate = null, 
+		?string $customerPurchaseOrderNumber  = null, ?string $status = null, ?string $timestamp = null, array $jobTypes = array())
 	{
 	    $this->setId($id);
 	    $this->setName($name);
-	    $this->setDeliveryDate($deliveryDate);
+		$this->setDeliveryDate($deliveryDate);
+		$this->setCustomerPurchaseOrderNumber($customerPurchaseOrderNumber);
 	    $this->setStatus($status);
 	    $this->setTimestamp($timestamp);
 	    $this->setJobtypes($jobTypes);
@@ -58,15 +61,15 @@ class Job implements JsonSerializable
 	 *
 	 * @throws
 	 * @author Marc-Olivier Bazin-Maurice
-	 * @return Job The Job associated to the specified ID in the specified database
+	 * @return \Job The Job associated to the specified ID in the specified database
 	 */
 	static function withID(FabPlanConnection $db, int $id, int $databaseConnectionLockingReadType = 0) : ?\Job
 	{
 	    // Récupérer le test
 	    $stmt = $db->getConnection()->prepare(
-            "SELECT `j`.`numero` AS `name`, `j`.`date_livraison` AS `deliveryDate`, `j`.`etat` AS `status`, 
-                `j`.`estampille` AS `timestamp`
-            FROM `fabplan`.`job` AS `j` WHERE `j`.`id_job` = :id " . 
+            "SELECT `j`.`numero` AS `name`, `j`.`date_livraison` AS `deliveryDate`, `j`.`customerPO` AS `customerPO`, 
+				`j`.`etat` AS `status`, `j`.`estampille` AS `timestamp`
+            FROM `job` AS `j` WHERE `j`.`id_job` = :id " . 
 	        (new \MYSQLDatabaseLockingReadTypes($databaseConnectionLockingReadType))->toLockingReadString() . ";"
         );
 	    $stmt->bindValue(':id', $id, PDO::PARAM_INT);
@@ -74,7 +77,7 @@ class Job implements JsonSerializable
 	    
 	    if ($row = $stmt->fetch())
 	    {
-	        $instance = new self($id, $row["name"], $row["deliveryDate"], $row["status"], $row["timestamp"]);
+	        $instance = new self($id, $row["name"], $row["deliveryDate"], $row["customerPO"], $row["status"], $row["timestamp"]);
 	    }
 	    else
 	    {
@@ -84,9 +87,9 @@ class Job implements JsonSerializable
 	    //Récupérer les paramètres
 	    $stmt = $db->getConnection()->prepare(
             "SELECT `jt`.`id_job_type` AS `id` 
-            FROM `fabplan`.`job_type` AS `jt` 
+            FROM `job_type` AS `jt` 
             WHERE `jt`.`job_id` = :id 
-            ORDER BY `jt`.`type_no` ASC, `jt`.`door_model_id` ASC " . 
+            ORDER BY `jt`.`id_job_type` ASC " . 
 	        (new \MYSQLDatabaseLockingReadTypes($databaseConnectionLockingReadType))->toLockingReadString() . ";"
         );
 	    $stmt->bindValue(':id', $id, PDO::PARAM_INT);
@@ -109,15 +112,15 @@ class Job implements JsonSerializable
 	 *
 	 * @throws
 	 * @author Marc-Olivier Bazin-Maurice
-	 * @return Job The Job associated to the specified name in the specified database
+	 * @return \Job The Job associated to the specified name in the specified database
 	 */
 	static function withName(FabPlanConnection $db, string $name, int $databaseConnectionLockingReadType = 0) : ?\Job
 	{
 	    // Récupérer le Job
 	    $stmt = $db->getConnection()->prepare("
-            SELECT `j`.`id_job` AS `id`, `j`.`date_livraison` AS `deliveryDate`, `j`.`etat` AS `status`, 
-                `j`.`estampille` AS `timestamp`
-            FROM `fabplan`.`job` AS `j` WHERE `j`.`numero` = :name " . 
+			SELECT `j`.`id_job` AS `id`, `j`.`date_livraison` AS `deliveryDate`, `j`.`customerPO` AS `customerPO`, 
+				`j`.`etat` AS `status`, `j`.`estampille` AS `timestamp`
+            FROM `job` AS `j` WHERE `j`.`numero` = :name " . 
             (new \MYSQLDatabaseLockingReadTypes($databaseConnectionLockingReadType))->toLockingReadString() . ";"
         );
 	    $stmt->bindValue(':name', $name, PDO::PARAM_INT);
@@ -125,7 +128,7 @@ class Job implements JsonSerializable
 	    
 	    if ($row = $stmt->fetch())
 	    {
-	        $instance = new self($row["id"], $name, $row["deliveryDate"], $row["status"], $row["timestamp"]);
+	        $instance = new self($row["id"], $name, $row["deliveryDate"], $row["customerPO"], $row["status"], $row["timestamp"]);
 	    }
 	    else
 	    {
@@ -135,7 +138,7 @@ class Job implements JsonSerializable
 	    //Récupérer les JobType
 	    $stmt = $db->getConnection()->prepare(
             "SELECT `jt`.`id_job_type` AS `id` 
-            FROM `fabplan`.`job_type` AS `jt` 
+            FROM `job_type` AS `jt` 
             WHERE `jt`.`job_id` = :id 
             ORDER BY `jt`.`type_no` ASC, `jt`.`door_model_id` ASC " . 
 	        (new \MYSQLDatabaseLockingReadTypes($databaseConnectionLockingReadType))->toLockingReadString() . ";"
@@ -164,7 +167,7 @@ class Job implements JsonSerializable
 	public function save(FabPlanConnection $db) : Job
 	{
 	    $stmt = $db->getConnection()->prepare("
-            SELECT `j`.* FROM `fabplan`.`job` AS `j` WHERE `j`.`id_job` = :id LIMIT 1;
+            SELECT `j`.* FROM `job` AS `j` WHERE `j`.`id_job` = :id LIMIT 1;
         ");
 	    $stmt->bindValue(':id', $this->getId(), PDO::PARAM_INT);
 	    $stmt->execute();
@@ -213,11 +216,12 @@ class Job implements JsonSerializable
 	private function insert(FabPlanConnection $db) : Job
 	{
 	    $stmt = $db->getConnection()->prepare("
-            INSERT INTO `fabplan`.`job` (`numero`, `date_livraison`, `etat`)
-            VALUES (:name, :deliveryDate, :status);
+            INSERT INTO `job` (`numero`, `date_livraison`, `customerPO`, `etat`)
+            VALUES (:name, :deliveryDate, :customerPO, :status);
         ");
 	    $stmt->bindValue(':name', $this->getName(), PDO::PARAM_STR);
-	    $stmt->bindValue(':deliveryDate', $this->getDeliveryDate(), PDO::PARAM_STR);
+		$stmt->bindValue(':deliveryDate', $this->getDeliveryDate(), PDO::PARAM_STR);
+		$stmt->bindValue(':customerPO', $this->getCustomerPurchaseOrderNumber(), \PDO::PARAM_STR);
 	    $stmt->bindValue(':status', $this->getStatus(), PDO::PARAM_STR);
 	    $stmt->execute();
 	    $this->setId(intval($db->getConnection()->lastInsertId()));
@@ -243,15 +247,16 @@ class Job implements JsonSerializable
 	private function update(\FabPlanConnection $db) : \Job
 	{
 	    $stmt = $db->getConnection()->prepare("
-            UPDATE `fabplan`.`job`
-            SET `numero` = :name, `date_livraison` = :deliveryDate, `etat` = :status
+            UPDATE `job`
+            SET `numero` = :name, `date_livraison` = :deliveryDate, `customerPO` = :customerPO, `etat` = :status
             WHERE `id_job` = :id;
         ");
-	    $stmt->bindValue(':id', $this->getId(), PDO::PARAM_INT);
-	    $stmt->bindValue(':name', $this->getName(), PDO::PARAM_STR);
-	    $stmt->bindValue(':deliveryDate', $this->getDeliveryDate(), PDO::PARAM_STR);
-	    $stmt->bindValue(':status', $this->getStatus(), PDO::PARAM_STR);
-	    $success = $stmt->execute();
+	    $stmt->bindValue(':id', $this->getId(), \PDO::PARAM_INT);
+	    $stmt->bindValue(':name', $this->getName(), \PDO::PARAM_STR);
+		$stmt->bindValue(':deliveryDate', $this->getDeliveryDate(), \PDO::PARAM_STR);
+		$stmt->bindValue(':customerPO', $this->getCustomerPurchaseOrderNumber(), \PDO::PARAM_STR);
+	    $stmt->bindValue(':status', $this->getStatus(), \PDO::PARAM_STR);
+	    $stmt->execute();
 	    
 	    /* @var \JobType $jobType */
 	    foreach($this->_jobTypes as $jobType)
@@ -280,7 +285,7 @@ class Job implements JsonSerializable
 	    }
 	    else
 	    {
-    	    $stmt = $db->getConnection()->prepare("DELETE FROM `fabplan`.`job` WHERE `id_job` = :id;");
+    	    $stmt = $db->getConnection()->prepare("DELETE FROM `job` WHERE `id_job` = :id;");
     	    $stmt->bindValue(':id', $this->getId(), PDO::PARAM_INT);
     	    $stmt->execute();
 	    }
@@ -300,7 +305,7 @@ class Job implements JsonSerializable
 	public function getTimestampFromDatabase(\FabPlanConnection $db) : ?string
 	{
 	    $stmt= $db->getConnection()->prepare("
-            SELECT `j`.`estampille` FROM `fabplan`.`job` AS `j` WHERE `j`.`id_job` = :id;
+            SELECT `j`.`estampille` FROM `job` AS `j` WHERE `j`.`id_job` = :id;
         ");
 	    $stmt->bindValue(':id', $this->getId(), PDO::PARAM_INT);
 	    $stmt->execute();
@@ -327,7 +332,7 @@ class Job implements JsonSerializable
 	private function emptyInDatabase(\FabPlanConnection $db) : \Job
 	{
 	    $stmt = $db->getConnection()->prepare("
-            SELECT `jt`.`id_job_type` AS `jobTypeId` FROM `fabplan`.`job_type` AS `jt` 
+            SELECT `jt`.`id_job_type` AS `jobTypeId` FROM `job_type` AS `jt` 
             WHERE `jt`.`job_id` = :id;
 	    ");
 	    $stmt->bindValue(':id', $this->getId(), PDO::PARAM_INT);
@@ -356,9 +361,9 @@ class Job implements JsonSerializable
 	{
 	    $stmt = $db->getConnection()->prepare(
             "SELECT `b`.`id_batch` AS `batchId` 
-            FROM `fabplan`.`job` AS `j`
-            INNER JOIN `fabplan`.`batch_job` AS `bj` ON `bj`.`job_id` = `j`.`id_job`
-            INNER JOIN `fabplan`.`batch` AS `b` ON `b`.`id_batch` = `bj`.`batch_id`
+            FROM `job` AS `j`
+            INNER JOIN `batch_job` AS `bj` ON `bj`.`job_id` = `j`.`id_job`
+            INNER JOIN `batch` AS `b` ON `b`.`id_batch` = `bj`.`batch_id`
             WHERE `j`.`id_job` = :id " . 
 	        (new \MYSQLDatabaseLockingReadTypes($this->getDatabaseConnectionLockingReadType()))->toLockingReadString() . ";"
         );
@@ -416,6 +421,21 @@ class Job implements JsonSerializable
 	public function setDeliveryDate(?string $deliveryDate = null) : Job
 	{
 	    $this->_deliveryDate = $deliveryDate;
+	    return $this;
+	}
+
+	/**
+	 * Set the customer's purchase order number of this Job.
+	 *
+	 * @param int $customerPurchaseOrderNumber The customer's purchase order number of this Job.
+	 *
+	 * @throws
+	 * @author Marc-Olivier Bazin-Maurice
+	 * @return \Job This Job (for method chaining)
+	 */
+	public function setCustomerPurchaseOrderNumber(?string $customerPurchaseOrderNumber = null) : \Job
+	{
+	    $this->_customerPurchaseOrderNumber = $customerPurchaseOrderNumber;
 	    return $this;
 	}
 	
@@ -505,13 +525,25 @@ class Job implements JsonSerializable
 	 *
 	 * @throws
 	 * @author Marc-Olivier Bazin-Maurice
-	 * @return int The timestamp of the last modification date of this Job
+	 * @return string The timestamp of the last modification date of this Job
 	 */
 	public function getTimestamp() : ?string
 	{
 	    return $this->_timestamp;
 	}
 	
+	/**
+	 * Get the customer's purchase order number of this Job.
+	 *
+	 * @throws
+	 * @author Marc-Olivier Bazin-Maurice
+	 * @return string The customer's purchase order number of this Job
+	 */
+	public function getCustomerPurchaseOrderNumber() : ?string
+	{
+	    return $this->_customerPurchaseOrderNumber;
+	}
+
 	/**
 	 * Get the status of this Job.
 	 *

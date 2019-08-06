@@ -12,7 +12,7 @@ function validateInformation(id, description, copyParametersFrom)
 {
 		let err = "";
 		
-		if(!isPositiveInteger(id) && id !== "" && id!== null)
+		if(!isPositiveInteger(id, true, true) && id !== "" && id!== null)
 		{
 			err += "L'identificateur unique doit être un entier positif. ";
 		}
@@ -22,7 +22,7 @@ function validateInformation(id, description, copyParametersFrom)
 			err += "Description manquante. ";
 		}
 		
-		if(!isPositiveInteger(copyParametersFrom) && copyParametersFrom && copyParametersFrom.length !== 0)
+		if(!isPositiveInteger(copyParametersFrom, true, true) && copyParametersFrom && copyParametersFrom.length !== 0)
 		{
 			err += "Un modèle invalide a été choisi pour la copie des paramètres. ";
 		}
@@ -44,17 +44,19 @@ function validateInformation(id, description, copyParametersFrom)
  */
 async function saveConfirm()
 {
+	let copyParametersFromSelect = document.getElementById("copyParametersFrom");
+	let selectedIndex = (copyParametersFromSelect !== null) ? copyParametersFromSelect.selectedIndex : null;
 	let args = [
-		$("#id").val(), 
-		$("#description").val(), 
-		$("#copyParametersFrom").val()
+		document.getElementById("id").value, 
+		document.getElementById("description").value, 
+		(selectedIndex !== null) ? copyParametersFromSelect.options[selectedIndex].value : null
 	];
 	
 	if(validateInformation.apply(null, args))
 	{
 		if(await askConfirmation("Sauvegarde de modèle", "Voulez-vous vraiment sauvegarder ce modèle?"))
 		{
-			$("#loadingModal").css({"display": "block"});
+			document.getElementById("loadingModal").style.display = "block";
 			try{
 				let id = await saveModel.apply(null, args);
 				openModel(id);
@@ -64,7 +66,7 @@ async function saveConfirm()
 				showError("La sauvegarde du modèle a échouée", error);
 			}
 			finally{
-				$("#loadingModal").css({"display": "none"});
+				document.getElementById("loadingModal").style.display = "none";
 			}
 		}
 	}
@@ -81,34 +83,33 @@ async function saveConfirm()
 function saveModel(id, description, copyParametersFrom)
 {
 	return new Promise(function(resolve, reject){
-		$.ajax({
-	    	"url": "/Planificateur/parametres/model/actions/save.php",
-	        "type": "POST",
-	        "contentType": "application/json;charset=utf-8",
-	        "data": JSON.stringify({
-	        	"id": (id !== "") ? id : null, 
-	        	"description": description, 
-	        	"copyParametersFrom": (copyParametersFrom !== "") ? copyParametersFrom : null, 
-	        	"exists": $("#id").is(":disabled")
-	        }),
-	        "dataType": 'json',
-	        "async": true,
-	        "cache": false
-	     })
-	     .done(function(response){
-			if(response.status === "success")
-			{
-				resolve(response.success.data);
+		ajax.send({
+			"url": ROOT_URL + "/parametres/model/actions/save.php",
+			"type": "POST",
+			"contentType": "application/json;charset=utf-8",
+			"data": {
+				"id": (id !== "") ? id : null, 
+				"description": description, 
+				"copyParametersFrom": (copyParametersFrom !== "") ? copyParametersFrom : null
+			},
+			"dataType": 'json',
+			"async": true,
+			"cache": false,
+			"onSuccess": function(response){
+				if(response.status === "success")
+				{
+					resolve(response.success.data);
+				}
+				else
+				{
+					reject(response.failure.message);
+				}
+			},
+			"onFailure": function(error){
+				reject(error);
 			}
-			else
-			{
-				reject(response.failure.message);
-			}
-		})
-		.fail(function(error){
-			reject(error.responseText);
-		});
-     });
+	  });
+  });
 }
 
 /**
@@ -118,9 +119,9 @@ async function deleteConfirm()
 {
 	if(await askConfirmation("Suppression de modèle", "Voulez-vous vraiment supprimer ce modèle?"))
 	{
-		$("#loadingModal").css({"display": "block"});
+		document.getElementById("loadingModal").style.display = "block";
 		try{
-			await deleteModel($("#id").val());
+			await deleteModel(document.getElementById("id").value);
 			goToIndex();
 		}
 		catch(error)
@@ -128,7 +129,7 @@ async function deleteConfirm()
 			showError("La suppression du modèle a échouée", error);
 		}
 		finally{
-			$("#loadingModal").css({"display": "none"});
+			document.getElementById("loadingModal").style.display = "none";
 		}
 	}
 }
@@ -142,29 +143,29 @@ async function deleteConfirm()
 function deleteModel(id)
 {
 	return new Promise(function(resolve, reject){
-		$.ajax({
-			"url": "/Planificateur/parametres/model/actions/delete.php",
+		ajax.send({
+			"url": ROOT_URL + "/parametres/model/actions/delete.php",
 			"type": "POST",
 			"contentType": "application/json;charset=utf-8",
-			"data": JSON.stringify({"id": id}),
+			"data": {"id": id},
 			"dataType": "json",
 			"async": true,
-			"cache": false
-	    })
-	    .done(function(response){
-			if(response.status === "success")
-			{
-				resolve(response.success.data);
+			"cache": false,
+			"onSuccess": function(response){
+				if(response.status === "success")
+				{
+					resolve(response.success.data);
+				}
+				else
+				{
+					reject(response.failure.message);
+				}
+			},
+			"onFailure": function(error){
+				reject(error);
 			}
-			else
-			{
-				reject(response.failure.message);
-			}
-		})
-		.fail(function(error){
-			reject(error.responseText);
-		});
-    });
+	  });
+  });
 }
 
 /**

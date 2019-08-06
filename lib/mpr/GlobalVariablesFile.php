@@ -1,7 +1,7 @@
 <?php
     namespace MprGlobalParameters
     {
-        include_once __DIR__ . "/../config.php";
+        require_once __DIR__ . "/../config.php";
         
         /**
          * \MprGlobalParameters\MprGlobalParametersFile
