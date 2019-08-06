@@ -8,24 +8,43 @@
      * \brief 		Met à jour les programmes unitaires des combinaisons modèle-type spécifiées
      */
     
-    include_once __DIR__ . '/../../../lib/mpr/mprCutRite.php';  // Créateur de MPR pour CutRite
-    include_once __DIR__ . '/../../test/controller/testController.php'; //Contrôleur de Test
-    include_once __DIR__ . '/../../model/controller/modelController.php'; //Contrôleur de Modele
-    include_once __DIR__ . '/../../type/controller/typeController.php'; //Contrôleur de Type
-    include_once __DIR__ . '/../../generic/controller/genericController.php'; //Contrôleur de Type
-    include_once __DIR__ . '/../../varmodtypegen/controller/modelTypeGenericController.php'; //Contrôleur de Type
-    include_once __DIR__ . '/../../../lib/config.php';	// Fichier de configuration
-    include_once __DIR__ . '/../../../lib/connect.php';	// Classe de connection à la base de données
-    include_once __DIR__ . "/../../../lib/fileFunctions/fileFunctions.php"; //Fonctions sur les fichiers
-    
     // Structure de retour vers javascript
     $responseArray = array("status" => null, "success" => array("data" => null), "failure" => array("message" => null));
-    
-    set_time_limit(3600); // Pour éviter les erreurs de dépassement du temps alloué, on augmente le temps alloué.
     
     $lock = null;
     try
     {
+        require_once __DIR__ . '/../../../lib/mpr/mprCutRite.php';  // Créateur de MPR pour CutRite
+        require_once __DIR__ . '/../../test/controller/testController.php'; //Contrôleur de Test
+        require_once __DIR__ . '/../../model/controller/modelController.php'; //Contrôleur de Modele
+        require_once __DIR__ . '/../../type/controller/typeController.php'; //Contrôleur de Type
+        require_once __DIR__ . '/../../generic/controller/genericController.php'; //Contrôleur de Type
+        require_once __DIR__ . '/../../varmodtypegen/controller/modelTypeGenericController.php'; //Contrôleur de Type
+        require_once __DIR__ . '/../../../lib/config.php';	// Fichier de configuration
+        require_once __DIR__ . '/../../../lib/connect.php';	// Classe de connection à la base de données
+        require_once __DIR__ . "/../../../lib/fileFunctions/fileFunctions.php"; //Fonctions sur les fichiers
+        
+        // Initialize the session
+        session_start();
+                                
+        // Check if the user is logged in, if not then redirect him to login page
+        if(!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true){
+            if(!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest')
+            {
+                throw new \Exception("You are not logged in.");
+            }
+            else
+            {
+                header("location: /Planificateur/lib/account/logIn.php");
+            }
+            exit;
+        }
+    
+        // Closing the session to let other scripts use it.
+        session_write_close();
+
+        set_time_limit(3600); // Pour éviter les erreurs de dépassement du temps alloué, on augmente le temps alloué.
+
         $lockName = sys_get_temp_dir() . "/MAJModeleUnitaire.tmp";
         if(!$lock = fopen($lockName, 'c'))
         {
@@ -173,7 +192,7 @@
         $generic = $type->getGeneric();
         
         // Créer le fichier mpr.
-        $mpr = new \mprCutrite($_SERVER['DOCUMENT_ROOT'] . "\\" . _GENERICPROGRAMSDIRECTORY . $generic->getFilename());
+        $mpr = new \mprCutrite(__DIR__ . "/../../../lib/" . $generic->getFilename());
         $mpr->extractMprBlocks();
         try 
         {

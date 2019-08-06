@@ -1,5 +1,5 @@
 <?php
-include_once __DIR__ . "/../../../lib/numberFunctions/numberFunctions.php";
+require_once __DIR__ . "/../../../lib/numberFunctions/numberFunctions.php";
 
 /**
  * \name		Porte

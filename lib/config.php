@@ -9,12 +9,12 @@
      */
     
     /*
-     * Paramètres de connection à la base de données de FabPlan
+     * Paramètres de connexion à la base de données de FabPlan
      */
     define('DB_HOST', "127.0.0.1");
     define('DB_USER', "root");
     define('DB_PASS', "Cuisine123");
-    define('DB_NAME', "FabPlan");
+    define('DB_NAME', "fabplan");
     
     /*
      * Paramètre des chemins d'accès aux répertoires de CutRite
@@ -50,4 +50,12 @@
      * Chemin du fichier d'origine des paramètres globaux des fichiers mpr
      */
     define('WWGLOB_VAR', "C:\\MACHINE1\\a1\\ml4\\wwglob.var");
+
+    /*
+     * Paramètres de connexion au répertoires d'impression d'étiquettes
+     */
+    define('LABEL_PRINT_SERVER_SHARE_INTERNAL_PATH', "Print_Server");
+    define('LABEL_PRINT_SERVER_SHARE_DOMAIN', "");
+    define('LABEL_PRINT_SERVER_SHARE_USERNAME', "Print_Server");
+    define('LABEL_PRINT_SERVER_SHARE_PASSWORD', "qwerty");
 ?>

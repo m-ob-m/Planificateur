@@ -15,9 +15,28 @@
      */
     
     /* INCLUDE */
-    include_once __DIR__ . '/../type/controller/typeController.php';		// Classe contrôleur la Type
-    include_once __DIR__ . '/../model/controller/modelController.php';		// Classe contrôleur de Model
-    include_once __DIR__ . '/../test/controller/testController.php';        // Classe contrôleur de Test
+    require_once __DIR__ . '/../type/controller/typeController.php';		// Classe contrôleur la Type
+    require_once __DIR__ . '/../model/controller/modelController.php';		// Classe contrôleur de Model
+	require_once __DIR__ . '/../test/controller/testController.php';        // Classe contrôleur de Test
+	
+	// Initialize the session
+	session_start();
+        
+	// Check if the user is logged in, if not then redirect him to login page
+	if(!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true){
+		if(!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest')
+		{
+			throw new \Exception("You are not logged in.");
+		}
+		else
+		{
+			header("location: /Planificateur/lib/account/logIn.php");
+		}
+		exit;
+	}
+
+	// Closing the session to let other scripts use it.
+	session_write_close();
     
     $types = array();
     $models = array();
@@ -28,8 +47,8 @@
         $db->getConnection()->beginTransaction();
         $types = (new \TypeController())->getTypes();
         $models = (new \ModelController())->getModels();
-        $defaultModel = $models[0];
-        $defaultType = $types[0];
+        $defaultModel = $models[0] ?? null;
+        $defaultType = $types[0] ?? null;
         $test = isset($_GET["id"]) ? \Test::withID($db, $_GET["id"]) : new \Test(null, "", $defaultModel, $defaultType);
         $db->getConnection()->commit();
     }
@@ -52,12 +71,12 @@
 		<title>Fabridor - Création de tests</title>
 		<meta charset="UTF-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1" />
-		<link rel="stylesheet" href="/Planificateur/assets/css/responsive.css" />
-		<link rel="stylesheet" href="/Planificateur/assets/css/fabridor.css" />
-		<link rel="stylesheet" href="/Planificateur/assets/css/parametersTable.css" />
-		<link rel="stylesheet" href="/Planificateur/assets/css/loader.css" />
-		<link rel="stylesheet" href="/Planificateur/assets/css/parametersForm.css" />
-		<link rel="stylesheet" href="/Planificateur/assets/css/imageButton.css">
+		<link rel="stylesheet" href="../../assets/css/responsive.css" />
+		<link rel="stylesheet" href="../../assets/css/fabridor.css" />
+		<link rel="stylesheet" href="../../assets/css/parametersTable.css" />
+		<link rel="stylesheet" href="../../assets/css/loader.css" />
+		<link rel="stylesheet" href="../../assets/css/parametersForm.css" />
+		<link rel="stylesheet" href="../../assets/css/imageButton.css">
 	</head>
 	<body class="homepage">
 		<div id="page-wrapper">
@@ -73,25 +92,25 @@
 						</h1>
 						<span>Création de tests</span>
 					</div>
-					<div style="display:inline-block;float:right;">
+					<div style="float:right;">
     					<!-- Nav -->
-    					<nav id="nav">
+    					<nav id="nav" style="display: block;">
     						<ul>
     							<li>
     								<a href="javascript: void(0);" onclick="saveConfirm();" class="imageButton">
-    									<img src="/Planificateur/images/save.png">
+    									<img src="../../images/save.png">
     								Sauvegarder</a>
     							</li>
     							<?php if($test->getId() !== null): ?>
         							<li>
         								<a href="javascript: void(0);" onclick="deleteConfirm();" class="imageButton">
-        									<img src="/Planificateur/images/cancel16.png">
+        									<img src="../../images/cancel16.png">
         								Supprimer</a>
         							</li>
     							<?php endif; ?>
     							<li>
     								<a href="index.php" class="imageButton">
-    									<img src="/Planificateur/images/exit.png">
+    									<img src="../../images/exit.png">
     								Sortir</a>
     							</li>
     						</ul>
@@ -104,12 +123,11 @@
 			<div id="features-wrapper">
 				<div id="parametersFormContainer" class="container">
 					<!-- Sélection du modèle/type dont on veut éditer les paramètres par défaut -->
-					<form id="parametersForm" class="parametersForm" action="javascript: void(0);" 
-						onsubmit="refreshParameters();">
+					<form id="parametersForm" class="parametersForm" action="javascript: void(0);">
 						<div class="formContainer">
         					<div class="hFormElement">
             					<label for="type">Type : 
-                					<select id="type" <?= $disabled; ?> onchange="$('#parametersForm').submit();">
+                					<select id="type" <?= $disabled; ?> onchange="refreshParameters();">
                 						<?php foreach($types as $type):?>
                 							<?php $typeNo = $type->getImportNo(); ?>
                 							<?php $testTypeImportNo = $test->getType()->getImportNo(); ?>
@@ -123,7 +141,7 @@
                 			</div>
                 			<div class="hFormElement">
             					<label for="model">Modèle : 
-                        			<select id="model" <?= $disabled; ?> onchange="$('#parametersForm').submit();">
+                        			<select id="model" <?= $disabled; ?> onchange="refreshParameters();">
                 					<?php foreach($models as $model):?>
                 						<?php if($model->getId() >= 2): ?>
                 							<?php $modelId = $model->getId(); ?>
@@ -162,12 +180,12 @@
 		</div>
 		
 		<!--  Fenetre Modal pour message d'erreurs -->
-		<div id="errMsgModal" class="modal" onclick='$(this).css({"display": "none"});'>
+		<div id="errMsgModal" class="modal" onclick='this.style.display = "none";'>
 			<div id="errMsg" class="modal-content" style='color:#FF0000;'></div>
 		</div>
 		
 		<!--  Fenetre Modal pour message de validation -->
-		<div id="validationMsgModal" class="modal" onclick='$(this).css({"display": "none"});'>
+		<div id="validationMsgModal" class="modal" onclick='this.style.display = "none";'>
 			<div id="validationMsg" class="modal-content" style='color:#FF0000;'></div>
 		</div>
 		
@@ -177,13 +195,10 @@
 		</div>		
 		
 		<!-- Scripts -->
-		<script type="text/javascript" src="/Planificateur/assets/js/jquery.min.js"></script>
-		<script type="text/javascript" src="/Planificateur/assets/js/jquery.dropotron.min.js"></script>
-		<script type="text/javascript" src="/Planificateur/assets/js/skel.min.js"></script>
-		<script type="text/javascript" src="/Planificateur/assets/js/util.js"></script>
-		<script type="text/javascript" src="/Planificateur/assets/js/main.js"></script>
-		<script type="text/javascript" src="/Planificateur/js/main.js"></script>
-		<script type="text/javascript" src="/Planificateur/js/toolbox.js"></script>
+		<script type="text/javascript" src="../../assets/js/ajax.js"></script>
+		<script type="text/javascript" src="../../assets/js/docReady.js"></script>
+		<script type="text/javascript" src="../../js/main.js"></script>
+		<script type="text/javascript" src="../../js/toolbox.js"></script>
 		<script type="text/javascript" src="js/main.js"></script>
 		<script type="text/javascript" src="js/view.js"></script>
 		<script type="text/javascript" src="js/test.js"></script>

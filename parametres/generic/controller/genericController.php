@@ -13,9 +13,9 @@
 /*
  * Includes
 */
-include_once __DIR__ .  '/../../../lib/config.php';	// Fichier de configuration
-include_once __DIR__ .  '/../../../lib/connect.php';	// Classe de connection à la base de données
-include_once __DIR__ .  '/../model/generic.php';	// Classe de matériel
+require_once __DIR__ .  '/../../../lib/config.php';	// Fichier de configuration
+require_once __DIR__ .  '/../../../lib/connect.php';	// Classe de connection à la base de données
+require_once __DIR__ .  '/../model/generic.php';	// Classe de matériel
 
 class GenericController
 {
@@ -55,7 +55,7 @@ class GenericController
 	{
 	    $stmt = $this->getDBConnection()->getConnection()->prepare("
             SELECT `g`.`id`
-            FROM `fabplan`.`generics` AS `g`
+            FROM `generics` AS `g`
             ORDER BY `g`.`id` " . (($ascending === true) ? "ASC" : "DESC") . " " . 
 	        (($quantity === 0) ? "" : "LIMIT :quantity OFFSET :offset") . " " . 
 	        "FOR SHARE;"

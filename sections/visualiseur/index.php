@@ -9,8 +9,27 @@
     * \details 		Menu qui visualise les panneaux de Nest
     */
     
-    include_once __DIR__ . "/../batch/controller/batchController.php";
-    include_once __DIR__ . "/model/collectionPanneaux.php";
+    require_once __DIR__ . "/../batch/controller/batchController.php";
+    require_once __DIR__ . "/model/collectionPanneaux.php";
+   
+    // Initialize the session
+    session_start();
+                                                                            
+    // Check if the user is logged in, if not then redirect him to login page
+    if(!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true){
+        if(!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest')
+        {
+            throw new \Exception("You are not logged in.");
+        }
+        else
+        {
+            header("location: /Planificateur/lib/account/logIn.php");
+        }
+        exit;
+    }
+
+    // Closing the session to let other scripts use it.
+    session_write_close();
     
     $error = null;
     $batch = null;
@@ -110,10 +129,10 @@
 		<title><?= $batch->getName(); ?></title>
 		<meta charset="utf-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1" />
-		<link rel="stylesheet" href="/Planificateur/assets/css/responsive.css" />
-		<link rel="stylesheet" href="/Planificateur/assets/css/fabridor.css" />
-		<link rel="stylesheet" href="/Planificateur/assets/css/parametersTable.css"/>
-		<link rel="stylesheet" href="/Planificateur/assets/css/imageButton.css">
+		<link rel="stylesheet" href="../../assets/css/responsive.css" />
+		<link rel="stylesheet" href="../../assets/css/fabridor.css" />
+		<link rel="stylesheet" href="../../assets/css/parametersTable.css"/>
+		<link rel="stylesheet" href="../../assets/css/imageButton.css">
 	</head>
 	<body style="background-image: none; background-color: #FFFFFF;">
 		<div style="display: flex; flex-flow: row;">
@@ -123,15 +142,15 @@
         			<div class="pannelContainer" style="page-break-after: always;">
                     	<!-- Entete de navigation (on veut l'avoir sur chaque page lors de l'impression) -->
                     	<div style="width: 100%; margin-top: 2px; margin-bottom: 2px; text-align: center; overflow: hidden;">
-                    		<button title="Premier" class="no-print" onclick="goToFirst();">&lt;&lt;</button>
-                    		<button title="Précédent" class="no-print" onclick="goToPrevious();">&lt;</button>
+                            <button title="Premier" class="no-print goToFirst">&lt;&lt;</button>
+                            <button title="Précédent" class="no-print goToPrevious">&lt;</button>
                     		<div id="index" style="display: inline-block; border: 1px black solid; padding: 2px;"><?= 
                                 ($index + 1) . " / " . count($collection->getPanneaux()); 
                             ?></div>
-                    		<button title="Suivant" class="no-print" onclick="goToNext();">&gt;</button>
-                    		<button title="Dernier" class="no-print" onclick="goToLast();">&gt;&gt;</button>
-                    		<button class="no-print" onclick="printPannel();">Imprimer</button>
-                    		<button class="no-print" onclick="printAllPannels();">Imprimer tout</button> 
+                            <button title="Suivant" class="no-print goToNext">&gt;</button>
+                            <button title="Dernier" class="no-print goToLast">&gt;&gt;</button>
+                    		<button class="no-print printSingle">Imprimer</button>
+                    		<button class="no-print printAll">Imprimer tout</button> 
                     		<div id="quantity" style="display: inline-block; border: 1px black solid; padding: 2px;">Qté : <?= 
                                 $panneau->getQuantite(); 
                             ?></div>
@@ -139,7 +158,7 @@
                                 $batch->getName(); 
                              ?></div>
                     		<button class="no-print" onclick="window.close();" style="float: right; margin-right: 2px;">
-                    			<img src="/Planificateur/images/exit.png" style="width: 16px; height: 16px;">
+                    			<img src="../../images/exit.png" style="width: 16px; height: 16px;">
                     		Sortir</button>
                     	</div>
                     	
@@ -160,11 +179,10 @@
                     				    <?php $t = $porte->getViewTop() - 30; // Haut de pièce décalé de 30px vers le bas. ?>
     									<?php $w = $porte->getViewHeight(); ?>
                     				    <?php $h = $porte->getViewWidth(); ?>
-    									<div class="porte no-print" onclick="displayDoorProperties(<?= $idjtp; ?>);" 
-    										style="left: <?= $l; ?>px; top: <?= $t; ?>px; width: <?= $w; ?>px;
-    											 height: <?= $h; ?>px;">
+    									<div class="porte no-print" data-id="<?= $idjtp; ?>" 
+    										style="left: <?= $l; ?>px; top: <?= $t; ?>px; width: <?= $w; ?>px; height: <?= $h; ?>px;">
                         					<?= $porte->getNoCommande(); ?><br>
-                        					<?= $porte->getModele(); ?><br>
+                        					<?= \Model::withID(new \FabplanConnection(), $porte->getModele())->getDescription(); ?><br>
                         					<?= $porte->getHauteurPo() . " X " . $porte->getLargeurPo(); ?>
                         				</div>
                         			<?php endforeach; ?>
@@ -183,9 +201,9 @@
         		<table class="parametersTable" style="width: 100%;">
             		<thead>
                 		<tr>
-                			<td>Propriétés de la porte</td>
+                			<td style="padding-left: 5px; padding-right: 5px;">Propriétés de la porte</td>
                 			<td>
-                				<img src="/Planificateur/images/closewin.png" onclick="closePropertiesWindow();" 
+                				<img id="propertiesWindowCloseButton" src="../../images/closewin.png" 
                 					style="float: right; padding-right: 2px; cursor: pointer;">
                 			</td>
                 		</tr>
@@ -197,17 +215,15 @@
     	</div>
     	
     	<!--  Fenêtre modale pour messages d'erreur -->
-		<div id="errMsgModal" class="modal" onclick='$(this).css({"display": "none"})'>
+		<div id="errMsgModal" class="modal" onclick='this.style.display = "none";'>
 			<div id="errMsg" class="modal-content" style='color:#FF0000;'></div>
 		</div>
     	
-    	<script src="/Planificateur/assets/js/jquery.min.js"></script>
-		<script src="/Planificateur/assets/js/jquery.dropotron.min.js"></script>
-		<script src="/Planificateur/assets/js/skel.min.js"></script>
-		<script src="/Planificateur/assets/js/util.js"></script>
-		<script src="/Planificateur/assets/js/main.js"></script>
-		<script src="/Planificateur/js/main.js"></script>
-		<script src="/Planificateur/js/toolbox.js"></script>
-		<script src="/Planificateur/sections/visualiseur/js/main.js"></script>
+    	<script type="text/javascript" src="../../assets/js/ajax.js"></script>
+		<script type="text/javascript" src="../../assets/js/docReady.js"></script>
+		<script type="text/javascript" src="../../js/main.js"></script>
+		<script type="text/javascript" src="../../js/toolbox.js"></script>
+        <script type="text/javascript" src="js/viewer.js"></script>
+        <script type="text/javascript" src="js/index.js"></script>
 	</body>
 </html>	

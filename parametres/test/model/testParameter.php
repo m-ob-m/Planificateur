@@ -9,7 +9,7 @@
  * \details 	Modele de testTypeParameter
  */
 
-include_once __DIR__ . "/../../varmodtypegen/model/modelTypeGenericParameter.php";
+require_once __DIR__ . "/../../varmodtypegen/model/modelTypeGenericParameter.php";
 
 class TestParameter  extends Parameter implements JsonSerializable
 {

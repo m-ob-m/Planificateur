@@ -13,9 +13,9 @@
 /*
  * Includes
 */
-include_once __DIR__ . '/../../../lib/config.php';		// Fichier de configuration
-include_once __DIR__ . '/../../../lib/connect.php';	    // Classe de connection à la base de données
-include_once __DIR__ . '/../model/job.php';			// Classe d'une job
+require_once __DIR__ . '/../../../lib/config.php';		// Fichier de configuration
+require_once __DIR__ . '/../../../lib/connect.php';	    // Classe de connection à la base de données
+require_once __DIR__ . '/../model/job.php';			// Classe d'une job
 
 class JobController
 {
@@ -59,7 +59,7 @@ class JobController
     function getJobByName(string $name) : ?Job
     {
         $stmt = $this->getDBConnection()->getConnection()->prepare("
-            SELECT `j`.`id_job` AS `id` FROM `fabplan`.`job` AS `j` 
+            SELECT `j`.`id_job` AS `id` FROM `job` AS `j` 
             WHERE `j`.`numero` = :name;
         ");
         $stmt->bindValue(":name", $name, \PDO::PARAM_STR);
@@ -90,7 +90,7 @@ class JobController
     {
         $stmt = $this->getDBConnection()->getConnection()->prepare("
             SELECT `j`.`id`
-            FROM `fabplan`.`job` AS `j`
+            FROM `job` AS `j`
             ORDER BY `j`.`id_job` " . (($ascending === true) ? "ASC" : "DESC") .
             (($quantity === 0) ? "" : " LIMIT :quantity OFFSET :offset") .
             ";"

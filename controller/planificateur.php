@@ -1,9 +1,9 @@
 <?php
 
-include_once __DIR__ . '/../lib/config.php';		// Fichier de configuration
-include_once __DIR__ . '/../lib/connect.php';	// Classe de connection à la base de données
-include_once __DIR__ . '/../sections/batch/model/batch.php'; //Classe modèle de batch
-include_once __DIR__ . '/../sections/job/model/job.php';
+require_once __DIR__ . '/../lib/config.php';		// Fichier de configuration
+require_once __DIR__ . '/../lib/connect.php';	// Classe de connection à la base de données
+require_once __DIR__ . '/../sections/batch/model/batch.php'; //Classe modèle de batch
+require_once __DIR__ . '/../sections/job/model/job.php';
 
 /**
  * \name		PlanificateurController
@@ -73,50 +73,40 @@ class PlanificateurController
 		
 		//  Retrieve batches between specified boundaries.
 		$this->_db->getConnection()->beginTransaction();
-		$stmt1 = $this->_db->getConnection()->prepare('
-            SELECT `b`.`id_batch` AS `id`, `b`.`nom_batch` AS `name`, `b`.`date_debut` AS `startDate`, 
-                `b`.`date_fin` AS `endDate`, `b`.`jour_complet` AS `fullDay`, `b`.`commentaire` AS `comments`, 
-                `b`.`etat` AS `status`, `b`.`etat_mpr` AS `mprStatus`, `b`.`carrousel` AS `carrousel`, 
-                `b`.`estampille` AS `timestamp`
-            FROM `fabplan`.`batch` AS `b`
+		$stmt = $this->_db->getConnection()->prepare('
+            SELECT `b`.`id_batch` AS `batchId`, `b`.`nom_batch` AS `batchName`, `b`.`date_debut` AS `batchStartDate`, 
+                `b`.`date_fin` AS `batchEndDate`, `b`.`jour_complet` AS `batchFullDay`, 
+                `b`.`commentaire` AS `batchComments`, `b`.`etat` AS `batchStatus`, `b`.`etat_mpr` AS `batchMprStatus`, 
+                `b`.`carrousel` AS `batchCarrousel`, `b`.`estampille` AS `batchTimestamp`, `j`.`numero` AS `jobName`
+			FROM `batch` AS `b`
+			INNER JOIN `batch_job` AS `bj` ON `b`.`id_batch` = `bj`.`batch_id`
+            INNER JOIN `job` AS `j` ON `bj`.`job_id` = `j`.`id_job`
             WHERE `b`.`date_debut` BETWEEN :start AND :end 
-            ORDER BY `b`.`id_batch` DESC
-            FOR SHARE;
+            ORDER BY `b`.`id_batch` DESC;
         ');
-		$stmt1->bindValue(':start', $start->format('Y/m/d'), PDO::PARAM_STR);
-		$stmt1->bindValue(':end', $end->format('Y/m/d'), PDO::PARAM_STR);
-		$stmt1->execute();
+		$stmt->bindValue(':start', $start->format('Y/m/d'), PDO::PARAM_STR);
+		$stmt->bindValue(':end', $end->format('Y/m/d'), PDO::PARAM_STR);
+		$stmt->execute();
 		
         // Add batches to object
-        while ($batchRow = $stmt1->fetch())
+        while ($row = $stmt->fetch())
         {
-            $batch = new StdClass();
-            $batch->id = $batchRow["id"];
-            $batch->name = $batchRow["name"];
-            $batch->start = $batchRow["startDate"];
-            $batch->end = $batchRow["endDate"];
-            $batch->fullDay = $batchRow["fullDay"];
-            $batch->status = $batchRow["status"];
-            $batch->jobs = array();
-            
-            $stmt2 = $this->_db->getConnection()->prepare('
-                SELECT `j`.`numero` AS `name`
-                FROM `fabplan`.`batch` AS `b`
-                INNER JOIN `fabplan`.`batch_job` AS `bj` ON `b`.`id_batch` = `bj`.`batch_id`
-                INNER JOIN `fabplan`.`job` AS `j` ON `bj`.`job_id` = `j`.`id_job`
-                WHERE `b`.`id_batch` = :batchId
-                ORDER BY `j`.`numero` ASC
-                FOR SHARE;
-            ');
-            $stmt2->bindValue(':batchId', $batch->id, PDO::PARAM_INT);
-            $stmt2->execute();
-            
-            while ($jobRow = $stmt2->fetch())
-            {
-                array_push($batch->jobs, $jobRow["name"]);
-            }
-            
-            array_push($this->_batches, $batch);
+			if(empty($this->batches) || end($this->batches)->id !== $row["batchId"])
+			{
+				$this->_batches[] = (object)array(
+					"id" => $row["batchId"],
+					"name" => $row["batchName"],
+					"start" => $row["batchStartDate"],
+					"end" => $row["batchEndDate"],
+					"fullDay" => $row["batchFullDay"],
+					"status" => $row["batchStatus"],
+					"jobs" => array($row["jobName"])
+				);
+			}
+			else
+			{
+				end($this->batches)->jobs[] = $row["jobName"];
+			}
         }
         $this->_db->getConnection()->commit();
         

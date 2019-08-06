@@ -14,8 +14,27 @@
     Free for personal and commercial use under the CCA 3.0 license (html5up.net/license)
     */
     
-    include_once __DIR__ . "/controller/batchController.php";
-    include_once __DIR__ . "/../../parametres/materiel/controller/materielCtrl.php";
+    require_once __DIR__ . "/controller/batchController.php";
+    require_once __DIR__ . "/../../parametres/materiel/controller/materielCtrl.php";
+    
+    // Initialize the session
+	session_start();
+                                                                        
+	// Check if the user is logged in, if not then redirect him to login page
+	if(!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true){
+		if(!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest')
+		{
+			throw new \Exception("You are not logged in.");
+		}
+		else
+		{
+			header("location: /Planificateur/lib/account/logIn.php");
+		}
+		exit;
+	}
+
+	// Closing the session to let other scripts use it.
+	session_write_close();
     
     $batch = null;
     $materials = null;
@@ -117,11 +136,11 @@
 		<title>Fabridor - Batch</title>
 		<meta charset="utf-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1" />
-		<link rel="stylesheet" href="/Planificateur/assets/css/responsive.css" />
-		<link rel="stylesheet" href="/Planificateur/assets/css/fabridor.css" />
-		<link rel="stylesheet" href="/Planificateur/assets/css/parametersTable.css" />
-		<link rel="stylesheet" href="/Planificateur/assets/css/imageButton.css" />
-		<link rel="stylesheet" href="/Planificateur/assets/css/loader.css" />
+		<link rel="stylesheet" href="../../assets/css/responsive.css" />
+		<link rel="stylesheet" href="../../assets/css/fabridor.css" />
+		<link rel="stylesheet" href="../../assets/css/parametersTable.css" />
+		<link rel="stylesheet" href="../../assets/css/imageButton.css" />
+		<link rel="stylesheet" href="../../assets/css/loader.css" />
 	</head>
 	<body class="homepage">
 		<div id="page-wrapper">
@@ -131,34 +150,34 @@
 					<div id="logo">
 						<h1>
 							<a href="index.php">
-								<img src="/Planificateur/images/fabridor.jpg">
+								<img src="../../images/fabridor.jpg">
 							</a>
 						</h1>
 						<span>Nest de production</span>
 					</div>
-					<div style="display: inline-block;float: right;">
-						<nav id="nav">
+					<div style="float: right;">
+						<nav id="nav" style="display: block;">
 							<ul>
 								<li>
 									<a href="javascript: void(0);" onclick="saveConfirm();" class="imageButton">
-										<img src="/Planificateur/images/save.png"> 
+										<img src="../../images/save.png"> 
 									Sauvegarder</a>
 								</li>
 								<?php if($id !==  null): ?>
 									<li>
 										<a href="javascript: void(0);" onclick="downloadConfirm();" class="imageButton">
-											<img src="/Planificateur/images/download.png"> 
+											<img src="../../images/download.png"> 
 										Télécharger</a>
 									</li>
     								<li>
     									<a href="javascript: void(0);" onclick="deleteConfirm();" class="imageButton">
-    										<img src="/Planificateur/images/cancel16.png"> 
+    										<img src="../../images/cancel16.png"> 
     									Supprimer</a>
     								</li>
 								<?php endif; ?>
 								<li>
 									<a href="javascript: void(0);" onclick="goToIndex();" class="imageButton">
-										<img src="/Planificateur/images/exit.png"> 
+										<img src="../../images/exit.png"> 
 									Sortir</a>
 								</li>
 							</ul>
@@ -213,8 +232,7 @@
             							<label style="cursor: pointer;">
             								<?php $fullDayChecked = $isFullDay ? "checked" : ""; ?>
             								<?php $fullDayValue = $isFullDay ? "Y" : "N"; ?>
-            								<input type="checkbox" id="fullDay" value="<?= $fullDayValue; ?>" 
-            								    <?= $fullDayChecked; ?>>
+            								<input type="checkbox" id="fullDay" <?= $fullDayChecked; ?>>
             							Toute la journée</label>
             						</td>
             					</tr>
@@ -272,39 +290,42 @@
         							</td>
         						</tr>
         						<tr>
-        							<td class="firstVisibleColumn" style="background-color: #c6e0b4;">Optimisation</td>
+									<td class="firstVisibleColumn" style="background-color: #c6e0b4;">Optimisation</td>
+									<td style="display: none;">
+										<input id="mprStatus" value=<?= $batch->getMprStatus(); ?>>
+									</td>
         							<?php if($batch->getMprStatus() === "N"): ?>
-										<td id="mprStatus" class="etatRouge lastVisibleColumn">
-											<div style="width: max-content; display: inline-block; float: left;">
+										<td class="etatRouge lastVisibleColumn">
+											<div style="width: max-content; float: left;">
 												<p style="margin-bottom: 0px;">Non téléchargé</p>
 											</div>
 											<a class="imageButton" href="javascript: void(0);" onclick="generateConfirm();"
 												style="width: max-content; float: right; text-decoration: underline;">
-												<img src="/Planificateur/images/download.png" style="margin-right: 2px;">
+												<img src="../../images/download.png" style="margin-right: 2px;">
 											Télécharger</a>
 										</td>
 									<?php elseif($batch->getMprStatus() === "A"): ?>
-										<td id="mprStatus" class="etatJaune lastVisibleColumn">En attente</td>
+										<td class="etatJaune lastVisibleColumn">En attente</td>
 									<?php elseif($batch->getMprStatus() === "P"): ?>
-										<td id="mprStatus" class="etatBleu lastVisibleColumn">En cours</td>
+										<td class="etatBleu lastVisibleColumn">En cours</td>
 									<?php elseif($batch->getMprStatus() === "E"): ?>
-										<td id="mprStatus" class="etatRouge lastVisibleColumn">Erreur</td>
+										<td class="etatRouge lastVisibleColumn">Erreur</td>
 									<?php elseif($batch->getMprStatus() === "G"): ?>
-										<td id="mprStatus" class="etatVert lastVisibleColumn">
+										<td class="etatVert lastVisibleColumn">
 											<p style="float: left; width: min-content;">Prêt</p>
 											<a class="imageButton" href="#" onclick="viewPrograms(<?= $id; ?>); return false;" 
 												style="float: right; color: black; text-decoration: underline; width: auto;">
-												<img src="/Planificateur/images/search16.png" style="margin-right: 2px;">
+												<img src="../../images/search16.png" style="margin-right: 2px;">
 											Visualiser</a>
 										</td>
 									<?php else: ?>
-										<td id="mprStatus" class="etatRouge lastVisibleColumn">
-											<div style="width: max-content; display: inline-block; float: left;">
+										<td class="etatRouge lastVisibleColumn">
+											<div style="width: max-content; float: left;">
 												<p style="margin-bottom: 0px;">Non téléchargé</p>
 											</div>
 											<a class="imageButton" href="javascript: void(0);" onclick="generateConfirm();"
 												style="width: max-content; float: right; text-decoration: underline;">
-												<img src="/Planificateur/images/download.png" style="margin-right: 2px;">
+												<img src="../../images/download.png" style="margin-right: 2px;">
 											Télécharger</a>
 										</td>
     								<?php endif; ?>
@@ -388,7 +409,7 @@
     					</table>
     					<br>
     					<!-- ### COMMANDES DU NEST ### -->
-    					<table id="orders" class="parametersTable" style="width=100%;">
+    					<table id="orders" class="parametersTable" style="width:100%;">
     						<thead>	
     							<tr>
     								<th class="firstVisibleColumn lastVisibleColumn" colspan="4">Commandes du nest</th>
@@ -426,17 +447,17 @@
 		</div>
 
 		<!--  Fenêtre Modal pour message d'erreurs -->
-		<div id="errMsgModal" class="modal" onclick='$(this).css({"display": "none"});' >
+		<div id="errMsgModal" class="modal" onclick='this.style.display = "none";' >
 			<div id="errMsg" class="modal-content" style='color: #FF0000;'></div>
 		</div>
 		
 		<!--  Fenêtre Modal pour message de validation -->
-		<div id="validationMsgModal" class="modal" onclick='$(this).css({"display": "none"});' >
+		<div id="validationMsgModal" class="modal" onclick='this.style.display = "none";' >
 			<div id="validationMsg" class="modal-content" style='color: #FF0000;'></div>
 		</div>
 		
 		<!--  Fenêtre Modale pour envoi des données pour génération des programmes -->
-		<div id="downloadMsgModal" class="modal" onclick='$(this).css({"display": "none"});' 
+		<div id="downloadMsgModal" class="modal" onclick='this.style.display = "none";' 
 			style="color: #FF0000; text-align: center;">
 			<div id="downloadMsg" class="modal-content">
 				<h4>Choisissez une option</h4>
@@ -455,19 +476,17 @@
 			<div id="loader" class="loader modal-content"></div>
 		</div>
 
-		<script src="/Planificateur/assets/js/moment.min.js"></script>
-		<script src="/Planificateur/assets/js/moment-timezone.js"></script>
-		<script src="/Planificateur/assets/js/jquery.min.js"></script>
-		<script src="/Planificateur/assets/js/jquery.dropotron.min.js"></script>
-		<script src="/Planificateur/assets/js/skel.min.js"></script>
-		<script src="/Planificateur/assets/js/util.js"></script>
-		<script src="/Planificateur/assets/js/main.js"></script>
-		<script src="/Planificateur/js/main.js"></script>
-		<script src="/Planificateur/js/toolbox.js"></script>
-		<script src="/Planificateur/sections/batch/js/batch.js"></script>
-		<script src="/Planificateur/sections/batch/js/index.js"></script>
-		<script src="/Planificateur/sections/batch/js/jobsTable.js"></script>
-		<script src="/Planificateur/sections/batch/js/main.js"></script>
-		<script src="/Planificateur/sections/batch/js/sessionDataStorage.js"></script>
+		<script type="text/javascript" src="../../assets/js/ajax.js"></script>
+		<script type="text/javascript" src="../../assets/js/docReady.js"></script>
+		<script type="text/javascript" src="../../assets/js/checkBox.js"></script>
+		<script type="text/javascript" src="../../assets/js/moment.min.js"></script>
+		<script type="text/javascript" src="../../assets/js/moment-timezone.js"></script>
+		<script type="text/javascript" src="../../js/main.js"></script>
+		<script type="text/javascript" src="../../js/toolbox.js"></script>
+		<script type="text/javascript" src="js/batch.js"></script>
+		<script type="text/javascript" src="js/index.js"></script>
+		<script type="text/javascript" src="js/jobsTable.js"></script>
+		<script type="text/javascript" src="js/main.js"></script>
+		<script type="text/javascript" src="js/sessionDataStorage.js"></script>
 	</body> 
 </html>

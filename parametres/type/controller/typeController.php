@@ -13,9 +13,9 @@
 /*
  * Includes
 */
-include_once __DIR__ .  '/../../../lib/config.php';	// Fichier de configuration
-include_once __DIR__ .  '/../../../lib/connect.php';	// Classe de connection à la base de données
-include_once __DIR__ .  '/../model/type.php';	// Classe de Type
+require_once __DIR__ .  '/../../../lib/config.php';	// Fichier de configuration
+require_once __DIR__ .  '/../../../lib/connect.php';	// Classe de connection à la base de données
+require_once __DIR__ .  '/../model/type.php';	// Classe de Type
 
 class TypeController {
 
@@ -55,7 +55,7 @@ class TypeController {
 	{
 	    $stmt = $this->getDBConnection()->getConnection()->prepare("
             SELECT `dt`.`id` AS `id`
-            FROM `fabplan`.`door_types` AS `dt`
+            FROM `door_types` AS `dt`
             ORDER BY `dt`.`importNo` " . (($ascending === true) ? "ASC" : "DESC") .
 	        (($quantity === 0) ? "" : " LIMIT :quantity OFFSET :offset") .
 	        ";"
@@ -85,7 +85,7 @@ class TypeController {
 	{
 	    $stmt = $this->getDBConnection()->getConnection()->prepare("
             SELECT `dt`.`id` AS `id`
-            FROM `fabplan`.`door_types` AS `dt`
+            FROM `door_types` AS `dt`
             WHERE `dt`.`importNo` = :importNo
             ;"
 	    );

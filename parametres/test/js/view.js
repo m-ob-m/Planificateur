@@ -1,11 +1,12 @@
 "use strict";
 
-$(async function(){
+docReady(async function(){
 	await refreshParameters();
-	$("input#mprFileDialog").change(async function(){
-		readMpr($(this).prop('files')[0]);
-		$(this).val("");
-	})
+	let mprFileDialog = document.getElementById("mprFileDialog");
+	mprFileDialog.onchange = async function(){
+		readMpr(mprFileDialog.files[0]);
+		mprFileDialog.value = "";
+	}
 });
 
 /**
@@ -15,16 +16,16 @@ async function deleteConfirm()
 {
 	if(await askConfirmation("Suppression de test", "Voulez-vous vraiment supprimer ce test?"))
 	{
-		$("#loadingModal").css({"display": "block"});
+		document.getElementById("loadingModal").style.display = "block";
 		try{
-			await deleteTest($("#id").val());
+			await deleteTest(document.getElementById("id").value);
 			goToIndex();
 		}
 		catch(error){
 			showError("La suppression du test a échouée", error);
 		}
 		finally{
-			$("#loadingModal").css({"display": "none"});
+			document.getElementById("loadingModal").style.display = "none";
 		}
 	}
 }
@@ -34,19 +35,24 @@ async function deleteConfirm()
  */
 async function saveConfirm()
 {	
-	let parameters = getModifiedParametersArray();
-	let mpr = ($("#parametersEditionTextArea").length > 0) ? $("#parametersEditionTextArea").val() : null;  
-	let testId = ($("#id").val() && 0 !== $("#id").val().length) ? $("#id").val() : null;
-	let args = [testId, $("#name").val(), $("#model").val(), $("#type").val(), mpr, parameters];
+	let parametersEditionTextArea = document.getElementById("parametersEditionTextArea");
+	let idInput = document.getElementById("id");
+	let id = idInput.value;
+	let name = document.getElementById("name").value;
+	let model = document.getElementById("model").value;
+	let type = document.getElementById("type").value;
+	let mpr = (parametersEditionTextArea !== null) ? parametersEditionTextArea.value : null; 
+	let parameters = getModifiedParametersArray(); 
+	let args = [(id === "") ? null : id, name, model, type, mpr, parameters];
 	
 	if(validateInformation.apply(null, args))
 	{
 		if(await askConfirmation("Sauvegarde de test", "Voulez-vous vraiment sauvegarder ce test?"))
 		{
-			$("#loadingModal").css({"display": "block"});
+			document.getElementById("loadingModal").style.display = "block";
 			try{
 				let id = await saveTest.apply(null, args);
-				$("input#id").val(id);
+				idInput.value = id;
 				try{
 					await createMachiningProgram(id);
 					openTest(id);
@@ -59,7 +65,7 @@ async function saveConfirm()
 				showError("La sauvegarde du test a échouée", error);
 			}
 			finally{
-				$("#loadingModal").css({"display": "none"});
+				document.getElementById("loadingModal").style.display = "none";
 			}
 		}
 	}
@@ -73,17 +79,22 @@ async function saveConfirm()
 function getModifiedParametersArray()
 {
 	let parameters = [];
-	$("table#parametersTable >tbody >tr").each(function(index){
-		if($(this).find('td:nth-child(5) >input').val() !== $(this).find('td:nth-child(2) >textarea').val())
-		{
-			parameters.push({
-				"key": $(this).find('td:nth-child(1) >input').val(), 
-				"value": $(this).find('td:nth-child(2) >textarea').val(),
-				"description": $(this).find('td:nth-child(3) >textarea').val(),
-				"index": index
-			});
-		}
-	});
+	let parametersTable = document.getElementById("parametersTable");
+	if(parametersTable !== null)
+	{
+		[...parametersTable.getElementsByTagName("tbody")[0].getElementsByTagName("tr")].forEach(function(element) {
+			let newValue = element.getElementsByTagName("td")[1].getElementsByTagName("textarea")[0].value;
+			let previousValue = element.getElementsByTagName("td")[3].getElementsByTagName("textarea")[0].value;
+			if(previousValue !== newValue)
+			{
+				parameters.push({
+					"key": element.getElementsByTagName("td")[0].getElementsByTagName("input")[0].value, 
+					"value": newValue,
+					"description": element.getElementsByTagName("td")[2].getElementsByTagName("textarea")[0].value
+				});
+			}
+		});
+	}
 	return parameters;
 }
 
@@ -105,23 +116,23 @@ function validateInformation(id, name, modelId, typeNo, mpr, parameters)
 	// Validation des parametres
 	if(parameters.length > 0)
 	{
-		$(parameters).each(function(index){
-				if(!(new RegExp("^\\S+$")).test(this.key))
+		parameters.forEach(function(element, index){
+				if(!(new RegExp("^\\S+$")).test(element.key))
 				{
-					err += "La clé du paramètre de la ligne \"" + this.index + 1 + "\" " +
+					err += "La clé du paramètre de la ligne \"" + element.index + 1 + "\" " +
 						"est vide ou contient des espaces blancs.";
 					return;
 				}
 				
-				if(!this.value.trim())
+				if(!element.value.trim())
 				{
-					err += "Le paramètre de la clé " + this.key + " n'a pas de valeur.";
+					err += "Le paramètre de la clé " + element.key + " n'a pas de valeur.";
 				}
 			}
 		);
 	}
 		
-	if(!isPositiveInteger(id) && id !== "" && id !== null)
+	if(!isPositiveInteger(id, true, true) && id !== "" && id !== null)
 	{
 		err += "L'identificateur unique doit être un entier positif.";
 	}
@@ -131,12 +142,12 @@ function validateInformation(id, name, modelId, typeNo, mpr, parameters)
 		err += "Le nom du test ne peut pas être vide et ne doit contenir que des caractères alphanumériques et des \"_\".";
 	}
 	
-	if(!isPositiveInteger(modelId))
+	if(!isPositiveInteger(modelId, true, true))
 	{
 		err += "Le modèle sélectionné présente une erreur.";
 	}
 	
-	if(!isPositiveInteger(typeNo))
+	if(!isPositiveInteger(typeNo, true, false))
 	{
 		err += "Le type sélectionné présente une erreur.";
 	}
@@ -157,6 +168,7 @@ function validateInformation(id, name, modelId, typeNo, mpr, parameters)
  * Creates a new parameter row for the parameters table
  * @param {object} parameter An object of the type {key => "key", value => "value"}
  * @param {boolean} isNew A bit that indicates if thisTest is new (it has no id)
+ * @returns {Element} The new parameter row
  */
 function newParameter(parameter, isNew)
 {
@@ -168,7 +180,7 @@ function newParameter(parameter, isNew)
 	let oldValue = null;
 	if(parameter !== null)
 	{
-		if(parameter.hasOwnProperty("specificValue"))
+		if(parameter.specificValue !== null)
 		{
 			value = parameter.specificValue;
 			if(parameter.specificValue !== null && !isNew)
@@ -182,57 +194,64 @@ function newParameter(parameter, isNew)
 		}
 	}
 	
-	let row = $("<tr></tr>")
-	.css({"height": "50px"});
+	let keyInput = document.createElement("input");
+	keyInput.classList.add("spaceEfficientText");
+	keyInput.disabled = true;
+	keyInput.value = key;
 	
-	let keyInput = $("<input>")
-	.addClass("spaceEfficientText")
-	.prop({"disabled": true})
-	.val(key);
+	let keyCell = document.createElement("td");
+	keyCell.classList.add("firstVisibleColumn");
+	keyCell.appendChild(keyInput);
 	
-	let keyCell = $("<td></td>")
-	.addClass("firstVisibleColumn")
-	.append(keyInput);
+	let valueInput = document.createElement("textarea");
+	valueInput.classList.add("spaceEfficientText");
+	valueInput.style.overflowX = "hidden";
+	valueInput.style.resize = "none";
+	valueInput.value = (value === null) ? defaultValue : value;
 	
-	let valueInput = $("<textarea></textarea>")
-	.addClass("spaceEfficientText")
-	.css({"overflow-x": "hidden", "overflow-y": "auto", "resize": "none"})
-	.val((value === null) ? defaultValue : value);
+	let valueCell = document.createElement("td");
+	valueCell.appendChild(valueInput);
 	
-	let valueCell = $("<td></td>")
-	.append(valueInput);
+	let descriptionInput = document.createElement("textarea");
+	descriptionInput.classList.add("spaceEfficientText");
+	descriptionInput.readOnly = true;
+	descriptionInput.style.overflowX = "hidden";
+	descriptionInput.style.resize = "none";
+	descriptionInput.value = description;
 	
-	let descriptionInput = $("<textarea></textarea>")
-	.prop({"readonly": true})
-	.css({"overflow-x": "hidden", "overflow-y": "auto", "resize": "none"})
-	.addClass("spaceEfficientText")
-	.val(description);
+	let descriptionCell = document.createElement("td");
+	descriptionCell.appendChild(descriptionInput);
 	
-	let descriptionCell = $("<td></td>")
-	.append(descriptionInput);
+	let defaultValueInput = document.createElement("textarea");
+	defaultValueInput.classList.add("spaceEfficientText");
+	defaultValueInput.disabled = true;
+	defaultValueInput.style.overflowX = "hidden";
+	defaultValueInput.style.resize = "none";
+	defaultValueInput.value = defaultValue;
 	
-	let defaultValueInput = $("<textarea></textarea>")
-	.prop({"disabled": true})
-	.css({"overflow-x": "hidden", "overflow-y": "auto", "resize": "none"})
-	.addClass("spaceEfficientText")
-	.val(defaultValue);
+	let defaultValueCell = document.createElement("td");
+	defaultValueCell.classList.add("lastVisibleColumn");
+	defaultValueCell.style.padding = "5px";
+	defaultValueCell.appendChild(defaultValueInput);
 	
-	let defaultValueCell = $("<td></td>")
-	.addClass("lastVisibleColumn")
-	.css("padding", "5px")
-	.append(defaultValueInput);
+	let oldValueInput = document.createElement("input");
+	oldValueInput.disabled = true;
+	oldValueInput.style.display = "none";
+	oldValueInput.value = oldValue;
 	
-	let oldValueInput = $("<input></input>")
-	.prop("disabled", true)
-	.css("display", "none")
-	.val(oldValue);
-	
-	let oldValueCell = $("<td></td>")
-	.prop("disabled", true)
-	.css("display", "none")
-	.append(oldValueInput);
-	
-	return row.append(keyCell, valueCell, descriptionCell, defaultValueCell, oldValueCell);
+	let oldValueCell = document.createElement("td");
+	oldValueCell.disabled = true;
+	oldValueCell.style.display = "none";
+	oldValueCell.appendChild(oldValueInput);
+
+	let row = document.createElement("tr");
+	row.style.height = "50px";
+	row.appendChild(keyCell);
+	row.appendChild(valueCell);
+	row.appendChild(descriptionCell);
+	row.appendChild(defaultValueCell);
+	row.appendChild(oldValueCell);
+	return row;
 }
 
 /**
@@ -241,11 +260,19 @@ function newParameter(parameter, isNew)
 async function refreshParameters()
 {
 	/* Read the test's id. */
-	let testId = ($("#id").val() && 0 !== $("#id").val().length) ? parseInt($("#id").val()) : null;
-	let typeNo = parseInt($("#type option:selected").val());
-	let modelId = parseInt($("#model option:selected").val());
+	let parametersEditorContainer = document.getElementById("parametersEditorContainer");
+	let testIdInput = document.getElementById("id");
+	let testId = (testIdInput.value !== null && testIdInput.value !== "") ? parseInt(testIdInput.value) : null;
+	let typeNoSelect = document.getElementById("type"); 
+	let modelIdSelect = document.getElementById("model");
+	let typeNo = parseInt(typeNoSelect.options[typeNoSelect.selectedIndex].value);
+	let modelId = parseInt(modelIdSelect.options[modelIdSelect.selectedIndex].value);
 	
-	$("#parametersEditorContainer").empty();
+	while(parametersEditorContainer.childElementCount > 0)
+	{
+		parametersEditorContainer.firstElementChild.remove();
+	}
+
 	if(modelId === 2)
 	{
 		try{
@@ -272,21 +299,54 @@ async function refreshParameters()
  */
 async function refreshParametersCustom(id)
 {
-	$("html").css({"height": "100%"});
-	$("body").css({"height": "100%"});
-	$("#page-wrapper").css({"display": "flex", "flex-flow": "column", "height": "100%"});
-	$("#header-wrapper").css({"flex": "0 1 auto"});
-	$("#features-wrapper").css({"flex": "1 1 auto", "display": "flex", "flex-flow": "column"});
-	$("#parametersFormContainer").css({"flex": "0 1 auto"});
+	document.getElementsByTagName("html")[0].style.height = "100%";
+	document.getElementsByTagName("body")[0].style.height = "100%";
+
+	let pageWrapper = document.getElementById("page-wrapper");
+	pageWrapper.style.display = "flex"; 
+	pageWrapper.style.flexFlow = "column"; 
+	pageWrapper.style.height = "100%";
 	
-	$("#parametersEditorContainer")
-	.css({"flex": "1 1 auto", "display": "flex", "flex-flow": "column"})
-	.append(makeCustomTextArea().attr({"id": "parametersEditionTextArea"}));
+	let headerWrapper = document.getElementById("header-wrapper");
+	headerWrapper.style.flexGrow = "0";
+	headerWrapper.style.flexShrink = "1";
+	headerWrapper.style.flexBasis = "auto";
+
+	let featuresWrapper = document.getElementById("features-wrapper");
+	featuresWrapper.style.flexGrow = "1";
+	featuresWrapper.style.flexShrink = "1";
+	featuresWrapper.style.flexBasis = "auto";
+	featuresWrapper.style.display = "flex";
+	featuresWrapper.style.flexFlow = "column";
+
+	let parametersFormContainer = document.getElementById("parametersFormContainer");
+	parametersFormContainer.style.flexGrow = "0";
+	parametersFormContainer.style.flexShrink = "1"; 
+	parametersFormContainer.style.flexBasis = "auto";
+	
+	let customTextArea = makeCustomTextArea();
+	customTextArea.id = "parametersEditionTextArea";
+
+	let parametersEditorContainer = document.getElementById("parametersEditorContainer");
+	parametersEditorContainer.style.flexGrow = "1";
+	parametersEditorContainer.style.flexShrink = "1";
+	parametersEditorContainer.style.flexBasis = "auto";
+	parametersEditorContainer.style.display = "flex";
+	parametersEditorContainer.style.flexFlow = "column";
+	parametersEditorContainer.appendChild(customTextArea);
+
+	let standardParametersTable = document.getElementById("parametersTable");
+	if(standardParametersTable !== null)
+	{
+		standardParametersTable.remove();
+	}
+
+	let mprFileDialogContainer = document.getElementById("mprFileDialogContainer");
 	
 	if(id === null)
 	{
-		$("textArea#parametersEditionTextArea").val("");
-		$("div#mprFileDialogContainer").show();
+		customTextArea.value = "";
+		mprFileDialogContainer.style.visibility = "visible";
 	}
 	
 	let mpr = "";
@@ -300,8 +360,8 @@ async function refreshParametersCustom(id)
 		}
 	}
 
-	$("textArea#parametersEditionTextArea").val(mpr);
-	$("div#mprFileDialogContainer").show();
+	document.getElementById("parametersEditionTextArea").value = mpr;
+	mprFileDialogContainer.style.visibility = "visible";
 }
 
 /**
@@ -312,21 +372,54 @@ async function refreshParametersCustom(id)
  */
 async function refreshParametersStandard(testId, modelId, typeNo)
 {
-	$("html").css({"height": "auto"});
-	$("body").css({"height": "auto"});
-	$("#page-wrapper").css({"display": "block", "height": "auto"});
-	$("#header-wrapper").css({"flex": "none"});
-	$("#features-wrapper").css({"flex": "none", "display": "block"});
-	$("#parametersFormContainer").css({"flex": "none"});
+	document.getElementsByTagName("html")[0].style.height = "auto";
+	document.getElementsByTagName("body")[0].style.height = "auto";
+
+	let pageWrapper = document.getElementById("page-wrapper");
+	pageWrapper.style.display = "block";
+	pageWrapper.style.height = "auto";
+
+	let headerWrapper = document.getElementById("header-wrapper");
+	headerWrapper.style.flexGrow = "0";
+	headerWrapper.style.flexShrink = "0";
+	headerWrapper.style.flexBasis = "auto";
+
+	let featuresWrapper = document.getElementById("features-wrapper");
+	featuresWrapper.style.flexGrow = "0";
+	featuresWrapper.style.flexShrink = "0";
+	featuresWrapper.style.flexBasis = "auto";
+	featuresWrapper.style.display = "block";
+
+	let parametersFormContainer = document.getElementById("parametersFormContainer");
+	parametersFormContainer.style.flexGrow = "0";
+	parametersFormContainer.style.flexShrink = "0"; 
+	parametersFormContainer.style.flexBasis = "auto";
 	
-	$("#parametersEditorContainer")
-	.css({"flex": "none", "display": "block"})
-	.append(makeStandardParametersTable().attr({"id": "parametersTable"}));
+	let standardParametersTable = makeStandardParametersTable();
+	standardParametersTable.id = "parametersTable";
+
+	let parametersEditorContainer = document.getElementById("parametersEditorContainer");
+	parametersEditorContainer.style.flexGrow = "0";
+	parametersEditorContainer.style.flexShrink = "0";
+	parametersEditorContainer.style.flexBasis = "auto";
+	parametersEditorContainer.style.display = "block";
+	parametersEditorContainer.appendChild(standardParametersTable);
 	
-	try{ 
-		let parameters = await retrieveParameters(testId, modelId, typeNo);
+	let customTextArea = document.getElementById("parametersEditionTextArea");
+	if(customTextArea !== null)
+	{
+		customTextArea.remove();
+	}
+
+	try
+	{ 
+		let parameters = [];
+		if(modelId !== null && modelId !== "" && !isNaN(modelId) && typeNo !== null && typeNo !== "" && !isNaN(typeNo))
+		{
+			parameters = await retrieveParameters(testId, modelId, typeNo);
+		}
 		fillStandardParametersTable(parameters, testId === null);
-		$("div#mprFileDialogContainer").hide();
+		document.getElementById("mprFileDialogContainer").style.visibility = "hidden";
 	}
 	catch(error){
 		showError("La récupération des paramètres de ce test a échouée", error);
@@ -336,45 +429,51 @@ async function refreshParametersStandard(testId, modelId, typeNo)
 /**
  * Creates a parameterTable for generic-driven model-types
  * 
- * @return {jquery} The new parametersTable
+ * @return {Element} The new parametersTable
  */
 function makeStandardParametersTable()
 {
-	let keyHeader = $("<th></th>")
-	.addClass("firstVisibleColumn spaceEfficientText")
-	.css({"width": "10%"})
-	.text("Clé");
+	let keyHeader = document.createElement("th");
+	keyHeader.classList.add("firstVisibleColumn", "spaceEfficientText");
+	keyHeader.style.width = "10%";
+	keyHeader.textContent ="Clé";
 	
-	let valueHeader = $("<th></th>")
-	.addClass("spaceEfficientText")
-	.css({"width": "35%"})
-	.text("Valeur");
+	let valueHeader = document.createElement("th");
+	valueHeader.classList.add("spaceEfficientText");
+	valueHeader.style.width = "35%";
+	valueHeader.textContent = "Valeur";
 	
-	let descriptionHeader = $("<th></th>")
-	.addClass("spaceEfficientText")
-	.css({"width": "20%"})
-	.text("Description");
+	let descriptionHeader = document.createElement("th");
+	descriptionHeader.classList.add("spaceEfficientText");
+	descriptionHeader.style.width = "20%";
+	descriptionHeader.textContent = "Description";
 	
-	let defaultValueHeader = $("<th></th>")
-	.addClass("lastVisibleColumn spaceEfficientText")
-	.css({"width": "35%"})
-	.text("Valeur par défaut");
+	let defaultValueHeader = document.createElement("th");
+	defaultValueHeader.classList.add("lastVisibleColumn", "spaceEfficientText");
+	defaultValueHeader.style.width = "35%";
+	defaultValueHeader.textContent = "Valeur par défaut";
 	
-	let oldValueHeader = $("<th></th>")
-	.css({"display": "none"})
-	.text("Valeur précédente");
+	let oldValueHeader = document.createElement("th");
+	oldValueHeader.style.display = "none";
+	oldValueHeader.textContent = "Valeur précédente";
 	
-	return $("<table></table>")
-	.addClass("test parametersTable")
-	.css({"width": "100%"})
-	.append(
-		$("<thead></thead>")
-		.append(
-			$("<tr></tr>").append(keyHeader, valueHeader, descriptionHeader, defaultValueHeader, oldValueHeader)
-		),
-		$("<tbody></tbody>")
-	);
-	
+	let headerRow = document.createElement("tr");
+	headerRow.appendChild(keyHeader);
+	headerRow.appendChild(valueHeader);
+	headerRow.appendChild(descriptionHeader);
+	headerRow.appendChild(defaultValueHeader);
+	headerRow.appendChild(oldValueHeader);
+
+	let tableHead = document.createElement("thead");
+	tableHead.appendChild(headerRow);
+
+	let table = document.createElement("table");
+	table.classList.add("test", "parametersTable");
+	table.style.width = "100%";
+	table.appendChild(tableHead);
+	table.appendChild(document.createElement("tbody"));
+
+	return table;
 }
 
 /**
@@ -385,11 +484,16 @@ function makeStandardParametersTable()
  */
 function fillStandardParametersTable(parameters, isCreating = false)
 {
-	$("table#parametersTable >tbody >tr").remove();
+	let tableBody = document.getElementById("parametersTable").getElementsByTagName("tbody")[0];
+	while(tableBody.childElementCount > 0)
+	{
+		tableBody.firstElementChild.remove();
+	}
+
 	if(parameters.length > 0)
 	{
-		$(parameters).each(function(){
-			$("table#parametersTable >tbody").append(newParameter(this, isCreating));
+		parameters.map(function(parameter){
+			tableBody.append(newParameter(parameter, isCreating));
 		});
 	}
 }
@@ -397,14 +501,20 @@ function fillStandardParametersTable(parameters, isCreating = false)
 /**
  * Creates a textArea for custom model-types edition
  * 
- * @return {jquery} The new textarea
+ * @return {Element} The new textarea
  */
 function makeCustomTextArea()
 {
-	return $("<textArea></textArea>")
-	.attr({"spellcheck": false, "autocorrect": false})
-	.addClass("spaceEfficientText")
-	.css({"resize": "none", "overflow-x": "hidden", "overflow-y": "auto", "flex": "1 1 auto"});
+	let customTextArea = document.createElement("textarea");
+	customTextArea.spellcheck = false;
+	customTextArea.autocorrect = false;
+	customTextArea.classList.add("spaceEfficientText");
+	customTextArea.style.resize = "none";
+	customTextArea.style.overflowX = "hidden";
+	customTextArea.style.flexGrow = "1";
+	customTextArea.style.flexShrink = "1";
+	customTextArea.style.flexBasis = "auto";
+	return customTextArea
 }
 
 /**
@@ -415,7 +525,7 @@ async function readMpr(filepath)
 {
 	try{
 		let mpr = await readFile(filepath, "iso88591");
-		$("textarea#parametersEditionTextArea").val(mpr);
+		document.getElementById("parametersEditionTextArea").value = mpr;
 	}
 	catch(error){
 		showError("La lecture du fichier a échouée", error);

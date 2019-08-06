@@ -9,17 +9,36 @@
      * \details     Sauvegarde un Materiel
      */
     
-    // INCLUDE
-    include_once __DIR__ . '/../../../lib/config.php';	// Fichier de configuration
-    include_once __DIR__ . '/../../../lib/connect.php';	// Classe de connection à la base de données
-    include_once __DIR__ . '/../controller/typeController.php'; // Contrôlleur de Type
-    include_once __DIR__ . "/../../../lib/numberFunctions/numberFunctions.php";
-    
-    //Structure de retour vers javascript
+    // Structure de retour vers javascript
     $responseArray = array("status" => null, "success" => array("data" => null), "failure" => array("message" => null));
     
     try
     {
+        // INCLUDE
+        require_once __DIR__ . '/../../../lib/config.php';	// Fichier de configuration
+        require_once __DIR__ . '/../../../lib/connect.php';	// Classe de connection à la base de données
+        require_once __DIR__ . '/../controller/typeController.php'; // Contrôlleur de Type
+        require_once __DIR__ . "/../../../lib/numberFunctions/numberFunctions.php";
+
+        // Initialize the session
+        session_start();
+                                                                
+        // Check if the user is logged in, if not then redirect him to login page
+        if(!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true){
+            if(!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest')
+            {
+                throw new \Exception("You are not logged in.");
+            }
+            else
+            {
+                header("location: /Planificateur/lib/account/logIn.php");
+            }
+            exit;
+        }
+
+        // Closing the session to let other scripts use it.
+        session_write_close();
+
         $input =  json_decode(file_get_contents("php://input"));
         
         $id = (isset($input->id) ? intval($input->id) : null);
@@ -27,7 +46,7 @@
         $description = (isset($input->description) ? $input->description : null);
         $genericId = (isset($input->genericId) ? $input->genericId : null);
         $copyParametersFrom = null;
-        if(is_positive_integer_or_equivalent_string($input->copyParametersFrom ?? null))
+        if(is_positive_integer_or_equivalent_string($input->copyParametersFrom ?? null, true, true))
         {
             $copyParametersFrom = intval($input->copyParametersFrom);
         }
@@ -36,11 +55,8 @@
         try
         {
             $db->getConnection()->beginTransaction();
-            if($id === null)
-            {
-                $type = new \Type();
-            }
-            else
+            $type = new \Type();
+            if($id !== null)
             {
                 $type = \Type::withID($db, $id, \MYSQLDatabaseLockingReadTypes::FOR_UPDATE);
                 if($type === null)
@@ -97,12 +113,28 @@
         $type->save($db);
         if($create && $referenceId !== null)
         {
-            // Only on insert
+            $firstParameter = true;
+            
+            $query = "INSERT INTO `door_model_data` (`fkDoorModel`, `fkDoorType`, `paramKey`, `paramValue`) VALUES ";
             /* @var $parameter \ModelTypeParameter */
             foreach(\Type::withId($db, $referenceId)->getModelTypeParametersForAllModels($db) as $parameter)
             {
-                $parameter->setTypeNo($type->getImportNo())->save($db);
+                if(!$firstParameter)
+                {
+                    $query .= ", ";
+                }
+                $firstParameter = false;
+
+                $modelId = $db->getConnection()->quote($parameter->getModelId());
+                $typeNo = $db->getConnection()->quote($type->getImportNo());
+                $key = $db->getConnection()->quote($parameter->getKey());
+                $value = $db->getConnection()->quote($parameter->getValue());
+                $query .= "({$modelId}, {$typeNo}, {$key}, {$value})";
             }
+            $query .= ";";
+            
+            $stmt = $db->getConnection()->prepare($query);
+            $stmt->execute();
         }
             
         return $type;

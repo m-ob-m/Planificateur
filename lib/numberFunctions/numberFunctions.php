@@ -49,7 +49,7 @@
         
         return "{$num}/{$denom}";
     }
-    
+
     /**
      * Verifies if a primitive value is a positive integer or a string representing a positive integer
      *

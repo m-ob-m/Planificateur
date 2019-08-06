@@ -1,8 +1,10 @@
 "use strict";
 
-$(async function(){
-	$("input#startDate").val(moment().tz("America/Montreal").subtract(1, "month").format("YYYY-MM-DDTHH:mm:ss"));
-	$("input#endDate").val(moment().tz("America/Montreal").format("YYYY-MM-DDTHH:mm:ss"));
+docReady(async function(){
+	let startDate = moment().tz("America/Montreal").subtract(1, "month").format("YYYY-MM-DDTHH:mm:ss");
+	let endDate = moment().tz("America/Montreal").format("YYYY-MM-DDTHH:mm:ss");
+	document.getElementById("startDate").value = startDate;
+	document.getElementById("endDate").value = endDate;
 	await refreshTests();
 });
 
@@ -11,13 +13,19 @@ $(async function(){
  */
 async function refreshTests()
 {
-	let startDate = moment($("input#startDate").val(), "YYYY-MM-DDTHH:mm:ss").tz("America/Montreal");
-	let endDate = moment($("input#endDate").val(), "YYYY-MM-DDTHH:mm:ss").tz("America/Montreal");
+	let startDateInput = document.getElementById("startDate");
+	let endDateInput = document.getElementById("endDate");
+	let startDate = moment(startDateInput.value, "YYYY-MM-DDTHH:mm:ss").tz("America/Montreal");
+	let endDate = moment(endDateInput.value, "YYYY-MM-DDTHH:mm:ss").tz("America/Montreal");
 	
 	try{
-		$("table.parametersTable >tbody").empty();
-		$(await retrieveTestsBetweenDates(startDate, endDate)).each(function(){
-			$("table.parametersTable >tbody").append(newTest(this));
+		let parametersTableBody = document.getElementById("parametersTable").getElementsByTagName("tbody")[0];
+		while(parametersTableBody.childElementCount > 0)
+		{
+			parametersTableBody.firstElementChild.remove();
+		}
+		(await retrieveTestsBetweenDates(startDate, endDate)).forEach(function(test){
+			parametersTableBody.appendChild(newTest(test));
 		});
 	}
 	catch(error){
@@ -28,16 +36,40 @@ async function refreshTests()
 /**
  * Creates a new row for a Test
  * @param {object} test A Test
- * @return {jquery} The new row for the test
+ * @return {Element} The new row for the test
  */
 function newTest(test)
 {
-	return $("<tr></tr>").addClass("link").click(test.id, function(event){openTest(event.data);}).append(
-		$("<td></td>").addClass("firstVisibleColumn").text(test.id),
-		$("<td></td>").text(test.name),
-		$("<td></td>").text(test.model),
-		$("<td></td>").text(test.type),
-		$("<td></td>").text(test.generic),
-		$("<td></td>").addClass("lastVisibleColumn").text(test.timestamp)
-	);
+	let idCell = document.createElement("td");
+	idCell.classList.add("firstVisibleColumn");
+	idCell.textContent = test.id;
+
+	let nameCell = document.createElement("td");
+	nameCell.textContent = test.name;
+
+	let modelCell = document.createElement("td");
+	modelCell.textContent = test.model;
+
+	let typeCell = document.createElement("td");
+	typeCell.textContent = test.type;
+
+	let genericCell = document.createElement("td");
+	genericCell.textContent = test.generic;
+
+	let timestampCell = document.createElement("td");
+	timestampCell.classList.add("lastVisibleColumn");
+	timestampCell.textContent = test.timestamp;
+
+	let row = document.createElement("tr");
+	row.classList.add("link");
+	row.onclick = function(){
+		openTest(test.id);
+	}
+	row.appendChild(idCell);
+	row.appendChild(nameCell);
+	row.appendChild(modelCell);
+	row.appendChild(typeCell);
+	row.appendChild(genericCell);
+	row.appendChild(timestampCell);
+	return row;
 }

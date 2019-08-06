@@ -9,18 +9,17 @@
      *              réimportation.
      */
     
-    include_once __DIR__ . "/../../varmodtypegen/controller/modelTypeGenericController.php"; /* Modèle-type-générique */
-    include_once __DIR__ . "/../../generic/controller/genericController.php"; // Contrôleur de générique
-    include_once __DIR__ . "/../../model/controller/modelController.php"; // Contrôleur de modèle
-    include_once __DIR__ . "/../../../lib/PhpSpreadsheet/autoload.php"; // PHPSpreadsheet
-    include_once __DIR__ . "/../../../lib/fileFunctions/fileFunctions.php"; // Fonctions sur les fichiers
-    
+     require_once __DIR__ . "/../../../lib/PhpSpreadsheet/autoload.php"; // PHPSpreadsheet
+        
     use \PhpOffice\PhpSpreadsheet\Spreadsheet as PHPSpreadSheetWorkBook;
     use \PhpOffice\PhpSpreadsheet\Worksheet\Worksheet as PHPSpreadSheetWorkSheet;
-    
-    // Structure de retour vers javascript
-    $responseArray = array("status" => null, "success" => array("data" => null), "failure" => array("message" => null));
-    
+    use \PhpOffice\PhpSpreadsheet\Cell\Coordinate as PHPSpreadSheetCoordinate;
+    use \PhpOffice\PhpSpreadsheet\Style\Conditional as PHPSpreadSheetConditional;
+    use \PhpOffice\PhpSpreadsheet\Style\Alignment as PHPSpreadSheetAlignment;
+    use \PhpOffice\PhpSpreadsheet\Style\Fill as PHPSpreadSheetFill;
+    use \PhpOffice\PhpSpreadsheet\Style\Border as PHPSpreadSheetBorder;
+    use \PhpOffice\PhpSpreadsheet\Writer\Xlsx as PHPSpreadsheetXlsxWriter;
+        
     const KEEP_FILES_FOR_X_DAYS = 1;
     const FIRST_PARAMETER_ROW = 5;
     const FIRST_TYPE_COLUMN = 2;
@@ -28,9 +27,36 @@
     const EVEN_ROW_COLOR = "FF97BFD9";
     const ODD_ROW_COLOR = "FFFFFFFF";
     const BORDER_COLOR = "FF000000";
+
+    // Structure de retour vers javascript
+    $responseArray = array("status" => null, "success" => array("data" => null), "failure" => array("message" => null));
     
     try
-    {   
+    {  
+        require_once __DIR__ . "/../../varmodtypegen/controller/modelTypeGenericController.php"; /* Modèle-type-générique */
+        require_once __DIR__ . "/../../generic/controller/genericController.php"; // Contrôleur de générique
+        require_once __DIR__ . "/../../model/controller/modelController.php"; // Contrôleur de modèle
+        require_once __DIR__ . "/../../../lib/fileFunctions/fileFunctions.php"; // Fonctions sur les fichiers
+
+        // Initialize the session
+        session_start();
+                    
+        // Check if the user is logged in, if not then redirect him to login page
+        if(!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true){
+            if(!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest')
+            {
+                throw new \Exception("You are not logged in.");
+            }
+            else
+            {
+                header("location: /Planificateur/lib/account/logIn.php");
+            }
+            exit;
+        }
+
+        // Closing the session to let other scripts use it.
+        session_write_close();
+
         $modelId = $_GET["modelId"] ?? null;
         if($modelId === null)
         {
@@ -110,7 +136,7 @@
         $filepath = "{$TemporaryFolderPath}/{$filename}";
         try
         {
-            (new \PhpOffice\PhpSpreadsheet\Writer\Xlsx($workbook))->save($filepath);
+            (new PHPSpreadsheetXlsxWriter($workbook))->save($filepath);
         }
         catch(\Exception $e)
         {
@@ -192,9 +218,10 @@
             $genericIdAsString = strval($generic->getId());
             if(isset($workSheetsIndex[$genericIdAsString]))
             {
-                /* If the worksheet for the current generic already exists, then fo to the next column. Then, identify
+                /* If the worksheet for the current generic already exists, then go to that worksheet. Then, identify
                  * the next available column. */
-                $worksheet = $workbook->getSheet($workSheetsIndex[$genericIdAsString]->index);
+                $worksheet = $workbook->getSheetByName($workSheetsIndex[$genericIdAsString]->workSheetName);
+                $workbook->setActiveSheetIndexByName($workSheetsIndex[$genericIdAsString]->workSheetName);
                 $workSheetsIndex[$genericIdAsString]->nextEmptyColumn++;
             }
             else
@@ -211,11 +238,16 @@
                 {
                     $worksheet = $workbook->addSheet(new PHPSpreadSheetWorkSheet());
                 }
-                $worksheet->setTitle($generic->getDescription());
+                $workSheetName = $generic->getDescription();
+                $worksheet->setTitle($workSheetName);
+                $workbook->setActiveSheetIndexByName($workSheetName);
+                
                 createTemplateWorkSheetForModelGeneric($worksheet, $model, $generic);
+                
                 $workSheetsIndex[$genericIdAsString] = (object) array(
-                    "index" => $workbook->getActiveSheetIndex(),
-                    "nextEmptyColumn" => FIRST_TYPE_COLUMN
+                    "nextEmptyColumn" => FIRST_TYPE_COLUMN,
+                    "parametersCount" => count($generic->getParameters()),
+                    "workSheetName" => $workSheetName
                 );
             }
             
@@ -223,9 +255,69 @@
             $column = $workSheetsIndex[$genericIdAsString]->nextEmptyColumn;
             ModelTypeGenericToColumn($worksheet, $modelTypeGenericCombination, $column);
         }
+
+        applyStyles($workbook, $workSheetsIndex);
+
         $workbook->setActiveSheetIndex(0);
     }
     
+    function applyStyles(PHPSpreadSheetWorkBook &$workbook, array $workSheetsIndex) : void
+    { 
+        foreach($workSheetsIndex as $worksheetIndex)
+        {
+            $worksheet = $workbook->getSheetByName($worksheetIndex->workSheetName);
+            $workbook->setActiveSheetIndexByName($worksheetIndex->workSheetName);
+
+            /* Set style for the type headers. */
+            $style = array(
+                "borders" => array(
+                    "allBorders" => array(
+                        "borderStyle" => PHPSpreadSheetBorder::BORDER_THIN
+                    )
+                ),
+                "alignment" => array(
+                    "textRotation" => 90,
+                    "horizontal" => PHPSpreadSheetAlignment::HORIZONTAL_CENTER,
+                    "vertical" => PHPSpreadSheetAlignment::VERTICAL_CENTER
+                ),
+                "fill" => array(
+                    "fillType" => PHPSpreadSheetFill::FILL_SOLID,
+                    "color" => array("argb" => TYPE_HEADER_COLOR)
+                )
+            );
+            $firstColumn = PHPSpreadSheetCoordinate::stringFromColumnIndex(FIRST_TYPE_COLUMN - 1);
+            $firstRow = (string)(FIRST_PARAMETER_ROW - 1);
+            $lastColumn = PHPSpreadSheetCoordinate::stringFromColumnIndex($worksheetIndex->nextEmptyColumn);
+            $lastRow = (string)(FIRST_PARAMETER_ROW - 1);
+            $worksheet->getStyle("{$firstColumn}{$firstRow}:{$lastColumn}{$lastRow}")
+                ->applyFromArray($style);
+            
+            /* Set style to parameter cells. */
+            $style = array(
+                "borders" => array(
+                    "allBorders" => array(
+                        "borderStyle" => PHPSpreadSheetBorder::BORDER_THIN
+                    )
+                ),
+                "alignment" => array(
+                    "horizontal" => PHPSpreadSheetAlignment::HORIZONTAL_CENTER,
+                    "vertical" => PHPSpreadSheetAlignment::VERTICAL_CENTER
+                )
+            );
+            $conditionnalFormatting = (new PHPSpreadSheetConditional())
+                ->setConditionType(PHPSpreadSheetConditional::CONDITION_EXPRESSION)
+                ->addCondition("NOT(MOD(ROW(), 2))");
+            $conditionnalFormatting->getStyle()->getFill()->setFillType(PHPSpreadSheetFill::FILL_SOLID);
+            $conditionnalFormatting->getStyle()->getFill()->getStartColor()->setARGB(EVEN_ROW_COLOR);
+            $conditionnalFormatting->getStyle()->getFill()->getEndColor()->setARGB(EVEN_ROW_COLOR);
+            $firstRow = (string)(FIRST_PARAMETER_ROW);
+            $lastRow = (string)(FIRST_PARAMETER_ROW + $worksheetIndex->parametersCount - 1);
+            $worksheet->getStyle("{$firstColumn}{$firstRow}:{$lastColumn}{$lastRow}")
+                ->applyFromArray($style)
+                ->setConditionalStyles(array($conditionnalFormatting));
+        }
+    }
+
     /**
      * Creates an Excel spreadsheet template to insert the specific parameters of a model-generic combination.
      *
@@ -239,26 +331,6 @@
      */
     function createTemplateWorkSheetForModelGeneric(PHPSpreadSheetWorkSheet $worksheet, \Model $model, \Generic $generic)
     {
-        /* Set the type header */
-        $style = array(
-            "borders" => array(
-                "outline" => array(
-                    "borderStyle" => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN
-                )
-            ),
-            "alignment" => array(
-                "textRotation" => 90,
-                "horizontal" => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER,
-                "vertical" => \PhpOffice\PhpSpreadsheet\Style\Alignment::VERTICAL_CENTER
-            ),
-            "fill" => array(
-                "fillType" => \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID,
-                "color" => array("argb" => TYPE_HEADER_COLOR)
-            )
-        );
-        $worksheet->getCellByColumnAndRow(FIRST_TYPE_COLUMN - 1, FIRST_PARAMETER_ROW - 1)->getStyle()
-            ->applyFromArray($style);
-        
         /* Set column dimension. */
         $worksheet->getColumnDimensionByColumn(FIRST_PARAMETER_ROW - 1)->setWidth(10);
         
@@ -271,25 +343,6 @@
         );
         for( $i = 0; $i < count($genericParameters); $i++)
         {
-            /* Apply style to parameter cell. */
-            $style = array(
-                "borders" => array(
-                    "outline" => array(
-                        "borderStyle" => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN
-                    )
-                ),
-                "alignment" => array(
-                    "horizontal" => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER,
-                    "vertical" => \PhpOffice\PhpSpreadsheet\Style\Alignment::VERTICAL_CENTER
-                ),
-                "fill" => array(
-                    "fillType" => \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID,
-                    "color" => array("argb" => $i % 2 ? EVEN_ROW_COLOR : ODD_ROW_COLOR)
-                )
-            );
-            $worksheet->getCellByColumnAndRow(FIRST_TYPE_COLUMN - 1, FIRST_PARAMETER_ROW + $i)->getStyle()
-                ->applyFromArray($style);
-            
             /* Get the value to insert into the cell. */
             array_push($values, array($genericParameters[$i]->getKey()));
         }
@@ -320,24 +373,6 @@
      */
     function ModelTypeGenericToColumn(PHPSpreadSheetWorkSheet $worksheet, \ModelTypeGeneric $modelTypeGeneric, int $column)
     {
-        /* Set the type header */
-        $style = array(
-            "borders" => array(
-                "outline" => array(
-                    "borderStyle" => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN
-                )
-            ),
-            "alignment" => array(
-                "textRotation" => 90,
-                "horizontal" => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER,
-                "vertical" => \PhpOffice\PhpSpreadsheet\Style\Alignment::VERTICAL_CENTER
-            ),
-            "fill" => array(
-                "fillType" => \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID,
-                "color" => array("argb" => TYPE_HEADER_COLOR)
-            )
-        );
-        $worksheet->getCellByColumnAndRow($column, FIRST_PARAMETER_ROW - 1)->getStyle()->applyFromArray($style);
         
         /* Set column dimension. */
         $worksheet->getColumnDimensionByColumn($column)->setWidth(10);
@@ -351,24 +386,6 @@
         );
         for( $i = 0; $i < count($genericParameters); $i++)
         {
-            /* Apply style to parameter cell. */
-            $style = array(
-                "borders" => array(
-                    "outline" => array(
-                        "borderStyle" => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN
-                    )
-                ),
-                "alignment" => array(
-                    "horizontal" => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER,
-                    "vertical" => \PhpOffice\PhpSpreadsheet\Style\Alignment::VERTICAL_CENTER
-                ),
-                "fill" => array(
-                    "fillType" => \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID,
-                    "color" => array("argb" => $i % 2 ? EVEN_ROW_COLOR : ODD_ROW_COLOR)
-                )
-            );
-            $worksheet->getCellByColumnAndRow($column, FIRST_PARAMETER_ROW + $i)->getStyle()->applyFromArray($style);
-            
             /* Get the value to insert into the cell. */
             $key = $genericParameters[$i]->getKey();
             array_push($values, array(isset($parameters[$key]) ? $parameters[$key] : null));

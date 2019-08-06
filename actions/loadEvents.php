@@ -9,7 +9,7 @@
  * \details     Charge les Batch (évènements) afin de les insérer dans le calendrier
  */
 
-include_once __DIR__ . '/../controller/planificateur.php';    
+require_once __DIR__ . '/../controller/planificateur.php';    
 
 // Structure de retour vers javascript
 $responseArray = array("status" => null, "success" => array("data" => null), "failure" => array("message" => null));

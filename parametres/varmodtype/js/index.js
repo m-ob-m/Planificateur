@@ -1,20 +1,6 @@
 "use strict";
 
-$(function(){
-	$("input#filesToImport").change(async function(){
-		$("#loadingModal").css({"display": "block"});
-		try{
-			await importParametersFromExcelFile($(this).prop("files")[0]);
-			openModelTypeParameters($("select#model").val(), $("select#type").val())
-		}
-		catch(error){
-			showError("L'importation des paramètres a échouée.", error)
-		}
-		finally{
-			$("input#filesToImport").val("");
-			$("#loadingModal").css({"display": "none"});
-		}
-	});
+docReady(function(){
 	refreshParameters();
 });
 
@@ -31,19 +17,19 @@ function validateInformation(modelId, typeNo, parameters)
 	let err = "";
 	
 	// Validation des parametres pour chaque parametre
-	$(parameters).each(function(){
-		if(!(new RegExp("^\\S+$")).test(this.key))
+	parameters.forEach(function(parameter){
+		if(!(new RegExp("^\\S+$")).test(parameter.key))
 		{
-			err += "La clé du paramètre de la ligne \"" + (this.index + 1) + "\" est vide ou contient des espaces blancs. ";
+			err += "La clé du paramètre de la ligne \"" + (parameter.index + 1) + "\" est vide ou contient des espaces blancs. ";
 		}
 	});
 			
-	if(!isPositiveInteger(modelId) && modelId !== "" && modelId !== null)
+	if(!isPositiveInteger(modelId, true, true) && modelId !== "" && modelId !== null)
 	{
 		err += "Le modèle choisi présente un problème. ";
 	}
 	
-	if(!isPositiveInteger(typeNo) && typeNo !== "" && typeNo !== null)
+	if(!isPositiveInteger(typeNo, true, false) && typeNo !== "" && typeNo !== null)
 	{
 		err += "Le type choisi présente un problème. ";
 	}
@@ -67,27 +53,31 @@ function validateInformation(modelId, typeNo, parameters)
  */
 async function saveConfirm()
 {
-	let model = $("select#model option:selected");
-	let type = $("select#type option:selected");
+	let modelSelect = document.getElementById("model"); 
+	let typeSelect = document.getElementById("type"); 
+	let selectedModelId = modelSelect.options[modelSelect.selectedIndex].value;
+	let selectedTypeNo = typeSelect.options[typeSelect.selectedIndex].value;
+	let selectedModelText = modelSelect.options[modelSelect.selectedIndex].text;
+	let selectedTypeText = typeSelect.options[typeSelect.selectedIndex].text;
 	let parameters = getModifiedParametersArray();
-	let args = [parseInt(model.val()), parseInt(type.val()), parameters];
-	let modelType = model.text() + " - " + type.text();
+	let args = [parseInt(selectedModelId), parseInt(selectedTypeNo), parameters];
+	let modelType = selectedModelText + " - " + selectedTypeText;
 	let message = "Voulez-vous vraiment sauvegarder ces paramètres pour la combinaison modèle-type : \"" + modelType  + "\"?";
 	
 	if(validateInformation.apply(null, args))
 	{
 		if(await askConfirmation("Sauvegarde des paramètres de paramètres de combinaison modèle-type", message))
 		{
-			$("#loadingModal").css({"display": "block"});
+			document.getElementById("loadingModal").style.display = "block";
 			try{
 				await saveParameters.apply(null, args);
-				openModelTypeParameters(model.val(), type.val());
+				openModelTypeParameters(selectedModelId, selectedTypeNo);
 			}
 			catch(error){
 				showError("La sauvegarde de la combinaison modèle-type a échouée", error);
 			}
 			finally{
-				$("#loadingModal").css({"display": "none"});
+				document.getElementById("loadingModal").style.display = "none";
 			}
 		}
 	}
@@ -100,13 +90,17 @@ async function saveConfirm()
  */
 function getModifiedParametersArray()
 {
+	let tableBody = document.getElementById("parametersTable").getElementsByTagName("tbody")[0];
 	let parameters = [];
-	$("table#parametersTable >tbody >tr").each(function(index){
-		if($(this).find('td:nth-child(5) >input').val() !== $(this).find('td:nth-child(2) >textarea').val())
+	[...tableBody.getElementsByTagName("tr")].forEach(function(parameterRow, index){
+		let key = parameterRow.getElementsByTagName("td")[0].getElementsByTagName("input")[0].value;
+		let previousValue = parameterRow.getElementsByTagName("td")[4].getElementsByTagName("input")[0].value;
+		let newValue = parameterRow.getElementsByTagName("td")[1].getElementsByTagName("textarea")[0].value;
+		if(previousValue !== newValue)
 		{
 			parameters.push({
-				"key": $(this).find('td:nth-child(1) >input').val(),
-				"value": $(this).find('td:nth-child(2) >textarea').val(),
+				"key": key,
+				"value": newValue,
 				"index": index
 			});
 		}
@@ -124,27 +118,27 @@ function getModifiedParametersArray()
 function retrieveParameters(modelId, typeNo)
 {	
 	return new Promise(function(resolve, reject){
-		$.ajax({
+		ajax.send({
 			"type": "GET",
 			"contentType": "application/json;charset=utf-8",
-			"url": "/Planificateur/parametres/varmodtype/actions/getParameters.php",
+			"url": ROOT_URL + "/parametres/varmodtype/actions/getParameters.php",
 			"data": {"modelId": modelId, "typeNo": typeNo},
 			"dataType": "json",
 			"async": true,
 			"cache": false,
-		})
-		.done(function(response){
-			if(response.status === "success")
-			{
-				resolve(response.success.data);
+			"onSuccess": function(response){
+				if(response.status === "success")
+				{
+					resolve(response.success.data);
+				}
+				else
+				{
+					reject(response.failure.message);
+				}
+			},
+			"onFailure": function(error){
+				reject(error);
 			}
-			else
-			{
-				reject(response.failure.message);
-			}
-		})
-		.fail(function(error){
-			reject(error.responseText);
 		});
 	});
 }
@@ -161,27 +155,27 @@ function retrieveParameters(modelId, typeNo)
 function saveParameters(modelId, typeNo, parameters)
 {	
 	return new Promise(function(resolve, reject){
-		$.ajax({
+		ajax.send({
 			"type": "POST",
 			"contentType": "application/json;charset=utf-8",
-			"url": "/Planificateur/parametres/varmodtype/actions/save.php",
-			"data": JSON.stringify({"modelId": modelId, "typeNo": typeNo, "parameters": parameters}),
+			"url": ROOT_URL + "/parametres/varmodtype/actions/save.php",
+			"data": {"modelId": modelId, "typeNo": typeNo, "parameters": parameters},
 			"dataType": "json",
 			"async": true,
 			"cache": false,
-		})
-		.done(function(response){
-			if(response.status === "success")
-			{
-				resolve(response.success.data);
+			"onSuccess": function(response){
+				if(response.status === "success")
+				{
+					resolve(response.success.data);
+				}
+				else
+				{
+					reject(response.failure.message);
+				}
+			},
+			"onFailure": function(error){
+				reject(error);
 			}
-			else
-			{
-				reject(response.failure.message);
-			}
-		})
-		.fail(function(error){
-			reject(error.responseText);
 		});
 	});
 }
@@ -191,48 +185,77 @@ function saveParameters(modelId, typeNo, parameters)
  * @param {object} parameter An object that respects the following formatting 
  * 		{key: "key", value: value, description: "description", defaultValue: "defaultValue"}.
  * 
- * @return {jquery} A new parameter row
+ * @return {Element} A new parameter row
  */
 function newParameter(parameter)
 {
 	let key = ((parameter === null) ? null : parameter.key);
-	let value = ((parameter === null) ? null : parameter.value);
+	let value = ((parameter === null) ? null : parameter.specificValue);
 	let description = ((parameter === null) ? null : parameter.description);
 	let defaultValue = ((parameter === null) ? null : parameter.defaultValue);
 	
-	let keyInput = $("<input>").css({"height": "100%"}).prop("disabled", true).addClass("spaceEfficientText").val(key);
-	let keyCell = $("<td></td>").addClass("firstVisibleColumn").css({"vertical-align": "middle"}).append(keyInput);
+	let keyInput = document.createElement("input");
+	keyInput.style.height = "100%";
+	keyInput.disabled = true;
+	keyInput.classList.add("spaceEfficientText");
+	keyInput.value = key;
 	
-	let valueInput = $("<textarea></textarea>")
-	.css({"overflow-x": "hidden", "overflow-y": "auto", "resize": "none"})
-	.addClass("spaceEfficientText")
-	.val(value);
+	let keyCell = document.createElement("td");
+	keyCell.style.verticalAlign = "middle";
+	keyCell.classList.add("firstVisibleColumn");
+	keyCell.appendChild(keyInput);
 	
-	let valueCell = $("<td></td>").css({"vertical-align": "middle"}).append(valueInput);
+	let valueInput = document.createElement("textarea");
+	valueInput.style.overflowX = "hidden"; 
+	valueInput.style.resize = "none";
+	valueInput.classList.add("spaceEfficientText");
+	valueInput.value = value;
 	
-	let descriptionInput = $("<textArea></textArea>")
-	.css({"overflow-x": "hidden", "overflow-y": "auto", "resize": "none"})
-	.prop({"readonly": true})
-	.addClass("spaceEfficientText")
-	.val(description);
+	let valueCell = document.createElement("td");
+	valueCell.style.verticalAlign = "middle";
+	valueCell.appendChild(valueInput);
 	
-	let descriptionCell = $("<td></td>").css({"vertical-align": "middle"}).append(descriptionInput);
+	let descriptionInput = document.createElement("textarea");
+	descriptionInput.style.overflowX = "hidden"; 
+	descriptionInput.style.resize = "none";
+	descriptionInput.readOnly = true;
+	descriptionInput.classList.add("spaceEfficientText");
+	descriptionInput.value = description;
 	
-	let defaultValueInput = $("<textarea></textarea>")
-	.css({"overflow-x": "hidden", "overflow-y": "auto", "resize": "none"})
-	.prop({"disabled": true})
-	.addClass("spaceEfficientText")
-	.val(defaultValue);
+	let descriptionCell = document.createElement("td");
+	descriptionCell.style.verticalAlign = "middle";
+	descriptionCell.appendChild(descriptionInput);
 	
-	let defaultValueCell = $("<td></td>")
-	.addClass("lastVisibleColumn")
-	.css({"vertical-align": "middle"})
-	.append(defaultValueInput);
+	let defaultValueInput = document.createElement("textarea");
+	defaultValueInput.style.overflowX = "hidden"; 
+	defaultValueInput.style.resize = "none";
+	defaultValueInput.disabled = true;
+	defaultValueInput.classList.add("spaceEfficientText");
+	defaultValueInput.value = defaultValue;
 	
-	let oldValueInput = $("<input></input>").prop({"disabled": true}).css({"display": "none"}).val(value);
-	let oldValueCell = $("<td></td>").prop({"disabled": true}).css({"display": "none"}).append(oldValueInput);
+	let defaultValueCell = document.createElement("td");
+	defaultValueCell.style.verticalAlign = "middle";
+	defaultValueCell.classList.add("lastVisibleColumn");
+	defaultValueCell.appendChild(defaultValueInput);
 	
-	return $("<tr></tr>").css({"height": "50px"}).append(keyCell, valueCell, descriptionCell, defaultValueCell, oldValueCell);
+	let oldValueInput = document.createElement("input");
+	oldValueInput.style.display = "none";
+	oldValueInput.disabled = true;
+	oldValueInput.value = value;
+
+	let oldValueCell = document.createElement("td");
+	oldValueCell.style.display = "none";
+	oldValueCell.disabled = true;
+	oldValueCell.appendChild(oldValueInput);
+	
+	let row = document.createElement("tr");
+	row.style.height = "50px";
+	row.appendChild(keyCell);
+	row.appendChild(valueCell);
+	row.appendChild(descriptionCell);
+	row.appendChild(defaultValueCell);
+	row.appendChild(oldValueCell);
+	return row;
 }
 
 /**
@@ -240,23 +263,33 @@ function newParameter(parameter)
  */
 async function refreshParameters()
 {
-	$("table#parametersTable >tbody >tr").remove();
-	try{
-		let modelId = $("select#model option:selected").val();
-		let typeNo = $("select#type option:selected").val();
-		let parameters = await retrieveParameters(modelId, typeNo);
-		if(parameters.length > 0)
+	let tableBody = document.getElementById("parametersTable").getElementsByTagName("tbody")[0];
+	let modelSelect = document.getElementById("model");
+	let typeSelect = document.getElementById("type");
+	let modelId = modelSelect.options[modelSelect.selectedIndex].value;
+	let typeNo = typeSelect.options[typeSelect.selectedIndex].value;
+	
+	while(tableBody.childElementCount > 0)
+	{
+		tableBody.firstElementChild.remove();
+	}
+
+	try
+	{
+		if(modelId !== null && modelId !== "" && typeNo !== null && typeNo !== "")
 		{
-			$(parameters).each(function(){
-				$("table#parametersTable >tbody").append(newParameter(this));
+			(await retrieveParameters(modelId, typeNo)).map(function(parameter){
+				tableBody.appendChild(newParameter(parameter));
 			});
-		}
-		else
-		{
-			$("table#parametersTable >tbody").append(newParameter());
+			
+			if(tableBody.childElementCount < 1)
+			{
+				tableBody.appendChild(newParameter());
+			}
 		}
 	}
-	catch(error){
+	catch(error)
+	{
 		showError("La récupération des paramètres de la combinaison modèle-type a échouée", error);
 	}
 }
@@ -266,8 +299,11 @@ async function refreshParameters()
  */
 async function exportParameters()
 {
+	let modelSelect = document.getElementById("model"); 
+	let selectedModel = modelSelect.options[modelSelect.selectedIndex].value;
+
 	try{
-		let downloadLink = await exportParametersToExcelFile($("select#model >option:selected").val());
+		let downloadLink = await exportParametersToExcelFile(selectedModel);
 		downloadFile(downloadLink, downloadLink.substring(downloadLink.lastIndexOf('/') + 1));
 	}
 	catch(error){
@@ -282,7 +318,7 @@ async function exportParameters()
  */
 function importParameters()
 {
-	$("input#filesToImport").click();
+	document.getElementById("filesToImport").click();
 }
 
 /**
@@ -293,27 +329,27 @@ function importParameters()
 function exportParametersToExcelFile(modelId)
 {
 	return new Promise(function(resolve, reject){
-		$.ajax({
+		ajax.send({
 			"type": "GET",
 			"contentType": "application/json;charset=utf-8",
-			"url": "/Planificateur/parametres/varmodtype/actions/exportToExcel.php",
+			"url": ROOT_URL + "/parametres/varmodtype/actions/exportToExcel.php",
 			"data": {"modelId": modelId, "generic": null},
 			"dataType": "json",
 			"async": true,
 			"cache": false,
-		})
-		.done(function(response){
-			if(response.status === "success")
-			{
-				resolve(response.success.data);
+			"onSuccess": function(response){
+				if(response.status === "success")
+				{
+					resolve(response.success.data);
+				}
+				else
+				{
+					reject(response.failure.message);
+				}
+			},
+			"onFailure": function(error){
+				reject(error);
 			}
-			else
-			{
-				reject(response.failure.message);
-			}
-		})
-		.fail(function(error){
-			reject(error.responseText);
 		});
 	});
 }
@@ -329,28 +365,48 @@ function importParametersFromExcelFile(file)
 	let formData = new FormData();
 	formData.append("files[]", file);
 	return new Promise(function(resolve, reject){
-		$.ajax({
+		ajax.send({
 			"type": "POST",
-			"contentType": false,
-			"processData": false,
-			"url": "/Planificateur/parametres/varmodtype/actions/importFromExcel.php",
+			"contentType": null,
+			"url": ROOT_URL + "/parametres/varmodtype/actions/importFromExcel.php",
 			"data": formData,
 			"dataType": "json",
 			"async": true,
 			"cache": false,
-		})
-		.done(function(response){
-			if(response.status === "success")
-			{
-				resolve(response.success.data);
+			"onSuccess": function(response){
+				if(response.status === "success")
+				{
+					resolve(response.success.data);
+				}
+				else
+				{
+					reject(response.failure.message);
+				}
+			},
+			"onFailure": function(error){
+				reject(error);
 			}
-			else
-			{
-				reject(response.failure.message);
-			}
-		})
-		.fail(function(error){
-			reject(error.responseText);
 		});
 	});
+}
+
+async function importParameterFiles()
+{
+	let modelSelect = document.getElementById("model"); 
+	let typeSelect = document.getElementById("type"); 
+	let selectedModel = modelSelect.options[modelSelect.selectedIndex].value;
+	let selectedType = typeSelect.options[typeSelect.selectedIndex].value;
+
+	document.getElementById("loadingModal").style.display = "block";
+	try{
+		await importParametersFromExcelFile(document.getElementById("filesToImport").files[0]);
+		openModelTypeParameters(selectedModel, selectedType);
+	}
+	catch(error){
+		showError("L'importation des paramètres a échouée.", error)
+	}
+	finally{
+		document.getElementById("filesToImport").value = "";
+		document.getElementById("loadingModal").style.display = "none";
+	}
 }

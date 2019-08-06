@@ -15,12 +15,28 @@
      */
     
     /* INCLUDE */
-    include_once __DIR__ . '/lib/config.php';	// Fichier de configuration
-    include_once __DIR__ . '/lib/connect.php';	// Classe de connection à la base de données
+    require_once __DIR__ . '/lib/config.php';	// Fichier de configuration
+    require_once __DIR__ . '/lib/connect.php';	// Classe de connection à la base de données
     
-    include_once __DIR__ . '/sections/batch/model/batch.php';	// Modèle d'une batch
-    include_once __DIR__ . '/sections/job/model/job.php';		// Modèle d'une job
-    include_once __DIR__ . '/controller/planificateur.php';		// Classe controleur de cette vue
+    require_once __DIR__ . '/sections/batch/model/batch.php';	// Modèle d'une batch
+    require_once __DIR__ . '/sections/job/model/job.php';		// Modèle d'une job
+	require_once __DIR__ . '/controller/planificateur.php';		// Classe controleur de cette vue
+	
+	// Initialize the session
+	session_start();
+                                                                        
+	// Check if the user is logged in, if not then redirect him to login page
+	if(!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true){
+		if(!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest')
+		{
+			throw new \Exception("You are not logged in.");
+		}
+		else
+		{
+			header("location: /Planificateur/lib/account/logIn.php");
+		}
+		exit;
+	}
 ?>
 
 <!DOCTYPE HTML>
@@ -29,12 +45,12 @@
 		<title>Fabridor - Planificateur de production</title>
 		<meta name="viewport" content="width=device-width, initial-scale=1" />
 		<meta http-equiv="content-type" content="text/html; charset=UTF-8" />
-		<link rel="stylesheet" href="/Planificateur/assets/css/responsive.css" />
-		<link rel="stylesheet" href="/Planificateur/assets/css/fabridor.css" />
-		<link rel="stylesheet" href="/Planificateur/assets/css/loader.css" />
-		<link rel="stylesheet" href="/Planificateur/assets/css/imageButton.css" />
-		<link rel='stylesheet' href='/Planificateur/lib/fullcalendar/fullcalendar.css' />
-		<link rel='stylesheet' href='/Planificateur/css/index.css' />
+		<link rel="stylesheet" href="assets/css/responsive.css" />
+		<link rel="stylesheet" href="assets/css/fabridor.css" />
+		<link rel="stylesheet" href="assets/css/loader.css" />
+		<link rel="stylesheet" href="assets/css/imageButton.css" />
+		<link rel='stylesheet' href='lib/fullcalendar/fullcalendar.css' />
+		<link rel='stylesheet' href='css/index.css' />
 	</head>
 	<body class="homepage" style="height:100%;">
 		<div id="page-wrapper" style="display:flex; flex-direction:column; height:100%;">
@@ -44,24 +60,23 @@
 					<!-- Logo -->
 					<div id="logo">
 						<h1>
-							<a href="/Planificateur/index.php">
+							<a href="index.php">
 								<img src="images/fabridor.jpg">
 							</a>
 						</h1>
 						<span>Planificateur de production</span>
 					</div>
 					<!-- Navigation menu -->
-					<div style="display:inline-block;float:right;">
-    					<nav id="nav">
+					<div style="float:right;">
+    					<nav id="nav" style="display: block;">
     						<ul>									
     							<li>
     								<a href="sections/batch/index.php" class="imageButton">
     									<img src="images/cal16.png">
     								Planifier un nest</a>
     							</li>
-    							
     							<li  class="current">
-    								<a href="#" class="imageButton"  class="imageButton">
+    								<a href="#" class="imageButton">
     									<img src="images/config16.png">
     								Paramètres</a>
     								<ul>
@@ -128,10 +143,28 @@
             										Combiner des programmes</a>
         										</li>
     										</ul>
-    									</li>
+										</li>
+										<li>
+											<a href="#" class="imageButton">
+            									<img src="images/user.png">
+            								<?= htmlspecialchars($_SESSION["username"]); ?></a>
+											<ul>
+												<li>
+													<a href="lib/account/reset-password.php" class="imageButton">
+														<img src="images/user.png">
+														Changer mot de passe
+													</a>
+												</li>
+												<li>
+													<a href="lib/account/logOut.php" class="imageButton">
+														<img src="images/exit.png">
+													Déconnexion</a>
+												</li>
+											</ul>
+										</li>
     								</ul>
-    							</li>
-    							<li  class="current">
+								</li>
+								<li  class="current">
     								<a href="#" class="imageButton">
     									<img src="images/help16.png">
     								Légende</a>
@@ -145,7 +178,7 @@
     									<li class="state" style='background-color: #3B3131;'>Terminée</li>
     								</ul>
     							</li>
-    						</ul>
+							</ul>
     					</nav>
     					<div style="float: right; margin-bottom: 5px;">
     						<form id="findBatchByJobNumberForm" action="javascript: void(0);" 
@@ -166,12 +199,12 @@
 			</div>
 
 			<!--  Fenetre Modal pour message d'erreurs -->
-    		<div id="errMsgModal" class="modal" onclick='$(this).css({"display": "none"});' style="z-index:4;">
+    		<div id="errMsgModal" class="modal" onclick='this.style.display = "none";' style="z-index:4;">
     			<div id="errMsg" class="modal-content" style='color:#FF0000;'></div>
     		</div>
     		
     		<!--  Fenetre Modal pour message de validation -->
-    		<div id="validationMsgModal" class="modal" onclick='$(this).css({"display": "none"});' style="z-index:4;">
+    		<div id="validationMsgModal" class="modal" onclick='this.style.display = "none";' style="z-index:4;">
                 <!-- Modal content -->
     			<div id="validationMsg" class="modal-content" style='color:#FF0000;'></div>
     		</div>
@@ -182,18 +215,23 @@
     		</div>			
 
 		    <!-- Scripts -->
-			<script src='/Planificateur/lib/fullcalendar/lib/jquery.min.js'></script>
-			<script src='/Planificateur/lib/fullcalendar/lib/jquery-ui.min.js'></script>
-			<script src='/Planificateur/lib/fullcalendar/lib/moment.min.js'></script>
-			<script src='/Planificateur/lib/fullcalendar/fullcalendar.js'></script>	
-			<script src='/Planificateur/lib/fullcalendar/locale/fr-ca.js'></script>
-			<script src="/Planificateur/assets/js/jquery.dropotron.min.js"></script>
-			<script src="/Planificateur/assets/js/skel.min.js"></script>
-			<script src="/Planificateur/assets/js/util.js"></script>
-			<script src="/Planificateur/assets/js/main.js"></script>
+			<script type="text/javascript" src="lib/fullcalendar/lib/jquery.min.js"></script>
+			<script type="text/javascript" src="lib/fullcalendar/lib/jquery-ui.min.js"></script>
+			<script type="text/javascript" src="lib/fullcalendar/lib/moment.min.js"></script>
+			<script type="text/javascript" src="lib/fullcalendar/fullcalendar.js"></script>	
+			<script type="text/javascript" src="lib/fullcalendar/locale/fr-ca.js"></script>
+			<script type="text/javascript" src="assets/js/jquery.dropotron.min.js"></script>
+			<script type="text/javascript" src="assets/js/skel.min.js"></script>
+			<script type="text/javascript" src="assets/js/util.js"></script>
+			<script type="text/javascript" src="assets/js/main.js"></script>
 			
-			<script src="js/main.js"></script>
-			<script src="js/index.js"></script>
+			<script type="text/javascript" src="js/main.js"></script>
+			<script type="text/javascript" src="js/index.js"></script>
 		</div>
 	</body>
 </html>
+
+<?php 
+	// Closing the session to let other scripts use it.
+	session_write_close();
+?>
