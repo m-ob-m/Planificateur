@@ -1,20 +1,21 @@
+"use strict";
+
 /**
  * Redirects to the page of the specified batch
  * @param {int} batchId The id of the batch
  */
-function goToBatch(batchId)
+async function goToBatch(batchId)
 {
-	if(dataHasChanged() === true)
+	if(hasChanged())
 	{
-		askConfirmation("Quitter cette job?", "Les modifications non sauvegardés seront perdues.")
-		.then(function(){
-			window.location.assign("/Planificateur/sections/batch/index.php?id=" + batchId);
-		})
-		.catch(function(){/* Do nothing. */});
+		if(await askConfirmation("Quitter cette job?", "Les modifications non sauvegardés seront perdues."))
+		{
+			window.location.assign(ROOT_URL + "/sections/batch/index.php?id=" + batchId);
+		}
 	}
 	else
 	{
-		window.location.assign("/Planificateur/sections/batch/index.php?id=" + batchId);
+		window.location.assign(ROOT_URL + "/sections/batch/index.php?id=" + batchId);
 	}
 }
 
@@ -25,5 +26,5 @@ function goToBatch(batchId)
  */
 function goToJob(jobId, batchId)
 {
-	window.location.assign("/Planificateur/sections/job/index.php?jobId=" + jobId  + "&batchId=" + batchId);
+	window.location.assign(ROOT_URL + "/sections/job/index.php?jobId=" + jobId  + "&batchId=" + batchId);
 }

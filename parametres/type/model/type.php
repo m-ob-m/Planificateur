@@ -1,5 +1,6 @@
 <?php
-include_once __DIR__ . "/../../varmodtype/model/modelTypeParameter.php";
+require_once __DIR__ . "/../../varmodtype/model/modelTypeParameter.php";
+require_once __DIR__ . "/../../generic/model/generic.php";
 
 /**
  * \name		type.php
@@ -17,7 +18,7 @@ class Type implements \JsonSerializable
 	private $_id;
 	private $_importNo;
 	private $_description;
-	private $_genericId;
+	private $_generic;
 	private $_timestamp;
 	private $__database_connection_locking_read_type = \MYSQLDatabaseLockingReadTypes::NONE;
 
@@ -27,20 +28,20 @@ class Type implements \JsonSerializable
 	 * @param int $id The id of the Type in the database
 	 * @param int $importNo The import number of this Type
 	 * @param string $description The description of this generic
-	 * @param int $genericId The id of the Generic associated to this Type
+	 * @param \Generic $generic The Generic associated to this Type
 	 * @param string $timestamp The timestamp of the last modification date of this object in the database
 	 *
 	 * @throws
 	 * @author Marc-Olivier Bazin-Maurice
 	 * @return Type
 	 */
-	function __construct(?int $id = null, ?int $importNo = null, ?string $description = null, ?int $genericId = null, 
-	    ?string $timestamp)
+	function __construct(?int $id = null, ?int $importNo = null, ?string $description = null, ?\Generic $generic = null, 
+	    ?string $timestamp = null)
 	{
 	    $this->setId($id);
 	    $this->setImportNo($importNo);
 	    $this->setDescription($description);
-	    $this->setGenericId($genericId);
+	    $this->setGeneric($generic);
 	    $this->setTimestamp($timestamp);
 	}
 	
@@ -54,10 +55,11 @@ class Type implements \JsonSerializable
 	 * @author Marc-Olivier Bazin-Maurice
 	 * @return Type The Type associated to the specified ID in the specified database
 	 */
-	public static function withId(\FabplanConnection $db, int $id, int $databaseConnectionLockingReadType = 0) : ? \Type
+	public static function withId(\FabplanConnection $db, int $id, int $databaseConnectionLockingReadType = 0) : ?\Type
 	{
 	    // Récupérer le test
-	    $stmt = $db->getConnection()->prepare("SELECT `dt`.* FROM `fabplan`.`door_types` AS `dt` WHERE `dt`.`id` = :id " . 
+	    $stmt = $db->getConnection()->prepare(
+	        "SELECT `dt`.* FROM `door_types` AS `dt` WHERE `dt`.`id` = :id " . 
 	        (new \MYSQLDatabaseLockingReadTypes($databaseConnectionLockingReadType))->toLockingReadString() . ";"
         );
 	    $stmt->bindValue(':id', $id, PDO::PARAM_INT);
@@ -65,14 +67,15 @@ class Type implements \JsonSerializable
 	    
 	    if ($row = $stmt->fetch())	// Récupération de l'instance de matériel
 	    {
-	        $instance = new self($row["id"], $row["importNo"], $row["description"], $row["generic_id"], $row["timestamp"]);
+	        $generic = \Generic::withID($db, $row["generic_id"]);
+	        $instance = new self($row["id"], $row["importNo"], $row["description"], $generic, $row["timestamp"]);
 	    }
 	    else
 	    {
 	        return null;
 	    }
 	    
-	    $this->setDatabaseConnectionLockingReadType($databaseConnectionLockingReadType);
+	    $instance->setDatabaseConnectionLockingReadType($databaseConnectionLockingReadType);
 	    return $instance;
 	}
 	
@@ -88,27 +91,37 @@ class Type implements \JsonSerializable
 	 */
 	public static function withImportNo(\FabplanConnection $db, int $importNo, int $dbConnectionLockingReadType = 0) : ?\Type
 	{
-	    if ($this->getId() === null)	// Récupération de l'instance de matériel
+	    // Récupérer le test
+	    $stmt = $db->getConnection()->prepare(
+	        "SELECT `dt`.* FROM `door_types` AS `dt` 
+            WHERE `dt`.`importNo` = :importNo " .
+	        (new \MYSQLDatabaseLockingReadTypes($dbConnectionLockingReadType))->toLockingReadString() . ";"
+	    );
+	    $stmt->bindValue(':importNo', $importNo, PDO::PARAM_INT);
+	    $stmt->execute();
+	    
+	    if ($row = $stmt->fetch())	// Récupération de l'instance de matériel
 	    {
-	        $instance = new self($row["id"], $row["importNo"], $row["description"], $row["generic_id"], $row["timestamp"]);
+	        $generic = \Generic::withID($db, $row["generic_id"]);
+	        $instance = new self($row["id"], $row["importNo"], $row["description"], $generic, $row["timestamp"]);
 	    }
 	    else
 	    {
 	        return null;
 	    }
 	    
-	    $this->setDatabaseConnectionLockingReadType($dbConnectionLockingReadType);
+	    $instance->setDatabaseConnectionLockingReadType($dbConnectionLockingReadType);
 	    return $instance;
 	}
 	
 	/**
 	 * Save the Type object in the database
 	 *
-	 * @param FabPlanConnection $db The database in which the record must be saved
+	 * @param \FabPlanConnection $db The database in which the record must be saved
 	 *
 	 * @throws
 	 * @author Marc-Olivier Bazin-Maurice
-	 * @return Type This Type (for method chaining)
+	 * @return \Type This Type (for method chaining)
 	 */
 	function save(\FabPlanConnection $db) : \Type
 	{
@@ -118,17 +131,17 @@ class Type implements \JsonSerializable
 	    }
 	    else
 	    {
-	        $dbTimestamp = \DateTime::createFromFormat("Y-m-d H:i:s", $this->getTimestampFromDatabase($db), "America/Montreal");
-	        $localTimestamp = \DateTime::createFromFormat("Y-m-d H:i:s", $this->getTimestamp(), "America/Montreal");
-	        if($this->getDatabaseConnectionReadingLockType() !== \MYSQLDatabaseLockingReadTypes::FOR_UPDATE)
+	        $dbTimestamp = \DateTime::createFromFormat("Y-m-d H:i:s", $this->getTimestampFromDatabase($db));
+	        $localTimestamp = \DateTime::createFromFormat("Y-m-d H:i:s", $this->getTimestamp());
+	        if($this->getDatabaseConnectionLockingReadType() !== \MYSQLDatabaseLockingReadTypes::FOR_UPDATE)
 	        {
 	            throw new \Exception("The provided " . get_class($this) . " is not locked for update.");
 	        }
-	        elseif($databaseTimestamp > $localTimestamp)
+	        elseif($dbTimestamp > $localTimestamp)
 	        {
 	            throw new \Exception(
-	                "The provided " . get_class($this) . " is outdated. The last modification date of the database entry is
-                    \"{$dbTimestamp->format("Y-m-d H:i:s")}\" whereas the last modification date of the local copy is
+	                "The provided " . get_class($this) . " is outdated. The last modification date of the database entry
+                    is \"{$dbTimestamp->format("Y-m-d H:i:s")}\" whereas the last modification date of the local copy is
                     \"{$localTimestamp->format("Y-m-d H:i:s")}\"."
 	            );
 	        }
@@ -147,24 +160,24 @@ class Type implements \JsonSerializable
 	/**
 	 * Insert the Type object in the database
 	 *
-	 * @param FabPlanConnection $db The database in which the record must be inserted
+	 * @param \FabPlanConnection $db The database in which the record must be inserted
 	 *
 	 * @throws
 	 * @author Marc-Olivier Bazin-Maurice
-	 * @return Type This Type (for method chaining)
+	 * @return \Type This Type (for method chaining)
 	 */
 	private function insert(\FabPlanConnection $db) : \Type
 	{
         // Création d'un test
         $stmt = $db->getConnection()->prepare("
-            INSERT INTO `fabplan`.`door_types` (`importNo`, `description`, `generic_id`)
+            INSERT INTO `door_types` (`importNo`, `description`, `generic_id`)
             VALUES (:importNo, :description, :generic_id);
         ");
         $stmt->bindValue(':importNo', $this->getImportNo(), PDO::PARAM_INT);
         $stmt->bindValue(':description', $this->getDescription(), PDO::PARAM_STR);
-        $stmt->bindValue(":generic_id", $this->getGenericId(), PDO::PARAM_INT);
+        $stmt->bindValue(":generic_id", $this->getGeneric()->getId(), PDO::PARAM_INT);
         $stmt->execute();
-        $this->_id = $db->getConnection()->lastInsertId();
+        $this->_id = intval($db->getConnection()->lastInsertId());
         
         return $this;
 	}
@@ -172,23 +185,23 @@ class Type implements \JsonSerializable
 	/**
 	 * Update the Type object in the database
 	 *
-	 * @param FabPlanConnection $db The database in which the record must be updated
+	 * @param \FabPlanConnection $db The database in which the record must be updated
 	 *
 	 * @throws
 	 * @author Marc-Olivier Bazin-Maurice
-	 * @return Type This Type (for method chaining)
+	 * @return \Type This Type (for method chaining)
 	 */
 	private function update(\FabPlanConnection $db) :Type
 	{ 
         // Mise à jour d'un test
         $stmt = $db->getConnection()->prepare("
-            UPDATE `fabplan`.`door_types`
+            UPDATE `door_types`
             SET `importNo` = :importNo, `description` = :description, `generic_id` = :genericId
             WHERE `id` = :id;
         ");
         $stmt->bindValue(':importNo', $this->getImportNo(), PDO::PARAM_INT);
         $stmt->bindValue(':description', $this->getDescription(), PDO::PARAM_STR);
-        $stmt->bindValue(":genericId", $this->getGenericId(), PDO::PARAM_INT);
+        $stmt->bindValue(":genericId", $this->getGeneric()->getId(), PDO::PARAM_INT);
         $stmt->bindValue(':id', $this->getId(), PDO::PARAM_INT);
         $stmt->execute();
         
@@ -206,17 +219,24 @@ class Type implements \JsonSerializable
 	 */
 	public function delete(\FabPlanConnection $db) : \Type
 	{
-	    $stmt = $db->getConnection()->prepare("
-            DELETE FROM `fabplan`.`door_model_data` WHERE `fkDoorType` = :importNo;
-        ");
-	    $stmt->bindValue(':importNo', $this->getImportNo(), PDO::PARAM_INT);
-	    $stmt->execute();
-	    
-        $stmt = $db->getConnection()->prepare("
-            DELETE FROM `fabplan`.`door_types` WHERE `id` = :id;
-        ");
-        $stmt->bindValue(':id', $this->getId(), PDO::PARAM_INT);
-        $stmt->execute();
+	    if($this->getDatabaseConnectionLockingReadType() !== \MYSQLDatabaseLockingReadTypes::FOR_UPDATE)
+	    {
+	        throw new \Exception("The provided " . get_class($this) . " is not locked for update.");
+	    }
+	    else
+	    {
+    	    $stmt = $db->getConnection()->prepare("
+                DELETE FROM `door_model_data` WHERE `fkDoorType` = :importNo;
+            ");
+    	    $stmt->bindValue(':importNo', $this->getImportNo(), PDO::PARAM_INT);
+    	    $stmt->execute();
+    	    
+            $stmt = $db->getConnection()->prepare("
+                DELETE FROM `door_types` WHERE `id` = :id;
+            ");
+            $stmt->bindValue(':id', $this->getId(), PDO::PARAM_INT);
+            $stmt->execute();
+	    }
         
         return $this;
 	}
@@ -233,7 +253,7 @@ class Type implements \JsonSerializable
 	public function getTimestampFromDatabase(\FabPlanConnection $db) : ?string
 	{
 	    $stmt= $db->getConnection()->prepare("
-            SELECT `dt`.`timestamp` FROM `fabplan`.`door_types` AS `dt` WHERE `dt`.`id` = :id;
+            SELECT `dt`.`timestamp` FROM `door_types` AS `dt` WHERE `dt`.`id` = :id;
         ");
 	    $stmt->bindValue(':id', $this->getId(), PDO::PARAM_INT);
 	    $stmt->execute();
@@ -285,15 +305,15 @@ class Type implements \JsonSerializable
 	}
 	
 	/**
-	 * Get the id of the Generic associated to this Type
+	 * Get the Generic associated to this Type
 	 *
 	 * @throws
 	 * @author Marc-Olivier Bazin-Maurice
-	 * @return int The id of the Generic associated to this Type
+	 * @return \Generic The id of the Generic associated to this Type
 	 */
-	public function getGenericId() : ?int
+	public function getGeneric() : ?\Generic
 	{
-	    return $this->_genericId;
+	    return $this->_generic;
 	}
 	
 	/**
@@ -320,8 +340,9 @@ class Type implements \JsonSerializable
 	public function getModelTypeParametersForAllModels(\FabplanConnection $db) : ?array
 	{
 	    $stmt = $db->getConnection()->prepare("
-            SELECT `dmd`.`fkDoorModel` AS `modelId`, `dmd`.`paramKey` AS `parameterKey`, `dmd`.`paramValue` AS `parameterValue`
-            FROM `fabplan`.`door_model_data` AS `dmd`
+            SELECT `dmd`.`fkDoorModel` AS `modelId`, `dmd`.`paramKey` AS `parameterKey`, 
+                `dmd`.`paramValue` AS `parameterValue`
+            FROM `door_model_data` AS `dmd`
             WHERE `dmd`.`fkDoorType` = :typeNo;
         ");
 	    $stmt->bindValue(":typeNo", $this->getImportNo(), PDO::PARAM_INT);
@@ -332,7 +353,7 @@ class Type implements \JsonSerializable
 	    {
 	        array_push(
 	            $modelTypeParameters, 
-	            new ModelTypeParameter($row["parameterKey"], $row["parameterValue"], $row["modelId"], $this->getImportNo())
+	            new \ModelTypeParameter($row["parameterKey"], $row["parameterValue"], $row["modelId"], $this->getImportNo())
 	        );
 	    }
 	    
@@ -366,6 +387,7 @@ class Type implements \JsonSerializable
 	public function setImportNo(?int $importNo) : Type
 	{
 	    $this->_importNo = $importNo;
+	    
 	    return $this;
 	}
 	
@@ -385,17 +407,17 @@ class Type implements \JsonSerializable
 	}
 	
 	/**
-	 * Set the id of the generic associated to this Type
+	 * Set the Generic associated to this Type
 	 *
-	 * @param int $genericId The id of the new generic associated to this Type
+	 * @param \Generic $generic The Generic associated to this Type
 	 *
 	 * @throws
 	 * @author Marc-Olivier Bazin-Maurice
-	 * @return Type This Type (for method chaining)
+	 * @return \Type This Type (for method chaining)
 	 */
-	public function setGenericId(?int $genericId) : Type
+	public function setGeneric(?\Generic $generic) : Type
 	{
-	    $this->_genericId = $genericId;
+	    $this->_generic = $generic;
 	    return $this;
 	}
 	
@@ -433,7 +455,7 @@ class Type implements \JsonSerializable
 	 * @author Marc-Olivier Bazin-Maurice
 	 * @return int The database connection locking read type applied to this object.
 	 */
-	private function getDatabaseConnectionLockingReadType() : int
+	public function getDatabaseConnectionLockingReadType() : int
 	{
 	    return $this->__database_connection_locking_read_type;
 	}
@@ -446,7 +468,7 @@ class Type implements \JsonSerializable
 	 * @author Marc-Olivier Bazin-Maurice
 	 * @return \JobType This JobType.
 	 */
-	private function setDatabaseConnectionLockingReadType(int $databaseConnectionLockingReadType) : \JobType
+	private function setDatabaseConnectionLockingReadType(int $databaseConnectionLockingReadType) : \Type
 	{
 	    $this->__database_connection_locking_read_type = $databaseConnectionLockingReadType;
 	    return $this;

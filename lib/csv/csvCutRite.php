@@ -1,5 +1,5 @@
 <?php
-    include_once __DIR__ . "/../../parametres/generic/controller/genericController.php";
+    require_once __DIR__ . "/../../parametres/generic/controller/genericController.php";
     
     /**
     * \name		   CsvCutrite
@@ -43,15 +43,32 @@
     		    /* @var $part JobTypePorte */
                 foreach($jobType->getParts() as $part)  
                 {
-                    $generic = \Generic::withID(new \FabPlanConnection(), $jobType->getGenericId());
-                    $externalProfile = $jobType->getParametersAsKeyValuePairs()["T_Ext"];
-                    $this->_csv .=  "{$jobType->getModelId()}_{$jobType->getTypeNo()}_{$jobType->getId()};" . 
+					$generic = $jobType->getType()->getGeneric();
+					$defaultExternalProfile = $jobType->getType()->getGeneric()->getParametersAsKeyValuePairs()["T_Ext"];
+                    $externalProfile = $jobType->getParametersAsKeyValuePairs()["T_Ext"] ?? $defaultExternalProfile;
+                    $modelId = $jobType->getModel()->getId();
+					$typeNo = $jobType->getType()->getImportNo();
+					$height = ($generic->getHeightParameter() === "LPX") ? $part->getLength() : $part->getWidth();
+					$width = ($generic->getHeightParameter() === "LPX") ? $part->getWidth() : $part->getLength();
+					$grain = $part->getGrain();
+					if($generic->getHeightParameter() === "LPY")
+					{
+						if($grain === "X")
+						{
+							$grain = "Y";
+						}
+						elseif($grain === "Y")
+						{
+							$grain = "X";
+						}
+					}
+                    $this->_csv .=  "{$modelId}_{$typeNo}_{$jobType->getId()};" . 
                         "{$material->getCodeCutRite()};" . 
                         "{$part->getQuantityToProduce()};" . 
-    					(($generic->getHeightParameter() === "LPX") ? $part->getLength() : $part->getWidth()) . ";" .
-    					(($generic->getHeightParameter() === "LPX") ? $part->getWidth() : $part->getLength()) . ";" .
-    					"{$jobType->getTypeNo()};" .
-    					"{$part->getGrain()};" .
+    					"{$height};" .
+    					"{$width};" .
+    					"{$typeNo};" .
+    					"{$grain};" .
     					"{$externalProfile};" .
     					"{$job->getName()}_{$part->getId()};;;;;;;\n"; 
     			}

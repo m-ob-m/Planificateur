@@ -13,9 +13,9 @@
 /*
  * Includes
  */
-include_once __DIR__ . '/../../../lib/config.php';	// Fichier de configuration
-include_once __DIR__ . '/../../../lib/connect.php';	// Classe de connection à la base de données
-include_once __DIR__ . '/../model/modelTypeGenericParameter.php';	// Classe de parametre
+require_once __DIR__ . '/../../../lib/config.php';	// Fichier de configuration
+require_once __DIR__ . '/../../../lib/connect.php';	// Classe de connection à la base de données
+require_once __DIR__ . '/../model/modelTypeGenericParameter.php';	// Classe de parametre
 
 class ModelTypeGenericParameterController
 {
@@ -43,7 +43,8 @@ class ModelTypeGenericParameterController
      *
      * @throws
      * @author Marc-Olivier Bazin-Maurice
-     * @return ModelTypeGenericParameter The ModelTypeGenericParameter object with $modelId as model id and $typeNo as type import no and $key as key
+     * @return ModelTypeGenericParameter The ModelTypeGenericParameter object with $modelId as model id and $typeNo as type import no and 
+     *                                   $key as key
      */
     public function getModelTypeGenericParameter(int $modelId, int $typeNo, string $key) : ?ModelTypeGenericParameter
     {

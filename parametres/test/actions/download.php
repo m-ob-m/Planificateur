@@ -9,17 +9,36 @@
  * \details 	Génère un fichier unitaire MPR pour un Test particulier.
  */
 
-    include_once __DIR__ . '/../../../lib/config.php';	// Fichier de configuration
-    include_once __DIR__ . '/../../../lib/connect.php';	// Classe de connection à la base de données
-    include_once __DIR__ . '/../../../lib/mpr/mprCutRite.php';  		// Createur de MPR pour CutRite
-    include_once __DIR__ . '/../controller/testController.php'; // Controlleur de TestType
-    include_once __DIR__ . '/../../generic/controller/genericController.php';	// Contrôleur de générique
-   
-    //Structure de retour vers javascript
-    $responseArray = array("status" => null, "success" => array("data" => null), "failure" => array("message" => null));
-    
+    // Structure de retour vers javascript
+    $responseArray = array("status" => null, "success" => array("data" => null), "failure" => array("message" => null));    
+
     try 
     {
+        require_once __DIR__ . '/../../../lib/config.php';	// Fichier de configuration
+        require_once __DIR__ . '/../../../lib/connect.php';	// Classe de connection à la base de données
+        require_once __DIR__ . '/../../../lib/mpr/mprCutRite.php';  		// Createur de MPR pour CutRite
+        require_once __DIR__ . '/../controller/testController.php'; // Controlleur de TestType
+        require_once __DIR__ . '/../../generic/controller/genericController.php';	// Contrôleur de générique
+        
+        // Initialize the session
+        session_start();
+                                    
+        // Check if the user is logged in, if not then redirect him to login page
+        if(!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true){
+            if(!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest')
+            {
+                throw new \Exception("You are not logged in.");
+            }
+            else
+            {
+                header("location: /Planificateur/lib/account/logIn.php");
+            }
+            exit;
+        }
+
+        // Closing the session to let other scripts use it.
+        session_write_close();
+        
         $input =  json_decode(file_get_contents("php://input"));
         
         $testId = isset($input->testId) ? $input->testId : null;
@@ -32,7 +51,7 @@
         try
         {
             $db->getConnection()->beginTransaction();
-            GenerateTestProgram(Test::withID($db, $testId));
+            GenerateTestProgram($db, \Test::withID($db, $testId));
             $db->getConnection()->commit();
         }
         catch(\Exception $e)
@@ -68,29 +87,32 @@
      * @author Marc-Olivier Bazin-Maurice
      * @return
      */
-    function GenerateTestProgram(Test $test) : void
+    function GenerateTestProgram(\FabplanConnection $db, \Test $test) : void
     { 
-        $defaultName = $test->getModelId() . "_" . $test->getTypeNo() . "_" .  $test->getId();
+        $type = $test->getType();
+        $modelId = $test->getModel()->getId();
+        $typeNo = $type->getImportNo();
+        $defaultName = $modelId . "_" . $typeNo . "_" .  $test->getId();
         $mprname = ($test->getName() <> "") ? ($test->getName()) : $defaultName;
         $filepath = _TESTDIRECTORY . "{$mprname}.mpr";
         
         // Vérification si programme générique utilisé
-        if($test->getModelId() === 1)
+        if($modelId === 1)
         {
             throw new \Exception("Vous ne pouvez pas télécharger des modèles génériques!");
         }
-        elseif($test->getModelId() === 2)
+        elseif($modelId === 2)
         {
-            $mpr = new mprCutrite(__DIR__ . "/../../../lib/" . (new GenericController())->getGenerics()[0]->getFilename());
+            $dummyGeneric = (new \GenericController())->getGenerics()[0];
+            $mpr = new \mprCutrite(__DIR__ . "/../../../lib/" . $dummyGeneric->getFilename());
             $mpr->makeMprFromTest($test, array());
             $mpr->makeMprFile($filepath);
         }
         else 
         {
-            $generic = \Generic::withID($test->getGenericId());
+            $generic = \Generic::withID($db, $type->getGeneric()->getId());
             $parametersDescription = getParametersDescriptionsTable($generic);
-            $mpr = new mprCutrite(__DIR__ . "/../../../lib/" . $generic->getFilename());
-            $mpr->extractMprBlocks();
+            $mpr = new \mprCutrite(__DIR__ . "/../../../lib/" . $generic->getFilename());
             $mpr->makeMprFromTest($test, $parametersDescription);
             $mpr->makeMprFile($filepath);
         }
@@ -108,7 +130,7 @@
     function getParametersDescriptionsTable(Generic $generic) : array
     {
         $descriptionTable = array();
-        foreach($generic->getGenericParameters() as $parameter)
+        foreach($generic->getParameters() as $parameter)
         {
             $descriptionTable[$parameter->getKey()] = $parameter->getDescription();
         }

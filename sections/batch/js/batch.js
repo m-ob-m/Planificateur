@@ -1,3 +1,5 @@
+"use strict";
+
 /**
  * Retrieves the status of a batch
  * 
@@ -5,30 +7,30 @@
  * 
  * @return {Promise}
  */
-function retrieveBatchStatus(id)
+function retrieveBatchMprStatus(id)
 {
 	return new Promise(function(resolve, reject){
-		$.ajax({
+		ajax.send({
 			"type": "GET",
 			"contentType": "application/json;charset=utf-8",
-			"url": "/Planificateur/sections/batch/actions/getStatus.php",
+			"url": ROOT_URL + "/sections/batch/actions/getMprStatus.php",
 			"data": {"batchId": id},
 			"dataType": "json",
 			"async": true,
-			"cache": false
-		})
-		.done(function(response){
-			if(response.status === "success")
-			{
-				resolve(response.success.data);
+			"cache": false,
+			"onSuccess": function(response){
+				if(response.status === "success")
+				{
+					resolve(response.success.data);
+				}
+				else
+				{
+					reject(response.failure.message);
+				}
+			},
+			"onFailure": function(error){
+				reject(error);
 			}
-			else
-			{
-				reject(response.failure.message);
-			}
-		})
-		.fail(function(error){
-			reject(error.responseText);
 		});
 	});
 }
@@ -43,27 +45,27 @@ function retrieveBatchStatus(id)
 function retrievePannels(materialId)
 {
 	return new Promise(function(resolve, reject){
-		$.ajax({
+		ajax.send({
 			"type": "GET",
 			"contentType": "application/json;charset=utf-8",
-			"url": "/Planificateur/parametres/materiel/actions/getPannels.php",
+			"url": ROOT_URL + "/parametres/materiel/actions/getPannels.php",
 			"data": {"materialId": materialId},
 			"dataType": "json",
 			"async": true,
-			"cache": false
-		})
-		.done(function(response){
-			if(response.status === "success")
-			{
-				resolve(response.success.data);
+			"cache": false,
+			"onSuccess": function(response){
+				if(response.status === "success")
+				{
+					resolve(response.success.data);
+				}
+				else
+				{
+					reject(response.failure.message);
+				}
+			},
+			"onFailure": function(error){
+				reject(error);
 			}
-			else
-			{
-				reject(response.failure.message);
-			}
-		})
-		.fail(function(error){
-			reject(error.responseText);
 		});
 	});
 }
@@ -78,27 +80,27 @@ function retrievePannels(materialId)
 function retrieveJobs(batchId)
 {
 	return new Promise(function(resolve, reject){
-		$.ajax({
+		ajax.send({
 			"type": "GET",
 			"contentType": "application/json;charset=utf-8",
-			"url": "/Planificateur/sections/batch/actions/getJobs.php",
+			"url": ROOT_URL + "/sections/batch/actions/getJobs.php",
 			"data": {"batchId": batchId},
 			"dataType": "json",
 			"async": true,
-			"cache": false
-		})
-		.done(function(response){
-			if(response.status === "success")
-			{
-				resolve(response.success.data);
+			"cache": false,
+			"onSuccess": function(response){
+				if(response.status === "success")
+				{
+					resolve(response.success.data);
+				}
+				else
+				{
+					reject(response.failure.message);
+				}
+			},
+			"onFailure": function(error){
+				reject(error);
 			}
-			else
-			{
-				reject(response.failure.message);
-			}
-		})
-		.fail(function(error){
-			reject(error.responseText);
 		});
 	});
 }
@@ -114,27 +116,27 @@ function retrieveJobs(batchId)
 function getJobSummary(identifier, isName = false)
 {
 	return new Promise(function(resolve, reject){
-		$.ajax({
+		ajax.send({
 			"type": "GET",
 			"contentType": "application/json;charset=utf-8",
-			"url": "/Planificateur/sections/job/actions/getSummary.php",
+			"url": ROOT_URL + "/sections/job/actions/getSummary.php",
 			"data": {[isName ? "name" : "id"]: identifier},
 			"dataType": "json",
 			"async": true,
-			"cache": false
-		})
-		.done(function(response){
-			if(response.status === "success")
-			{
-				resolve(response.success.data);
+			"cache": false,
+			"onSuccess": function(response){
+				if(response.status === "success")
+				{
+					resolve(response.success.data);
+				}
+				else
+				{
+					reject(response.failure.message);
+				}
+			},
+			"onFailure": function(error){
+				reject(error);
 			}
-			else
-			{
-				reject(response.failure.message);
-			}
-		})
-		.fail(function(error){
-			reject(error.responseText);
 		});
 	});
 }
@@ -158,11 +160,11 @@ function getJobSummary(identifier, isName = false)
 function saveBatch(id, name, startDate, endDate, fullDay, material, boardSize, status, comments, jobIds)
 {
 	return new Promise(function(resolve, reject){
-		$.ajax({
+		ajax.send({
 			"type": "POST",
 			"contentType": "application/json;charset=utf-8",
-			"url": "/Planificateur/sections/batch/actions/save.php",
-			"data": JSON.stringify({
+			"url": ROOT_URL + "/sections/batch/actions/save.php",
+			"data": {
 				"id": id, 
 				"name": name, 
 				"startDate": startDate.format("YYYY-MM-DD HH:mm:ss"), 
@@ -172,24 +174,24 @@ function saveBatch(id, name, startDate, endDate, fullDay, material, boardSize, s
 				"boardSize": boardSize, 
 				"status": status, 
 				"comments": comments, 
-				"jobIds": jobIds}
-			),
+				"jobIds": jobIds
+			},
 			"dataType": "json",
 			"async": true,
 			"cache": false,
-		})
-		.done(function(response){
-			if(response.status === "success")
-			{
-				resolve(response.success.data);
+			"onSuccess": function(response){
+				if(response.status === "success")
+				{
+					resolve(response.success.data);
+				}
+				else
+				{
+					reject(response.failure.message);
+				}
+			},
+			"onFailure": function(error){
+				reject(error);
 			}
-			else
-			{
-				reject(response.failure.message);
-			}
-		})
-		.fail(function(error){
-			reject(error.responseText);
 		});
 	});
 }
@@ -205,27 +207,27 @@ function saveBatch(id, name, startDate, endDate, fullDay, material, boardSize, s
 function downloadBatch(id, action = 1)
 {
 	return new Promise(function(resolve, reject){
-		$.ajax({
+		ajax.send({
 			"type": "POST",
 			"contentType": "application/json;charset=utf-8",
-			"url": "/Planificateur/sections/batch/actions/download.php",
-			"data": JSON.stringify({"batchId": id, "action": action}),
+			"url": ROOT_URL + "/sections/batch/actions/download.php",
+			"data": {"batchId": id, "action": action},
 			"dataType": "json",
 			"async": true,
-			"cache": false
-		})
-		.done(function(response){
-			if(response.status === "success")
-			{
-				resolve(response.success.data);
+			"cache": false,
+			"onSuccess": function(response){
+				if(response.status === "success")
+				{
+					resolve(response.success.data);
+				}
+				else
+				{
+					reject(response.failure.message);
+				}
+			},
+			"onFailure": function(error){
+				reject(error);
 			}
-			else
-			{
-				reject(response.failure.message);
-			}
-		})
-		.fail(function(error){
-			reject(error.responseText);
 		});
 	});
 }
@@ -239,27 +241,27 @@ function downloadBatch(id, action = 1)
 function deleteBatch(id)
 {
 	return new Promise(function(resolve, reject){
-		$.ajax({
+		ajax.send({
 			"type": "POST",
 			"contentType": "application/json;charset=utf-8",
-			"url": "/Planificateur/sections/batch/actions/delete.php",
-			"data": JSON.stringify({"batchId": id}),
+			"url": ROOT_URL + "/sections/batch/actions/delete.php",
+			"data": {"batchId": id},
 			"dataType": "json",
 			"async": true,
 			"cache": false,
-		})
-		.done(function(response){
-			if(response.status === "success")
-			{
-				resolve(response.success.data);
+			"onSuccess": function(response){
+				if(response.status === "success")
+				{
+					resolve(response.success.data);
+				}
+				else
+				{
+					reject(response.failure.message);
+				}
+			},
+			"onFailure": function(error){
+				reject(error);
 			}
-			else
-			{
-				reject(response.failure.message);
-			}
-		})
-		.fail(function(error){
-			reject(error.responseText);
 		});
 	});
 }

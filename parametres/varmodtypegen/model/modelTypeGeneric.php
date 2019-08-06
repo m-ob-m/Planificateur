@@ -10,36 +10,32 @@
 * du type et du générique sans discrimination sur la source des paramètres. Cette classe sert à faciliter la génération des objets 
 * JobType et TestType)
 * \details Représente toutes les valeurs d'un modèle/type/générique (paramétrie finale de l'objet après combinaison du modèle, 
-* du type et du générique sans discrimination sur la source des paramètres. Cette classe sert à faciliter la génération d'objets appliqués 
+* du type et du générique sans discrimination sur la source des paramètres. Cette classe sert à faciliter la génération d'objets appliqués
 * tels les JobType et TestType)
 */
 
-include_once __DIR__ . '/../../../lib/config.php';	// Fichier de configuration
-include_once __DIR__ . '/../../../lib/connect.php';	// Classe de connection à la base de données
-include_once __DIR__ . '/modelTypeGenericParameter.php'; // Classe de paramètres pour cet objet
-include_once __DIR__ . '/../../varmodtype/model/modelType.php'; // Classe de combinaison modèle-type
-include_once __DIR__ . '/../../type/controller/typeController.php'; // Classe de combinaison modèle-type
+require_once __DIR__ . '/../../../lib/config.php';	// Fichier de configuration
+require_once __DIR__ . '/../../../lib/connect.php';	// Classe de connection à la base de données
+require_once __DIR__ . '/modelTypeGenericParameter.php'; // Classe de paramètres pour cet objet
+require_once __DIR__ . '/../../varmodtype/model/modelType.php'; // Classe de combinaison modèle-type
+require_once __DIR__ . '/../../type/controller/typeController.php'; // Classe de combinaison modèle-type
 
 class ModelTypeGeneric extends \ModelType implements \JsonSerializable
-{   
-    protected $_generic_id;
-    
+{    
 	/**
 	 * Build a new ModelTypeGeneric object.
 	 *
-	 * @param int $modelId The model id of the combination.
-	 * @param int $typeId The type id of the combination.
-	 * @param array $parameters The parameters of the model/type combination 
-	 * @param int $genericId The id of the Generic associated to this Test
+	 * @param \Model $model The model of the combination.
+	 * @param \Type $type The type of the combination.
+	 * @param array $parameters The parameters of the model/type combination
 	 * 
 	 * @throws
 	 * @author Marc-Olivier Bazin-Maurice
 	 * @return ModelTypeGeneric This ModelTypeGeneric (for method chaining)
 	 */
-    public function __construct(?int $modelId = null, ?int $typeNo = null, array $parameters = array(), ?int $genericId = null)
+    public function __construct(?\Model $model= null, ?\Type $type = null, array $parameters = array())
 	{
-	   parent::__construct($modelId, $typeNo, $parameters);
-	    $this->setGenericId($genericId);
+	   parent::__construct($model, $type, $parameters);
 	}
 
 	/**
@@ -53,17 +49,17 @@ class ModelTypeGeneric extends \ModelType implements \JsonSerializable
 	 */
 	public function loadParameters(\FabPlanConnection $db) : \ModelTypeGeneric
 	{
-        $modelId = $this->getModelId();
-        $typeNo = $this->getTypeNo();
+        $modelId = $this->getModel()->getId();
+        $typeNo = $this->getType()->getImportNo();
         
 	    $stmt = $db->getConnection()->prepare("
         	SELECT `gp`.`parameter_key` AS `key`, `dmd`.`paramValue` AS `specificValue`,  
                 `gp`.`parameter_value` AS `genericValue`, `gp`.`description` AS `description`
-        	FROM `fabplan`.`door_types` AS `dt`
-        	INNER JOIN `fabplan`.`generics` AS `g` ON `dt`.`generic_id` = `g`.`id` AND `dt`.`importNo` = :typeNo
+        	FROM `door_types` AS `dt`
+        	INNER JOIN `generics` AS `g` ON `dt`.`generic_id` = `g`.`id` AND `dt`.`importNo` = :typeNo
         	INNER JOIN `generic_parameters` AS `gp` ON `gp`.`generic_id` = `g`.`id`
-        	INNER JOIN `fabplan`.`door_model` AS `dm` ON `dm`.`id_door_model` = :modelId
-        	LEFT JOIN `fabplan`.`door_model_data`AS `dmd` ON `dmd`.`paramKey` = `gp`.`parameter_key`
+        	INNER JOIN `door_model` AS `dm` ON `dm`.`id_door_model` = :modelId
+        	LEFT JOIN `door_model_data`AS `dmd` ON `dmd`.`paramKey` = `gp`.`parameter_key`
         		AND `dmd`.`fkDoorModel` = `dm`.`id_door_model` AND `dmd`.`fkDoorType` = `dt`.`importNo`
             ORDER BY `gp`.`id` ASC;
         ");
@@ -85,41 +81,6 @@ class ModelTypeGeneric extends \ModelType implements \JsonSerializable
 	    }
 	    
 	    return $this;
-	}
-	
-	/**
-	 * Set the id of the associated generic file
-	 *
-	 * @param int $generic The new id of the Generic
-	 *
-	 * @throws
-	 * @author Marc-Olivier Bazin-Maurice
-	 * @return ModelTypeGeneric This ModelTypeGeneric (for method chaining)
-	 */
-	public function setGenericId(?int $genericId = null) : \ModelTypeGeneric
-	{
-	    if($genericId === null && $this->getTypeNo() !== null)
-	    {
-	        $this->_generic_id = \Type::withImportNo(new \FabPlanConnection(), $this->getTypeNo())->getGenericId();
-	    }
-	    else
-	    {
-	        $this->_generic_id = $genericId;
-	    }
-	    
-	    return $this;
-	}
-	
-	/**
-	 * Get the id of the generic associated with this ModelTypeGeneric
-	 *
-	 * @throws
-	 * @author Marc-Olivier Bazin-Maurice
-	 * @return int The id of the Generic associated with this ModelTypeGeneric
-	 */
-	public function getGenericId() : ?int
-	{
-	    return $this->_generic_id;
 	}
 	
 	/**

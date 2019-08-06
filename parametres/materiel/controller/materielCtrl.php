@@ -13,9 +13,9 @@
 /*
  * Includes
 */
-include_once __DIR__ .  '/../../../lib/config.php';	// Fichier de configuration
-include_once __DIR__ .  '/../../../lib/connect.php';	// Classe de connection à la base de données
-include_once __DIR__ .  '/../model/materiel.php';	// Classe de matériel
+require_once __DIR__ .  '/../../../lib/config.php';	// Fichier de configuration
+require_once __DIR__ .  '/../../../lib/connect.php';	// Classe de connection à la base de données
+require_once __DIR__ .  '/../model/materiel.php';	// Classe de matériel
 
 class MaterielController
 {
@@ -55,7 +55,7 @@ class MaterielController
 	{
 	    $stmt = $this->getDBConnection()->getConnection()->prepare("
             SELECT `m`.`id_materiel`
-            FROM `fabplan`.`materiel` AS `m`
+            FROM `materiel` AS `m`
             ORDER BY `m`.`id_materiel` " . (($ascending === true) ? "ASC" : "DESC") . " " . 
 	        (($quantity === 0) ? "" : " LIMIT :quantity OFFSET :offset") . " " . 
 	        "FOR SHARE;"

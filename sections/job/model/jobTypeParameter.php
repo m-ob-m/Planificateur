@@ -9,7 +9,7 @@
      * \details 	Modèle de JobTypeParameter
      */
     
-    include_once __DIR__ . "/../../../parametres/parameter/parameter.php";
+    require_once __DIR__ . "/../../../parametres/parameter/parameter.php";
     
     class JobTypeParameter extends \Parameter implements \JsonSerializable
     {
@@ -26,7 +26,7 @@
          * @author Marc-Olivier Bazin-Maurice
          * @return JobTypeParameter This JObTypeParameter
          */
-        public function __construct(?int $jobTypeId = null, ?string $key = null, ?string $value = null)
+        public function __construct(?int $jobTypeId = null, string $key, ?string $value = null)
         {
             parent::__construct($key);
             $this->setJobTypeId($jobTypeId);
@@ -48,7 +48,7 @@
         {
             $stmt = $db->getConnection()->prepare(
                 "SELECT `jtp`.`param_value` AS `value` FROM `job_type_params` AS `jtp`
-                WHERE `jtp`.`job_type_id` = :jobTypeId AND `jtp`.`param_key` = :key;"
+                WHERE `jtp`.`job_type_id` = :job_type_id AND `jtp`.`param_key` = :key;"
             );
             $stmt->bindValue(':job_type_id', $jobTypeId, PDO::PARAM_INT);
             $stmt->bindValue(':key', $key, PDO::PARAM_STR);
@@ -74,13 +74,13 @@
          */
         public function save(\FabPlanConnection $db) : \JobTypeParameter
         {
-            if($this->getId() === null)
+            if(self::withID($db, $this->getJobTypeId(), $this->getKey()) === null)
             {
                 $this->insert($db);
             }
             else
             {
-                if($this->getDatabaseConnectionReadingLockType() !== \MYSQLDatabaseLockingReadTypes::FOR_UPDATE)
+                if($this->getDatabaseConnectionLockingReadType() !== \MYSQLDatabaseLockingReadTypes::FOR_UPDATE)
                 {
                     throw new \Exception("The provided " . get_class($this) . " is not locked for update.");
                 }
@@ -105,7 +105,7 @@
         private function insert(\FabPlanConnection $db) : \JobTypeParameter
         {
             $stmt = $db->getConnection()->prepare("
-                INSERT INTO `fabplan`.`job_type_params` (`job_type_id`, `param_key`, `param_value`)
+                INSERT INTO `job_type_params` (`job_type_id`, `param_key`, `param_value`)
                 VALUES (:job_type_id, :key, :value)
             ");
             $stmt->bindValue(':job_type_id', $this->getJobTypeId(), PDO::PARAM_INT);
@@ -128,7 +128,7 @@
         private function update(\FabPlanConnection $db) : \JobTypeParameter
         {
             $stmt = $db->getConnection()->prepare("
-                UPDATE `fabplan`.`job_type_params`
+                UPDATE `job_type_params`
                 SET `param_value` = :value
                 WHERE `jobType_id` = :jobTypeId AND `param_key` = :key;
             ");
@@ -152,7 +152,7 @@
         public function delete(\FabPlanConnection $db) : \JobTypeParameter
         {
             $stmt = $db->getConnection()->prepare("
-                DELETE FROM `fabplan`.`job_type_params`
+                DELETE FROM `job_type_params`
                 WHERE `job_type_id` = :jobTypeId AND `param_key` = :key;
             ");
             $stmt->bindValue(':jobTypeId', $this->getJobTypeId(), PDO::PARAM_INT);

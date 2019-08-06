@@ -1,3 +1,5 @@
+"use strict";
+
 /**
  * Validates user input
  * @param {int} id The id of the generic (is "" if new)
@@ -7,82 +9,76 @@
  * 								   (is "" if none)
  * @param {int} heightParameter Identifies wheter LPX is the Height of the part or its width.
  * 
- * @return {Promise}
+ * @return {bool} If information is valid, returns true. Otherwise, returns false.
  */
 function validateInformation(id, filename, description, heightParameter, copyParametersFrom)
 {
-	return new Promise(function(resolve, reject){
-		let err = "";
-		
-		if(!isPositiveInteger(id) && id !== "" && id!== null)
-		{
-			err += "L'identificateur unique doit être un entier positif. ";
-		}
-		
-		if(!(new RegExp("^[a-z0-9_]+\\.mpr$")).test(filename))
-		{
-			err += "Le nom de fichier doit être du format \"nomfichier.mpr\". ";
-		}
-		
-		if(heightParameter.length === 0 || !heightParameter.trim())
-		{
-			err += "Un paramètre valide doit être sélectionné pour identifier la hauteur des pièces. ";
-		}
-		
-		if(!description.trim())
-		{
-			err += "Description manquante. ";
-		}
-		
-		if(err != "")
-		{
-			reject(err);
-		}
-		else
-		{
-			resolve();
-		}
-	});
+	let err = "";
+	
+	if(!isPositiveInteger(id, true, true) && id !== "" && id!== null)
+	{
+		err += "L'identificateur unique doit être un entier positif. ";
+	}
+	
+	if(!(new RegExp("^[\\w]+\\.mpr$")).test(filename))
+	{
+		err += "Le nom de fichier doit être du format \"nomfichier.mpr\". ";
+	}
+	
+	if(heightParameter.length === 0 || !heightParameter.trim())
+	{
+		err += "Un paramètre valide doit être sélectionné pour identifier la hauteur des pièces. ";
+	}
+	
+	if(!description.trim())
+	{
+		err += "Description manquante. ";
+	}
+	
+	if(err == "")
+	{
+		return true;
+	}
+	else
+	{
+		showError("Les informations du générique ne sont pas valides", err);
+		return false;
+	}
 }
 
 /**
  * Prompts user to confirm the saving of the current Generic.
- * 
- * return {Promise}
  */
-function saveConfirm()
+async function saveConfirm()
 {
+	let copyParametersFromSelect = document.getElementById("copyParametersFrom");
+	let selectedIndex = (copyParametersFromSelect !== null) ? copyParametersFromSelect.selectedIndex : null;
 	let args = [
-		$("#id").val(), 
-		$("#filename").val(), 
-		$("#description").val(), 
-		$("#heightParameter").val(), 
-		$("#copyParametersFrom").val()
+		document.getElementById("id").value, 
+		document.getElementById("filename").value, 
+		document.getElementById("description").value, 
+		document.getElementById("heightParameter").value, 
+		(selectedIndex !== null) ? copyParametersFromSelect.options[selectedIndex].value : null
 	];
 	
-	return validateInformation.apply(null, args)
-	.catch(function(error){
-		showError("La sauvegarde du générique a échouée", error);
-		return Promise.reject();
-	})
-	.then(function(){
-		return askConfirmation("Sauvegarde de générique", "Voulez-vous vraiment sauvegarder ce générique?")
-		.then(function(){
-			$("#loadingModal").css({"display": "block"});
-			return saveGeneric.apply(null, args)
-			.catch(function(error){
-				showError("La sauvegarde du générique a échouée", error);
-				return Promise.reject();
-			})
-			.then(function(id){
+	if(validateInformation.apply(null, args))
+	{
+		if(await askConfirmation("Sauvegarde de générique", "Voulez-vous vraiment sauvegarder ce générique?"))
+		{
+			document.getElementById("loadingModal").style.display = "block";
+			try{
+				let id = await saveGeneric.apply(null, args);
 				openGeneric(id);
-			})
-			.finally(function(){
-				$("#loadingModal").css({"display": "none"});
-			});
-		});
-	})
-	.catch(function(){/* Do nothing */});
+			}
+			catch(error)
+			{
+				showError("La sauvegarde du générique a échouée", error);
+			}
+			finally{
+				document.getElementById("loadingModal").style.display = "none";
+			}
+		}
+	}
 }
 
 /**
@@ -99,61 +95,57 @@ function saveConfirm()
 function saveGeneric(id, filename, description, heightParameter, copyParametersFrom)
 {
 	return new Promise(function(resolve, reject){
-		$.ajax({
-	    	"url": "/Planificateur/parametres/generic/actions/save.php",
-	        "type": "POST",
-	        "contentType": "application/json;charset=utf-8",
-	        "data": JSON.stringify({
-	        	"id": ((id !== "") ? id : null), 
-	        	"filename": filename, 
-	        	"description": description,
-	        	"heightParameter": heightParameter,
-	        	"copyParametersFrom": ((copyParametersFrom !== "") ? copyParametersFrom : null)
-	        }),
-	        "dataType": 'json',
-	        "async": true,
-	        "cache": false
-     	})
-     	.done(function(response){
-			if(response.status === "success")
-			{
-				resolve(response.success.data);
+		ajax.send({
+			"url": ROOT_URL + "/parametres/generic/actions/save.php",
+			"type": "POST",
+			"contentType": "application/json;charset=utf-8",
+			"data": {
+				"id": ((id !== "") ? id : null), 
+				"filename": filename, 
+				"description": description,
+				"heightParameter": heightParameter,
+				"copyParametersFrom": ((copyParametersFrom !== "") ? copyParametersFrom : null)
+			},
+			"dataType": 'json',
+			"async": true,
+			"cache": false,
+			"onSuccess": function(response){
+				if(response.status === "success")
+				{
+					resolve(response.success.data);
+				}
+				else
+				{
+					reject(response.failure.message);
+				}
+			},
+			"onFailure": function(error){
+				reject(error);
 			}
-			else
-			{
-				reject(response.failure.message);
-			}
-		})
-		.fail(function(error){
-			reject(error.responseText);
 		});
-     });
+  });
 }
 
 /**
  * Display a message to validate the fact that the user wants to delete this generic
- * 
- * @return {Promise}
  */
-function deleteConfirm()
+async function deleteConfirm()
 {
-	let args = [$("#id").val()];
-	return askConfirmation("Suppression de générique", "Voulez-vous vraiment supprimer ce générique?")
-	.then(function(){
-		$("#loadingModal").css({"display": "block"});
-		return deleteGeneric.apply(null, args)
-		.catch(function(error){
-			showError("La suppression du générique a échouée", error);
-			return Promise.reject();
-		})
-		.then(function(){
+	if(await askConfirmation("Suppression de générique", "Voulez-vous vraiment supprimer ce générique?"))
+	{
+		document.getElementById("loadingModal").style.display = "block";
+		try
+		{
+			await deleteGeneric(document.getElementById("id").value);
 			goToIndex();
-		})
-		.finally(function(){
-			$("#loadingModal").css({"display": "none"});
-		});
-	})
-	.catch(function(){/* Do nothing */});
+		}
+		catch(error){
+			showError("La suppression du générique a échouée", error);
+		}
+		finally{
+			document.getElementById("loadingModal").style.display = "none";
+		}
+	}
 }
 
 /**
@@ -165,28 +157,28 @@ function deleteConfirm()
 function deleteGeneric(id)
 {
 	return new Promise(function(resolve, reject){
-		$.ajax({
-			"url": "/Planificateur/parametres/generic/actions/delete.php",
+		ajax.send({
+			"url": ROOT_URL + "/parametres/generic/actions/delete.php",
 			"type": "POST",
 			"contentType": "application/json;charset=utf-8",
-			"data": JSON.stringify({"id": id}),
+			"data": {"id": id},
 			"dataType": "json",
 			"async": true,
-	    })
-	    .done(function(response){
-			if(response.status === "success")
-			{
-				resolve(response.success.data);
+			"onSuccess": function(response){
+				if(response.status === "success")
+				{
+					resolve(response.success.data);
+				}
+				else
+				{
+					reject(response.failure.message);
+				}
+			},
+			"onFailure": function(error){
+				reject(error);
 			}
-			else
-			{
-				reject(response.failure.message);
-			}
-		})
-		.fail(function(error){
-			reject(error.responseText);
 		});
-	});
+	})
 }
 
 /**

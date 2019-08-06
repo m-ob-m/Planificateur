@@ -41,7 +41,7 @@ class JobTypePorte implements JsonSerializable
      * @return JobTypePorte This JobTypePorte
      */
     function __construct(?int $id = null, ?int $jobTypeId = null, ?int $quantityToProduce = null, ?int $producedQuantity = null, 
-        ?float $length = null, ?float $width = null, ?string $grain = null, ?string $done = null, ?string $timestamp = null)
+        ?float $length = null, ?float $width = null, ?string $grain = null, string $done = "N", ?string $timestamp = null)
     {
         $this->setId($id);
         $this->setJobTypeId($jobTypeId);
@@ -57,20 +57,20 @@ class JobTypePorte implements JsonSerializable
     /**
      * Constructor that retrieves an instance from the database
      *
-     * @param FabPlanConnection $db The database from which the record must be retrieved
+     * @param \FabPlanConnection $db The database from which the record must be retrieved
      * @param int $jobTypePorteId The id of the JobTypePorte
      *
      * @throws
      * @author Marc-Olivier Bazin-Maurice
-     * @return JobTypePorte This JobTypePorte
+     * @return \JobTypePorte This JobTypePorte
      */
-    static function withID(\FabplanConnection $db, int $id, int $databaseConnectionLockingReadType = 0) : ?\JobTypePorte
+    static function withID(\FabplanConnection $db, ?int $id, int $databaseConnectionLockingReadType = 0) : ?\JobTypePorte
     {
         $stmt = $db->getConnection()->prepare(
             "SELECT `jtp`.`job_type_id` AS `jobTypeId`, `jtp`.`longueur` AS `length`, `jtp`.`largeur` AS `width`, 
                 `jtp`.`quantite` AS `quantityToProduce`, `jtp`.`qte_produite` AS `producedQuantity`, `jtp`.`grain` AS `grain`, 
                 `jtp`.`terminer` AS `done`, `jtp`.`estampille` AS `timestamp`
-            FROM `fabplan`.`job_type_porte` AS `jtp`
+            FROM `job_type_porte` AS `jtp`
             WHERE `jtp`.`id_job_type_porte` = :id " . 
             (new \MYSQLDatabaseLockingReadTypes($databaseConnectionLockingReadType))->toLockingReadString() . ";"
         );
@@ -88,7 +88,7 @@ class JobTypePorte implements JsonSerializable
             return null;    
         }
         
-        $this->setDatabaseConnectionLockingReadType($databaseConnectionLockingReadType);
+        $instance->setDatabaseConnectionLockingReadType($databaseConnectionLockingReadType);
         return $instance;
     }
     
@@ -99,23 +99,24 @@ class JobTypePorte implements JsonSerializable
      *
      * @throws
      * @author Marc-Olivier Bazin-Maurice
-     * @return JobTypePorte This JobTypePorte (for method chaining)
+     * @return \JobTypePorte This JobTypePorte (for method chaining)
      */
     public function save(\FabPlanConnection $db) : \JobTypePorte
     {        
-        if(self::withID($db, $this->getId()))
+        if(self::withID($db, $this->getId()) === null)
         {
             $this->insert($db);
         }
         else
         {
-            $dbTimestamp = \DateTime::createFromFormat("Y-m-d H:i:s", $this->getTimestampFromDatabase($db), "America/Montreal");
-            $localTimestamp = \DateTime::createFromFormat("Y-m-d H:i:s", $this->getTimestamp(), "America/Montreal");
-            if($this->getDatabaseConnectionReadingLockType() !== \MYSQLDatabaseLockingReadTypes::FOR_UPDATE)
+            echo json_encode($this);
+            $dbTimestamp = \DateTime::createFromFormat("Y-m-d H:i:s", $this->getTimestampFromDatabase($db));
+            $localTimestamp = \DateTime::createFromFormat("Y-m-d H:i:s", $this->getTimestamp());
+            if($this->getDatabaseConnectionLockingReadType() !== \MYSQLDatabaseLockingReadTypes::FOR_UPDATE)
             {
                 throw new \Exception("The provided " . get_class($this) . " is not locked for update.");
             }
-            elseif($databaseTimestamp > $localTimestamp)
+            elseif($dbTimestamp > $localTimestamp)
             {
                 throw new \Exception(
                     "The provided " . get_class($this) . " is outdated. The last modification date of the database entry is
@@ -138,20 +139,19 @@ class JobTypePorte implements JsonSerializable
     /**
      * Insert the JobTypePorte object in the database
      *
-     * @param FabPlanConnection $db The database in which the record must be inserted
+     * @param \FabPlanConnection $db The database in which the record must be inserted
      *
      * @throws
      * @author Marc-Olivier Bazin-Maurice
-     * @return JobTypePorte This JobTypePorte (for method chaining)
+     * @return \JobTypePorte This JobTypePorte (for method chaining)
      */
-    private function insert(FabPlanConnection $db) : JobTypePorte
+    private function insert(\FabPlanConnection $db) : \JobTypePorte
     {
         $stmt = $db->getConnection()->prepare("
-            INSERT INTO `fabplan`.`job_type_porte` (`id_job_type_porte`, `job_type_id`, `quantite`, `qte_produite`, `longueur`, 
-                `largeur`, `grain`, `terminer`)
-            VALUES (:jobTypePorteId, :jobTypeId, :quantityToProduce, :producedQuantity, :length, :width, :grain, :done);
+            INSERT INTO `job_type_porte` (`job_type_id`, `quantite`, `qte_produite`, 
+                `longueur`, `largeur`, `grain`, `terminer`)
+            VALUES (:jobTypeId, :quantityToProduce, :producedQuantity, :length, :width, :grain, :done);
         ");
-        $stmt->bindValue(':jobTypePorteId', $this->getId(), PDO::PARAM_INT);
         $stmt->bindValue(':jobTypeId', $this->getJobTypeId(), PDO::PARAM_INT);
         $stmt->bindValue(':quantityToProduce', $this->getQuantityToProduce(), PDO::PARAM_INT);
         $stmt->bindValue(':producedQuantity', $this->getProducedQuantity(), PDO::PARAM_INT);
@@ -160,7 +160,7 @@ class JobTypePorte implements JsonSerializable
         $stmt->bindValue(':grain', $this->getGrain(), PDO::PARAM_STR);
         $stmt->bindValue(':done', $this->getDone(), PDO::PARAM_STR);
         $success = $stmt->execute();
-        $this->setId($db->getConnection()->lastInsertId());
+        $this->setId(intval($db->getConnection()->lastInsertId()));
         
         return $this;
     }
@@ -168,16 +168,16 @@ class JobTypePorte implements JsonSerializable
     /**
      * Update the JobTypePorte object in the database
      *
-     * @param FabPlanConnection $db The database in which the record must be updated
+     * @param \FabPlanConnection $db The database in which the record must be updated
      *
      * @throws
      * @author Marc-Olivier Bazin-Maurice
-     * @return JobTypePorte This JobTypePorte (for method chaining)
+     * @return \JobTypePorte This JobTypePorte (for method chaining)
      */
-    private function update(FabPlanConnection $db) : JobTypePorte
+    private function update(\FabPlanConnection $db) : \JobTypePorte
     {
         $stmt = $db->getConnection()->prepare("
-            UPDATE `fabplan`.`job_type_porte`
+            UPDATE `job_type_porte`
             SET `job_type_id` = :jobTypeId, `quantite` = :quantityToProduce, `qte_produite` = :produceQuantity, 
                 `longueur` = :length, `largeur` = :width, `grain`= :grain, `terminer` = :done
             WHERE `id_job_type_porte` = :id;
@@ -206,12 +206,19 @@ class JobTypePorte implements JsonSerializable
      */
     public function delete(FabPlanConnection $db) : JobTypePorte
     {
-        $stmt = $db->getConnection()->prepare("
-                DELETE FROM `fabplan`.`job_type_porte`
-                WHERE `id_job_type_porte` = :id;
-            ");
-        $stmt->bindValue(':id', $this->getId(), PDO::PARAM_INT);
-        $stmt->execute();
+        if($this->getDatabaseConnectionLockingReadType() !== \MYSQLDatabaseLockingReadTypes::FOR_UPDATE)
+        {
+            throw new \Exception("The provided " . get_class($this) . " is not locked for update.");
+        }
+        else
+        {
+            $stmt = $db->getConnection()->prepare("
+                    DELETE FROM `job_type_porte`
+                    WHERE `id_job_type_porte` = :id;
+                ");
+            $stmt->bindValue(':id', $this->getId(), PDO::PARAM_INT);
+            $stmt->execute();
+        }
         
         return $this;
     }
@@ -228,7 +235,7 @@ class JobTypePorte implements JsonSerializable
     public function getTimestampFromDatabase(\FabPlanConnection $db) : ?string
     {
         $stmt= $db->getConnection()->prepare("
-            SELECT `jtp`.`estampille` FROM `fabplan`.`job_type_porte` AS `jtp` WHERE `jtp`.`id_job_type_porte` = :id;
+            SELECT `jtp`.`estampille` FROM `job_type_porte` AS `jtp` WHERE `jtp`.`id_job_type_porte` = :id;
         ");
         $stmt->bindValue(':id', $this->getId(), PDO::PARAM_INT);
         $stmt->execute();
@@ -357,7 +364,7 @@ class JobTypePorte implements JsonSerializable
      * @author Marc-Olivier Bazin-Maurice
      * @return JobTypePorte This JobTypePorte (for method chaining)
      */
-    public function setDone(?string $done) : JobTypePorte
+    public function setDone(string $done) : JobTypePorte
     {
         $this->_done = $done;
         return $this;
@@ -385,7 +392,7 @@ class JobTypePorte implements JsonSerializable
      * @author Marc-Olivier Bazin-Maurice
      * @return int The id of this JobTypePorte
      */
-    public function getId() : int
+    public function getId() : ?int
     {
         return $this->_id;
     }
@@ -481,7 +488,7 @@ class JobTypePorte implements JsonSerializable
      * @author Marc-Olivier Bazin-Maurice
      * @return string The timestamp of the last modification date of this JobTypePorte
      */
-    public function getTimestamp() : string
+    public function getTimestamp() : ?string
     {
         return $this->_timestamp;
     }
@@ -505,7 +512,7 @@ class JobTypePorte implements JsonSerializable
      * @author Marc-Olivier Bazin-Maurice
      * @return int The database connection locking read type applied to this object.
      */
-    private function getDatabaseConnectionLockingReadType() : int
+    public function getDatabaseConnectionLockingReadType() : int
     {
         return $this->__database_connection_locking_read_type;
     }
@@ -518,7 +525,7 @@ class JobTypePorte implements JsonSerializable
      * @author Marc-Olivier Bazin-Maurice
      * @return \JobType This JobType.
      */
-    private function setDatabaseConnectionLockingReadType(int $databaseConnectionLockingReadType) : \JobType
+    private function setDatabaseConnectionLockingReadType(int $databaseConnectionLockingReadType) : \JobTypePorte
     {
         $this->__database_connection_locking_read_type = $databaseConnectionLockingReadType;
         return $this;
