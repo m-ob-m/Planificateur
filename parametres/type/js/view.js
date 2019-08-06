@@ -1,4 +1,6 @@
-$(
+"use strict";
+
+docReady(
 	function()
 	{
 		updateCopyParametersFrom();
@@ -13,88 +15,82 @@ $(
  * @param {int} genericId The id of the Generic associated to this Type
  * @param {int} copyParametersFrom The selected type for parameters copy
  * 
- * @return {Promise}
+ * @return {bool} If information is valid, returns true. Otherwise, returns false.
  */
 function validateInformation(id, siaNumber, description, genericId, copyParametersFrom)
 {
-	return new Promise(function(resolve, reject){
-		let err = "";
-		
-		if(!isPositiveInteger(id) && id !== "" && id !== null)
-		{
-			err += "L'identificateur unique doit être un entier positif. ";
-		}
-		
-		if(!isPositiveInteger(siaNumber))
-		{
-			err += "Le numéro d'importation SIA doit être un entier positif. ";
-		}
-		
-		if(!description.trim())
-		{
-			err += "Description manquante. ";
-		}
-		
-		if(!isPositiveInteger(genericId))
-		{
-			err += "Le générique choisi présente un problème. ";
-		}
-		
-		if(!isPositiveInteger(copyParametersFrom) && copyParametersFrom && copyParametersFrom.length !== 0)
-		{
-			err += "Un type invalide a été choisi pour la copie des paramètres. ";
-		}
-		
-		// S'il y a erreur, afficher la fenêtre d'erreur
-		if(err != "")
-		{
-			reject(err);
-		}
-		else
-		{
-			resolve();
-		}	
-	});
+	let err = "";
+	
+	if(!isPositiveInteger(id, true, true) && id !== "" && id !== null)
+	{
+		err += "L'identificateur unique doit être un entier positif. ";
+	}
+	
+	if(!isPositiveInteger(siaNumber, true, false))
+	{
+		err += "Le numéro d'importation SIA doit être un entier positif. ";
+	}
+	
+	if(!description.trim())
+	{
+		err += "Description manquante. ";
+	}
+	
+	if(!isPositiveInteger(genericId, true, true))
+	{
+		err += "Le générique choisi présente un problème. ";
+	}
+	
+	if(!isPositiveInteger(copyParametersFrom, true, true) && copyParametersFrom && copyParametersFrom.length !== 0)
+	{
+		err += "Un type invalide a été choisi pour la copie des paramètres. ";
+	}
+	
+	// S'il y a erreur, afficher la fenêtre d'erreur
+	if(err == "")
+	{
+		return true;
+	}
+	else
+	{
+		showError("Les informations du type ne sont pas valides", err);
+		return false;
+	}
 }
 
 /**
  * Prompts user to confirm the saving of the current Type.
- * 
- * @return {Promise}
  */
-function saveConfirm()
+async function saveConfirm()
 {
+	let copyParametersFromSelect = document.getElementById("copyParametersFrom");
+	let selectedIndex = (copyParametersFromSelect !== null) ? copyParametersFromSelect.selectedIndex : null;
 	let args = [
-		$("#id").text(), 
-		$("#importNo").val(), 
-		$("#description").val(), 
-		$("#generic").val(), 
-		$("#copyParametersFrom").val()
+		document.getElementById("id").value, 
+		document.getElementById("importNo").value, 
+		document.getElementById("description").value, 
+		document.getElementById("generic").value, 
+		(selectedIndex !== null) ? copyParametersFromSelect.options[selectedIndex].value : null
 	];
 	
-	return validateInformation.apply(null, args)
-	.catch(function(error){
-		showError("La sauvegarde du type a échouée", error);
-		return Promise.reject();
-	})
-	.then(function(){
-		return askConfirmation("Sauvegarde de type", "Voulez-vous vraiment sauvegarder ce type?")
-		.then(function(){
-			$("#loadingModal").css({"display": "block"});
-			return saveType.apply(null, args)
-			.catch(function(error){
-				showError("La sauvegarde du type a échouée", error);
-				return Promise.reject();
-			})
-			.then(function(id){
+	if(validateInformation.apply(null, args))
+	{
+		if(await askConfirmation("Sauvegarde de type", "Voulez-vous vraiment sauvegarder ce type?"))
+		{
+			document.getElementById("loadingModal").style.display = "block";
+			try{
+				let id = await saveType.apply(null, args);
 				openType(id);
-			})
-			.finally(function(){
-				$("#loadingModal").css({"display": "none"});
-			});
-		});
-	})
-	.catch(function(){/* Do nothing. */});
+			}
+			catch(error)
+			{
+				showError("La sauvegarde du type a échouée", error);
+			}
+			finally{
+				document.getElementById("loadingModal").style.display = "none";
+			}
+		}
+	}
 }
 
 /**
@@ -110,60 +106,56 @@ function saveConfirm()
 function saveType(id, importNo, description, genericId, copyParametersFrom)
 {
 	return new Promise(function(resolve, reject){
-		$.ajax({
-	    	"url": "/Planificateur/parametres/type/actions/save.php",
-	        "type": "POST",
-	        "contentType": "application/json;charset=utf-8",
-	        "data": JSON.stringify({
-	    		"id": (id !== "") ? id : null, 
-	    		"importNo": (importNo !== "") ? importNo : null, 
-	    		"description": (description !== "") ? description : null, 
-	    		"genericId": (genericId !== "") ? genericId : null, 
-	    		"copyParametersFrom": copyParametersFrom
-	        }),
-	        "dataType": 'json',
-	        "async": true,
-	        "cache": false
-     	})
-     	.done(function(response){
-			if(response.status === "success")
-			{
-				resolve(response.success.data);
+		ajax.send({
+			"url": ROOT_URL + "/parametres/type/actions/save.php",
+			"type": "POST",
+			"contentType": "application/json;charset=utf-8",
+			"data": {
+			"id": (id !== "") ? id : null, 
+			"importNo": (importNo !== "") ? importNo : null, 
+			"description": (description !== "") ? description : null, 
+			"genericId": (genericId !== "") ? genericId : null, 
+			"copyParametersFrom": copyParametersFrom
+			},
+			"dataType": 'json',
+			"async": true,
+			"cache": false,
+			"onSuccess": function(response){
+				if(response.status === "success")
+				{
+					resolve(response.success.data);
+				}
+				else
+				{
+					reject(response.failure.message);
+				}
+			}, 
+			"onFailure": function(error){
+				reject(error);
 			}
-			else
-			{
-				reject(response.failure.message);
-			}
-		})
-		.fail(function(error){
-			reject(error.responseText);
 		});
 	});
 }
 
 /**
  * Display a message to validate the fact that the user wants to delete this Type
- * 
- * @return {Promise}
  */
-function deleteConfirm()
+async function deleteConfirm()
 {
-	return askConfirmation("Suppression de type", "Voulez-vous vraiment supprimer ce type?")
-	.then(function(){
-		$("#loadingModal").css({"display": "block"});
-		return deleteType($("#id").text())
-		.catch(function(error){
-			showError("La suppression du type a échouée", error);
-			return Promise.reject();
-		})
-		.then(function(){
+	if(await askConfirmation("Suppression de type", "Voulez-vous vraiment supprimer ce type?"))
+	{
+		document.getElementById("loadingModal").style.display = "block";
+		try{
+			await deleteType(document.getElementById("id").value);
 			goToIndex();
-		})
-		.finally(function(){
-			$("#loadingModal").css({"display": "none"});
-		});
-	})
-	.catch(function(){/* Do nothing. */});
+		}
+		catch(error){
+			showError("La suppression du type a échouée", error);
+		}
+		finally{
+			document.getElementById("loadingModal").style.display = "none";
+		}
+	}
 }
 
 /**
@@ -175,52 +167,61 @@ function deleteConfirm()
 function deleteType(id)
 {
 	return new Promise(function(resolve, reject){
-		$.ajax({
-    		"url": "/Planificateur/parametres/type/actions/delete.php",
-    		"type": "POST",
-    		"contentType": "application/json;charset=utf-8",
-    		"data": JSON.stringify({"id": id}),
+		ajax.send({
+			"url": ROOT_URL + "/parametres/type/actions/delete.php",
+			"type": "POST",
+			"contentType": "application/json;charset=utf-8",
+			"data": {"id": id},
 			"dataType": "json",
 			"async": true,
 			"cache": false,
-		})
-		.done(function(response){
-			if(response.status === "success")
-			{
-				resolve(response.success.data);
+			"onSuccess": function(response){
+				if(response.status === "success")
+				{
+					resolve(response.success.data);
+				}
+				else
+				{
+					reject(response.failure.message);
+				}
+			},
+			"onFailure": function(error){
+				reject(error);
 			}
-			else
-			{
-				reject(response.failure.message);
-			}
-		})
-		.fail(function(error){
-			reject(error.responseText);
 		});
 	});
 }
 
 /**
  * Updates the parameters copy select box available choices according to the provided Generic unique identifier.
- * 
- * @return {Promise}
- * 
  */
-function updateCopyParametersFrom()
+async function updateCopyParametersFrom()
 {
-	if($("#copyParametersFrom").length)
+	let copyParametersFromSelect = document.getElementById("copyParametersFrom"); 
+	if(copyParametersFromSelect !== null)
 	{
-		$("#copyParametersFrom").empty();
-		return getTypesWithGeneric($("#generic").val())
-		.then(function(types){
-			$("#copyParametersFrom").append($("<option></option>").val("").text("Aucun")).val("");
-			$(types).each(function(){
-				$("#copyParametersFrom").append($("<option></option>").val(this._id).text(this._description));
+		while(copyParametersFromSelect.childElementCount > 0)
+		{
+			copyParametersFromSelect.firstElementChild.remove();
+		}
+
+		let noneOption = document.createElement("option");
+		noneOption.value = "";
+		noneOption.text = "Aucun";
+		copyParametersFromSelect.appendChild(noneOption);
+
+		try{
+			let generic = document.getElementById("generic").value;
+			(await getTypesWithGeneric(generic)).forEach(function(element){
+				let option = document.createElement("option");
+				option.value = element._id;
+				option.text = element._description;
+				copyParametersFromSelect.appendChild(option);
 			});
-		})
-		.catch(function(error){
+		}
+		catch(error){
 			showError("L'obtention des types concernés par ce générique a échouée", error);
-		});
+		}
 	}
 }
 
@@ -234,27 +235,27 @@ function updateCopyParametersFrom()
 function getTypesWithGeneric(id)
 {
 	return new Promise(function(resolve, reject){
-		$.ajax({
-			"url": "/Planificateur/parametres/type/actions/getTypesByGeneric.php",
+		ajax.send({
+			"url": ROOT_URL + "/parametres/type/actions/getTypesByGeneric.php",
 			"type": "GET",
 			"contentType": "application/json;charset=utf-8",
 			"data": {"genericId": id},
 			"dataType": "json",
 			"async": true,
-			"cache": false
-		})
-		.done(function(response){
-			if(response.status === "success")
-			{
-				resolve(response.success.data);
+			"cache": false,
+			"onSuccess": function(response){
+				if(response.status === "success")
+				{
+					resolve(response.success.data);
+				}
+				else
+				{
+					reject(response.failure.message);
+				}
+			},
+			"onFailure": function(error){
+				reject(error);
 			}
-			else
-			{
-				reject(response.failure.message);
-			}
-		})
-		.fail(function(error){
-			reject(error.responseText);
 		});
 	});
 }

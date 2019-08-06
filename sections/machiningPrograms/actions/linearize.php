@@ -8,17 +8,36 @@
      * \brief 		Simplifie un programme d'usinage mpr
      * \details     Simplifie un programme d'usinage mpr
      */
-
-    include_once __DIR__ . "/../../../lib/mpr/mprmerge/MprMerge.php";
-    include_once __DIR__ . "/../../../lib/fileFunctions/fileFunctions.php";
-    
+      
     // Structure de retour vers javascript
     $responseArray = array("status" => null, "success" => array("data" => null), "failure" => array("message" => null));
     
-    set_time_limit(3 * 60);
-    
     try
     {
+        require_once __DIR__ . "/../../../lib/mpr/mprmerge/MprMerge.php";
+        require_once __DIR__ . "/../../../lib/fileFunctions/fileFunctions.php";
+      
+        // Initialize the session
+        session_start();
+                                                       
+        // Check if the user is logged in, if not then redirect him to login page
+        if(!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true){
+            if(!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest')
+            {
+                throw new \Exception("You are not logged in.");
+            }
+            else
+            {
+                header("location: /Planificateur/lib/account/logIn.php");
+            }
+            exit;
+        }
+    
+        // Closing the session to let other scripts use it.
+        session_write_close();
+
+        set_time_limit(40 * 60);
+
         $data =  json_decode(file_get_contents("php://input"));
         
         $outputFolder = "C:\\PROGRAMMES_V200\\__DEV\\linearized\\";
@@ -30,10 +49,8 @@
         
         // Vérification des paramètres
         $inputFileContents = $data->inputFile ?? null;
-        $outputFileName = \FileFunctions\PathSanitizer::sanitize($data->outputFileName ?? null, array("inputPathDelimiter" => ""));
-        $variables = $data->variables ?? array();
-        
-        
+        $outputFileName = \FileFunctions\PathSanitizer::sanitize($data->outputFileName ?? null, array("fileNameMode" => true));
+        $variables = $data->variables ?? array(); 
         
         if($inputFileContents === null)
         {

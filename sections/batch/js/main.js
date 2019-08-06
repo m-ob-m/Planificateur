@@ -1,10 +1,12 @@
+"use strict";
+
 /**
  * Clears the session storage and returns to the main window.
  */
 function goToIndex()
 {
 	window.sessionStorage.clear();
-	window.location.assign("/Planificateur/index.php");
+	window.location.assign(ROOT_URL + "/index.php");
 }
 
 /**

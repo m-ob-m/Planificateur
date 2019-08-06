@@ -8,24 +8,43 @@
      * \brief 		Met à jour les programmes unitaires des combinaisons modèle-type spécifiées
      */
     
-    include_once __DIR__ . '/../../../lib/mpr/mprCutRite.php';  // Créateur de MPR pour CutRite
-    include_once __DIR__ . '/../../test/controller/testController.php'; //Contrôleur de Test
-    include_once __DIR__ . '/../../model/controller/modelController.php'; //Contrôleur de Modele
-    include_once __DIR__ . '/../../type/controller/typeController.php'; //Contrôleur de Type
-    include_once __DIR__ . '/../../generic/controller/genericController.php'; //Contrôleur de Type
-    include_once __DIR__ . '/../../varmodtypegen/controller/modelTypeGenericController.php'; //Contrôleur de Type
-    include_once __DIR__ . '/../../../lib/config.php';	// Fichier de configuration
-    include_once __DIR__ . '/../../../lib/connect.php';	// Classe de connection à la base de données
-    include_once __DIR__ . "/../../../lib/fileFunctions/fileFunctions.php"; //Fonctions sur les fichiers
-    
     // Structure de retour vers javascript
     $responseArray = array("status" => null, "success" => array("data" => null), "failure" => array("message" => null));
-    
-    set_time_limit(3600); // Pour éviter les erreurs de dépassement du temps alloué, on augmente le temps alloué.
     
     $lock = null;
     try
     {
+        require_once __DIR__ . '/../../../lib/mpr/mprCutRite.php';  // Créateur de MPR pour CutRite
+        require_once __DIR__ . '/../../test/controller/testController.php'; //Contrôleur de Test
+        require_once __DIR__ . '/../../model/controller/modelController.php'; //Contrôleur de Modele
+        require_once __DIR__ . '/../../type/controller/typeController.php'; //Contrôleur de Type
+        require_once __DIR__ . '/../../generic/controller/genericController.php'; //Contrôleur de Type
+        require_once __DIR__ . '/../../varmodtypegen/controller/modelTypeGenericController.php'; //Contrôleur de Type
+        require_once __DIR__ . '/../../../lib/config.php';	// Fichier de configuration
+        require_once __DIR__ . '/../../../lib/connect.php';	// Classe de connection à la base de données
+        require_once __DIR__ . "/../../../lib/fileFunctions/fileFunctions.php"; //Fonctions sur les fichiers
+        
+        // Initialize the session
+        session_start();
+                                
+        // Check if the user is logged in, if not then redirect him to login page
+        if(!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true){
+            if(!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest')
+            {
+                throw new \Exception("You are not logged in.");
+            }
+            else
+            {
+                header("location: /Planificateur/lib/account/logIn.php");
+            }
+            exit;
+        }
+    
+        // Closing the session to let other scripts use it.
+        session_write_close();
+
+        set_time_limit(3600); // Pour éviter les erreurs de dépassement du temps alloué, on augmente le temps alloué.
+
         $lockName = sys_get_temp_dir() . "/MAJModeleUnitaire.tmp";
         if(!$lock = fopen($lockName, 'c'))
         {
@@ -71,7 +90,11 @@
         }
         catch(\Exception $e)
         {
-            /* Boohoo! Quelque chose nous échappe. Allez, retournons quand-même notre réponse à l'utilisateur. */
+            $responseArray["status"] = "failure";
+            $responseArray["failure"]["message"] .= "
+                L'opération a réussi, mais le verrour d'application n'a pas pu être relâché. 
+                Cette routine risque d'échouer au prochain lancement.
+            ";
         }
         finally
         {
@@ -122,17 +145,19 @@
             foreach($typesToUpdate as $type)
             {
                 /* \var $model \Model */
-                foreach($modelToUpdate as $model)
+                foreach($modelsToUpdate as $model)
                 {
-                    $modelTypeGeneric = (new \ModelTypeGeneric($model->getId(), $type->getImportNo()))->loadParameters($db);
-                    $generic = \Generic::withID($db, $type->getGenericId());
-                    array_push($modelTypeGenericsToUpdate, 
-                        array("modelTypeGeneric" => $modelTypeGeneric, "model" => $model, "type" => $type, "generic" => $generic)
-                    );
+                    $modelTypeGeneric = (new \ModelTypeGeneric($model, $type))->loadParameters($db);
+                    $model = \Model::withID($db, $modelTypeGeneric->getModel()->getId());
+                    $type = \Type::withImportNo($db, $modelTypeGeneric->getType()->getImportNo());
+                    $name = getUnitaryProgramName($model, $type);
+                    $test = \Test::fromModelTypeGeneric($modelTypeGeneric)->setName($name);
+                    generateSingleUnitaryProgram($test, $model, $type);
                 }
             }
             
             $db->getConnection()->commit();
+            $db = null;
         }
         catch(\Exception $e)
         {
@@ -143,39 +168,6 @@
         {
             $db = null;
         }
-        
-        loopGenerateUnitaryPrograms($modelTypeGenericsToUpdate);
-    }
-    
-    
-    /**
-     * Loop through model-type combinations and generate their unitary program.
-     *
-     * @param array $modelTypeGenericsToUpdate An array containing all the Model objects for which unitary 
-     *                                                       programs must be generated.
-     *
-     * @throws 
-     * @author Marc-Olivier Bazin-Maurice
-     * @return 
-     */ 
-    function loopGenerateUnitaryPrograms(array $modelTypeGenericsToUpdate) : void
-    {
-        if(empty($modelTypeGenericsToUpdate))
-        {
-            throw new Exception("La demande de mise à jour des couples modèle-type n'affecte aucun couple.");
-        }
-        
-        /* \var $modelTypeGeneric \ModelTypeGeneric */
-        foreach ($modelTypeGenericsToUpdate as $modelTypeGenericToUpdate)
-        {
-            $model = $modelTypeGenericToUpdate["model"];
-            $type = $modelTypeGenericToUpdate["type"];
-            $generic = $modelTypeGenericToUpdate["generic"];
-            $modelTypeGeneric = $modelTypeGenericToUpdate["modelTypeGeneric"];
-            $name = getUnitaryProgramName($model, $type);
-            $test = \Test::fromModelTypeGeneric($modelTypeGeneric)->setName($name);
-            generateSingleUnitaryProgram($test, $model, $type, $generic);
-        }
     }
     
     /**
@@ -184,13 +176,12 @@
      * @param \Test $test A Test object.
      * @param \Model $model A model object for which a unitary program must be generated.
      * @param \Type $type A type object for which a unitary program must be generated.
-     * @param \Generic $generic The generic object to use to produce this Test.
      *
      * @throws 
      * @author Marc-Olivier Bazin-Maurice
      * @return 
      */ 
-    function generateSingleUnitaryProgram(\Test $test, \Model $model, \Type $type, \Generic $generic) : void
+    function generateSingleUnitaryProgram(\Test $test, \Model $model, \Type $type) : void
     {
         // Les modèles 1 à 9 n'ont pas de programme par défaut.
         if($model->getId() > 0 && $model->getId() < 10)
@@ -198,8 +189,10 @@
             return;
         }
         
+        $generic = $type->getGeneric();
+        
         // Créer le fichier mpr.
-        $mpr = new \mprCutrite($_SERVER['DOCUMENT_ROOT'] . "\\" . _GENERICPROGRAMSDIRECTORY . $generic->getFilename());
+        $mpr = new \mprCutrite(__DIR__ . "/../../../lib/" . $generic->getFilename());
         $mpr->extractMprBlocks();
         try 
         {
@@ -235,11 +228,11 @@
         return \FileFunctions\PathSanitizer::sanitize(
             "{$type->getDescription()}_{$model->getDescription()}.mpr", 
             array(
+                "fileNameMode" => true,
                 "allowSlashesInFilename" => false,
                 "transliterate" => true,
                 "fullyPortable" => true,
                 "simplify" => false,
-                "inputPathDelimiter" => "" /* This is a filename. */
             )
         );
     }

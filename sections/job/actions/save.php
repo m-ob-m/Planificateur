@@ -1,135 +1,165 @@
 <?php
-/**
- * \name		save.php
- * \author    	Marc-Olivier Bazin-Maurice
- * \version		1.0
- * \date       	2019-02-12
- *
- * \brief 		Saves a batch.
- * \details     Saves a batch.
- */
-
-// INCLUDE
-include_once __DIR__ . '/../../../lib/config.php';	// Fichier de configuration
-include_once __DIR__ . '/../../../lib/connect.php';	// Classe de connection à la base de données
-include_once __DIR__ . '/../controller/jobController.php'; // Contrôleur de Job
-include_once __DIR__ . '/../../../parametres/generic/controller/genericController.php'; // Contrôleur de Generic
-include_once __DIR__ . '/../../../parametres/model/controller/modelController.php'; // Contrôleur de Model
-include_once __DIR__ . '/../../../parametres/type/controller/typeController.php'; // Contrôleur de Type
-
-//Structure de retour vers javascript
-$responseArray = array("status" => null, "success" => array("data" => null), "failure" => array("message" => null));
-
-try
-{
-    $inputJob =  json_decode(file_get_contents("php://input"));
+    /**
+     * \name		save.php
+     * \author    	Marc-Olivier Bazin-Maurice
+     * \version		1.0
+     * \date       	2019-02-12
+     *
+     * \brief 		Saves a batch.
+     * \details     Saves a batch.
+     */
     
-    $db = new \FabPlanConnection();
+    // Structure de retour vers javascript
+    $responseArray = array("status" => null, "success" => array("data" => null), "failure" => array("message" => null));
+
     try
     {
-        $db->getConnection()->beginTransaction();
-        buildJob($db, $inputJob)->save($db);
-        $db->getConnection()->commit();
-    }
-    catch(\Exception $e)
-    {
-        $db->getConnection()->rollback();
-        throw $e;
-    }
-    finally
-    {
-        $db = null;
-    }
-    
-    // Retour au javascript
-    $responseArray["status"] = "success";
-    $responseArray["success"]["data"] = $job->getId();
-}
-catch(Exception $e)
-{
-    $responseArray["status"] = "failure";
-    $responseArray["failure"]["message"] = $e->getMessage();
-}
-finally
-{
-    echo json_encode($responseArray);
-}
+        // INCLUDE
+        require_once __DIR__ . '/../../../lib/config.php';	// Fichier de configuration
+        require_once __DIR__ . '/../../../lib/connect.php';	// Classe de connection à la base de données
+        require_once __DIR__ . '/../controller/jobController.php'; // Contrôleur de Job
+        require_once __DIR__ . '/../../../parametres/generic/controller/genericController.php'; // Contrôleur de Generic
+        require_once __DIR__ . '/../../../parametres/model/controller/modelController.php'; // Contrôleur de Model
+        require_once __DIR__ . '/../../../parametres/type/controller/typeController.php'; // Contrôleur de Type
 
-/**
- * Builds a job from a javascript object.
- *
- * @param \FabplanConnection $db The database to query.
- * @param \stdClass $inputJob The javascript object input job.
- *
- * @throws \Exception if there is an error.
- * @author Marc-Olivier Bazin-Maurice
- * @return \Job A Job object.
- */
-function buildJob(\FabPlanConnection $db, \stdClass $inputJob) : \Job
-{
-    $jobTypes = array();
-    if(!empty($inputJob->jobTypes))
-    {
-        foreach($inputJob->jobTypes as $inputJobType)
-        {
-            $model = \Model::withID($db, $inputJobType->model->id);
-            if($model === null)
+        // Initialize the session
+        session_start();
+                                                                                                        
+        // Check if the user is logged in, if not then redirect him to login page
+        if(!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true){
+            if(!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest')
             {
-                throw \Exception("Il n'y a pas de modèle avec l'identifiant unique \"{$inputJobType->model->id}\".");
-            }
-            
-            $type = \Type::withImportNo($db, $inputJobType->type->importNo);
-            if($type === null)
-            {
-                throw \Exception("Il n'y a pas de type avec l'identifiant unique \"{$inputJobType->type->importNo}\".");
-            }
-            
-            $generic = \Generic::withID($db, $type->getGenericId());
-            
-            $parts = array();
-            if(!empty($inputJobType->parts))
-            {
-                foreach($inputJobType->parts as $inputPart)
-                {
-                    $part = new \JobTypePorte($inputPart->id, $inputJobType->id, $inputPart->quantityToProduce,
-                        $inputPart->producedQuantity ?? 0, $inputPart->length, $inputPart->width, $inputPart->grain,
-                        $inputPart->done ?? "N", null);
-                    array_push($parts, $part);
-                }
-            }
-            
-            $parameters = array();
-            $mprFile = null;
-            if($model->getId() !== 2)
-            {
-                foreach($generic->getGenericParameters() as $genericParameter)
-                {
-                    $key = $genericParameter->getKey();
-                    $genericValue = $genericParameter->getValue();
-                    $value = $inputJobType->jobTypeParameters->{$key};
-                    if($value !== $genericValue && $value !== null && $value !== "")
-                    {
-                        $parameter = new \JobTypeParameter($inputJobType->id, $key, $value);
-                        array_push($parameters, $parameter);
-                    }
-                }
+                throw new \Exception("You are not logged in.");
             }
             else
             {
-                $mprfile = $inputJobType->mprFile;
+                header("location: /Planificateur/lib/account/logIn.php");
             }
-            
-            $jobType = new \JobType($inputJobType->id, $inputJob->id, $model->getId(), $type->getImportNo(),
-                $mprFile, null, null, $parameters, $parts);
-            array_push($jobTypes, $jobType);
+            exit;
         }
+
+        // Closing the session to let other scripts use it.
+        session_write_close();
+
+        $inputJob =  json_decode(file_get_contents("php://input"));
+        
+        $db = new \FabPlanConnection();
+        try
+        {
+            $db->getConnection()->beginTransaction();
+            $job = buildJob($db, $inputJob)->save($db);
+
+            $batch = $job->getParentBatch($db, \MYSQLDatabaseLockingReadTypes::FOR_UPDATE);
+            if($batch !== null)
+            {
+                $batch->setMprStatus("N")->updateCarrousel()->save($db);
+            }
+
+            $db->getConnection()->commit();
+        }
+        catch(\Exception $e)
+        {
+            $db->getConnection()->rollback();
+            throw $e;
+        }
+        finally
+        {
+            $db = null;
+        }
+        
+        // Retour au javascript
+        $responseArray["status"] = "success";
+        $responseArray["success"]["data"] = $job->getId();
     }
-    
-    $status = null;
-    $job = \Job::withID($inputJob->id);
-    if($job === null)
+    catch(Exception $e)
     {
-        throw new \Exception("La création de job n'a pas encore été implémentée.");
+        $responseArray["status"] = "failure";
+        $responseArray["failure"]["message"] = $e->getMessage();
     }
-    return $job->setDeliveryDate($inputJob->deliveryDate)->setJobTypes($jobTypes);
-}
+    finally
+    {
+        echo json_encode($responseArray);
+    }
+
+    /**
+     * Builds a job from a javascript object.
+     *
+     * @param \FabplanConnection $db The database to query.
+     * @param \stdClass $inputJob The javascript object input job.
+     *
+     * @throws \Exception if there is an error.
+     * @author Marc-Olivier Bazin-Maurice
+     * @return \Job A Job object.
+     */
+    function buildJob(\FabPlanConnection $db, \stdClass $inputJob) : \Job
+    {
+        $jobTypes = array();
+        if(!empty($inputJob->jobTypes))
+        {
+            foreach($inputJob->jobTypes as $inputJobType)
+            {
+                $model = \Model::withID($db, $inputJobType->model->id);
+                if($model === null)
+                {
+                    throw \Exception("Il n'y a pas de modèle avec l'identifiant unique \"{$inputJobType->model->id}\".");
+                }
+                
+                $type = \Type::withImportNo($db, $inputJobType->type->importNo);
+                if($type === null)
+                {
+                    throw \Exception("Il n'y a pas de type avec le numéro d'importation \"{$inputJobType->type->importNo}\".");
+                }
+                
+                $generic = $type->getGeneric();
+                
+                $parts = array();
+                if(!empty($inputJobType->parts))
+                {
+                    foreach($inputJobType->parts as $inputPart)
+                    {
+                        $part = new \JobTypePorte(is_string($inputPart->id) ? intval($inputPart->id) : $inputPart->id, 
+                            is_string($inputJobType->id) ? intval($inputJobType->id) : $inputJobType->id, $inputPart->quantity, 0, 
+                            $inputPart->length, $inputPart->width, $inputPart->grain, $inputPart->done ?? "N", null);
+                        array_push($parts, $part);
+                    }
+                }
+                
+                $parameters = array();
+                $mprFile = null;
+                if($model->getId() !== 2)
+                {
+                    foreach($generic->getParameters() as $genericParameter)
+                    {
+                        $key = $genericParameter->getKey();
+                        $genericValue = $genericParameter->getValue();
+                        $value = $inputJobType->parameters->$key;
+                        if($value !== $genericValue && $value !== null && $value !== "")
+                        {
+                            $parameter = new \JobTypeParameter(is_string($inputJobType->id) ? intval($inputJobType->id) : $inputJobType->id, 
+                                $key, $value);
+                            array_push($parameters, $parameter);
+                        }
+                    }
+                }
+                else
+                {
+                    $mprFile = $inputJobType->mprFile;
+                }
+                
+                $jobType = new \JobType(is_string($inputJobType->id) ? intval($inputJobType->id) : $inputJobType->id, $inputJob->id, 
+                    $model, $type, $mprFile, null, $parameters, $parts);
+                array_push($jobTypes, $jobType);
+            }
+        }
+        
+        $job = \Job::withID($db, $inputJob->id, MYSQLDatabaseLockingReadTypes::FOR_UPDATE);
+        if($job === null)
+        {
+            throw new \Exception("La création de job n'a pas encore été implémentée.");
+        }
+        return $job
+            ->setName($inputJob->name ?? $job->getName())
+            ->setDeliveryDate($inputJob->deliveryDate ?? $job->getDeliveryDate())
+            ->setJobTypes($jobTypes);
+    }
+?>

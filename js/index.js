@@ -1,22 +1,16 @@
+"use strict";
+
 /**
  * Updates the calendar planning interface.
- * 
- * @return {Promise}
  */
-function reloadEvents()
+async function reloadEvents()
 {
-	return retrieveEvents()
-	.catch(function(error){
-		showError("La récupération des évènements a échouée", error);
-		return Promise.reject();
-	})
-	.then(function(events){
-		updateEventsCalendar(events)
-	})
-	.catch(function(){
-		/* Errors were treated as they were triggered. Some of them required different treatments so they couldn't be handled here. 
-		 * This is only here to prevent unhandled rejected promise errors generation. */
-	});
+	try {
+		updateEventsCalendar(await retrieveEvents());
+	}
+	catch (error) {
+		showError("La mise à jour des évènements a échouée", error);
+	}
 }
 
 /**
@@ -28,7 +22,7 @@ function retrieveEvents()
 {
 	return new Promise(function(resolve, reject){
 		$.ajax({
-	    	"url": "/Planificateur/actions/loadEvents.php",
+	    	"url": ROOT_URL + "/actions/loadEvents.php",
 	        "type": "GET",
 	        "contentType": "application/json;charset=utf-8",
 	        "data": {
@@ -64,7 +58,6 @@ function updateEventsCalendar(events)
 {
 	$("#calendar").fullCalendar('removeEvents');
 	$("#calendar").fullCalendar('addEventSource', events);
-	$("#calendar").fullCalendar('rerenderEvents');
 }
 
 /**
@@ -73,7 +66,8 @@ function updateEventsCalendar(events)
 $(function(){
     // Chargement du calendrier
     $('#calendar').fullCalendar({
-    	"height": "auto",
+    	"contentHeight": "9999",
+		"height": "9999",
 		"header": {"left": 'prev,next today', "center": 'title', "right": 'month, agendaWeek, agendaDay, listMonth'},
 		"locale": 'fr-ca',
 		"navLinks": true, // can click day/week names to navigate views
@@ -106,32 +100,23 @@ $(function(){
     $('.fc-month-button').click(function(){
     	$("html").css({"height": "125%"});
     	$("#calendar").fullCalendar("option", "height", $("#calendar").height());
-    }).click();
-    
-    reloadEvents();
+    });
+	reloadEvents();
 });
 
 /**
  * Reschedule an event
  * @param {FullCalendarEvent} event The event for which the planning is modified
- * 
- * @return {Promise}
  */
-function reschedule(event)
+async function reschedule(event)
 {
-	return rescheduleEvent(event)
-	.catch(function(error){
+	try {
+		event.color = await rescheduleEvent(event);
+		$('#calendar').fullCalendar('updateEvent', event);
+	}
+	catch (error) {
 		showError("Le changement de planification de l'évènement a échoué", error);
-		return Promise.reject();
-	})
-	.then(function(color){
-		event.color = color; // Le résultat modifie la couleur
-		$('#calendar').fullCalendar('updateEvent', event); 
-	})
-	.catch(function(){
-		/* Errors were treated as they were triggered. Some of them required different treatments so they couldn't be handled here. 
-		 * This is only here to prevent unhandled rejected promise errors generation. */
-	});
+	}
 }
 
 /**
@@ -147,12 +132,12 @@ function rescheduleEvent(event)
 	    	"url": "actions/eventDrop.php",
 	        "type": "POST",
 	        "contentType": "application/json;charset=utf-8",
-	        "data": JSON.stringify({
+	        "data": {
 	        	"batchId": event.id, 
 	        	"debut": event.start.format(), 
 	        	"fin": event.end.format(), 
 	        	"allDay":event.allDay
-	        }),
+	        },
 			"dataType": "json",
 			"async": true,
 			"cache": false
@@ -182,7 +167,7 @@ function getBatchIdFromJobName(jobName)
 {
 	return new Promise(function(resolve, reject){
 		$.ajax({
-			"url": "/Planificateur/sections/job/actions/findBatchByJobName.php",
+			"url": ROOT_URL + "/sections/job/actions/findBatchByJobName.php",
             "type": "POST",
             "contentType": "application/json;charset=utf-8",
             "data": JSON.stringify({"productionNumber": jobName}),
@@ -207,22 +192,103 @@ function getBatchIdFromJobName(jobName)
 }
 
 /**
- * Finds a job by production number
+ * Update all unitary programs
+ * @param {int} modelId The model id for which programs must be updated, null means all
+ * @param {int} TypeNo The type id for which programs must be updated, null means all
+ */
+async function updateUnitaryPrograms(modelId = null, typeNo = null)
+{
+	document.getElementById("loadingModal").style.display = "block";
+	try{
+		await updatePrograms()
+	}
+	catch(error){
+		showError("La génération des programmes unitaires a échouée", error);
+	}
+	finally{
+		document.getElementById("loadingModal").style.display = "none";
+	};
+}
+
+/**
+ * Updates unitary programs
  * 
  * @return {Promise}
  */
-function findJobByProductionNumber()
+function updatePrograms()
 {
-	return getBatchIdFromJobName($("form#findBatchByJobNumberForm > input[name=jobNumero]").val())
-	.catch(function(error){
-		showError("La job \"" + productionNumber + "\" n'a pas été trouvée : ", error);
-		return Promise.reject();
-	})
-	.then(function(id){
-		window.location.assign(["/Planificateur/sections/batch/index.php", "?", "id=", id].join(""));
-	})
-	.catch(function(){
-		/* Errors were treated as they were triggered. Some of them required different treatments so they couldn't be handled here. 
-		 * This is only here to prevent unhandled rejected promise errors generation. */
+	return new Promise(function(resolve, reject){
+		$.ajax({
+			"type": "POST",
+			"contentType": "application/json;charset=utf-8",
+			"url": ROOT_URL + "/parametres/varmodtype/actions/MAJModeleUnitaire.php",
+			"data": JSON.stringify({}),
+			"dataType": "json",
+			"async": true,
+			"cache": false,
+		})
+		.done(function(response){
+			if(response.status === "success")
+			{
+				resolve(response.success.data);
+			}
+			else
+			{
+				reject(response.failure.message);
+			}
+		})
+		.fail(function(error){
+			reject(error.responseText);
+		});
 	});
+}
+
+/**
+ * Regenerates unitary programs
+ * 
+ * @return {Promise}
+ */
+function getBatchIdFromJobName(jobName)
+{
+	return new Promise(function(resolve, reject){
+		$.ajax({
+			"url": ROOT_URL + "/sections/job/actions/findBatchByJobName.php",
+            "type": "POST",
+            "contentType": "application/json;charset=utf-8",
+            "data": JSON.stringify({"productionNumber": jobName}),
+            "dataType": 'json',
+            "async": true,
+            "cache": false,
+		})
+		.done(function(response){
+			if(response.status === "success")
+			{
+				resolve(response.success.data);
+			}
+			else
+			{
+				reject(response.failure.message);
+			}
+		})
+		.fail(function(error){
+			reject(error.responseText);
+		});
+	});
+}
+
+
+/**
+ * Finds a job by production number
+ */
+async function findJobByProductionNumber()
+{
+	let productionNumber = document.getElementById("findBatchByJobNumberForm").elements["jobNumero"].value;
+	try 
+	{
+		let id = await getBatchIdFromJobName(productionNumber);
+		window.location.assign([ROOT_URL + "/sections/batch/index.php", "?", "id=", id].join(""));
+	}
+	catch (error) {
+		showError("La job \"" + productionNumber + "\" n'a pas été trouvée : ", error);
+	}
 }

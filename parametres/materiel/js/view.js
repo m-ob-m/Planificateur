@@ -1,3 +1,5 @@
+"use strict";
+
 /**
  * Validates information entered by user
  * @param {int} id The id of the material.
@@ -9,136 +11,138 @@
  * @param {boolean} grain True if the material has a grain
  * @param {boolean} isMDF True if the wood type is mdf
  * 
- * @return {Promise}
+ * @return {bool} If information is valid, returns true. Otherwise, returns false.
  */
 function validateInformation(id, description, siaCode, cutRiteCode, thickness, woodType, grain, isMDF){
-	return new Promise(
-		function(resolve, reject)
-		{
-			let err = "";
+	let err = "";
 			
-			if(!isPositiveInteger(id) && id !== "" && id!== null)
-			{
-				err += "L'identificateur unique doit être un entier positif. ";
-			}
-			
-			if(!description.trim())
-			{
-				err += "Description manquante. ";
-			}
-			
-			if(!siaCode.trim())
-			{
-				err += "Code SIA manquant. ";
-			}
-			
-			if(!cutRiteCode.trim())
-			{
-				err += "Code CutRite manquant. ";
-			}
-			
-			if(!thickness.trim())
-			{
-				err += "Épaisseur manquante. ";
-			}
+	if(!isPositiveInteger(id, true, true) && id !== "" && id!== null)
+	{
+		err += "L'identificateur unique doit être un entier positif. ";
+	}
+	
+	if(!description.trim())
+	{
+		err += "Description manquante. ";
+	}
+	
+	if(!siaCode.trim())
+	{
+		err += "Code SIA manquant. ";
+	}
+	
+	if(!cutRiteCode.trim())
+	{
+		err += "Code CutRite manquant. ";
+	}
+	
+	if(!thickness.trim())
+	{
+		err += "Épaisseur manquante. ";
+	}
 
-			if(!woodType.trim())
-			{
-				err += "Essence manquante. ";
-			}
-			
-			if(grain !== "Y" && grain !== "N")
-			{
-				err += "Présence de grain non validée. ";
-			}
-			
-			if(isMDF !== "Y" && isMDF !== "N")
-			{
-				err += "Paramètre est_mdf sans valeur. ";
-			}
+	if(!woodType.trim())
+	{
+		err += "Essence manquante. ";
+	}
+	
+	if(grain !== "Y" && grain !== "N")
+	{
+		err += "Présence de grain non validée. ";
+	}
+	
+	if(isMDF !== "Y" && isMDF !== "N")
+	{
+		err += "Paramètre est_mdf sans valeur. ";
+	}
 
-			if(err != "")
-			{
-				reject(err);
-			}
-			else
-			{
-				resolve();
-			}
-		}	
-	);	
-} 
+	if(err == "")
+	{
+		return true;	
+	}
+	else
+	{
+		showError("Les informations du matériel ne sont pas valides", err);
+		return false;
+	}
+}
 
 /**
  * Prompts user to confirm deletion of the current material.
- * 
- * @return {Promise}
  */
-function deleteConfirm()
+async function deleteConfirm()
 {
-	let args = [$("#id_materiel").val()];
+	let args = [];
 	
-	return askConfirmation("Suppression de matériel", "Voulez-vous vraiment supprimer ce matériel?")
-	.then(function(){
-		$("#loadingModal").css({"display": "block"});
-		return deleteMaterial.apply(null, args)
-		.catch(function(error){
-			showError("La suppression du matériel a échouée", error);
-			return Promise.reject();
-		})
-		.then(function(){
+	if(await askConfirmation("Suppression de matériel", "Voulez-vous vraiment supprimer ce matériel?"))
+	{
+		document.getElementById("loadingModal").style.display = "block";
+		try{
+			await deleteMaterial(document.getElementById("id_materiel").value);
 			goToIndex();
-		})
-		.finally(function(){
-			$("#loadingModal").css({"display": "none"});
-		});
-	})
-	.catch(function(){/* Do nothing. */});
+		}
+		catch(error){
+			showError("La suppression du matériel a échouée", error);
+		}
+		finally{
+			document.getElementById("loadingModal").style.display = "none";
+		}
+	}
 }
 
 /**
  * Prompts user to confirm the saving of the current material.
- * 
- * @return {Promise}
  */
-function saveConfirm()
+async function saveConfirm()
 {
+	let hasGrain = null;
+	for (let item of document.getElementsByName("has_grain"))
+	{
+		if(item.checked)
+		{
+			hasGrain = item.value;
+			break;
+		}
+	}
+
+	let isMDF = null;
+	for (let item of document.getElementsByName("est_mdf"))
+	{
+		if(item.checked)
+		{
+			isMDF = item.value;
+			break;
+		}
+	}
+
 	let args = [
-		$("#id_materiel").val(), 
-		$("#description").val(), 
-		$("#codeSIA").val(), 
-		$("#codeCutRite").val(), 
-		$("#epaisseur").val(), 
-		$("#essence").val(), 
-		$("input[name=has_grain]:checked").val(), 
-		$("input[name=est_mdf]:checked").val()
+		document.getElementById("id_materiel").value, 
+		document.getElementById("description").value, 
+		document.getElementById("codeSIA").value, 
+		document.getElementById("codeCutRite").value, 
+		document.getElementById("epaisseur").value, 
+		document.getElementById("essence").value, 
+		hasGrain, 
+		isMDF
 	];
 	
-	return validateInformation.apply(null, args)
-	.catch(function(error){
-		showError("La sauvegarde du matériel a échouée", error);
-		return Promise.reject();
-	})
-	.then(function(){
-		return askConfirmation("Sauvegarde de matériel", "Voulez-vous vraiment sauvegarder ce matériel?")
-		.then(function(){
-			$("#loadingModal").css({"display": "block"});
-			return saveMaterial.apply(null, args)
-			.catch(function(error){
+	if(validateInformation.apply(null, args))
+	{
+		if(await askConfirmation("Sauvegarde de matériel", "Voulez-vous vraiment sauvegarder ce matériel?"))
+		{
+			document.getElementById("loadingModal").style.display = "block";
+			try{
+				let id = await saveMaterial.apply(null, args);
+				openMaterial(id);
+			}
+			catch(error){
 				showError("La sauvegarde du matériel a échouée", error);
-				return Promise.reject();
-			})
-			.then(function(id){
-				window.location.assign(
-					window.location.protocol + '//' + window.location.host + window.location.pathname + "?id=" + id
-				);
-			})
-			.finally(function(){
-				$("#loadingModal").css({"display": "none"});
-			});
-		});
-	})
-	.catch(function(){/* Do nothing. */});
+			}
+			finally{
+				document.getElementById("loadingModal").style.display = "none";
+			}
+		}
+	}
 }
 
 /**
@@ -150,27 +154,27 @@ function saveConfirm()
 function deleteMaterial(id)
 {	
 	return new Promise(function(resolve, reject){
-		$.ajax({
+		ajax.send({
 			"type": "POST",
 			"contentType": "application/json;charset=utf-8",
-			"url": "/Planificateur/parametres/materiel/actions/delete.php",
-			"data": JSON.stringify({"id": id}),
+			"url": ROOT_URL + "/parametres/materiel/actions/delete.php",
+			"data": {"id": id},
 			"dataType": "json",
 			"async": true,
 			"cache": false,
-		})
-		.done(function(response){
-			if(response.status === "success")
-			{
-				resolve(response.success.data);
+			"onSuccess": function(response){
+				if(response.status === "success")
+				{
+					resolve(response.success.data);
+				}
+				else
+				{
+					reject(response.failure.message);
+				}
+			},
+			"onFailure": function(error){
+				reject(error);
 			}
-			else
-			{
-				reject(response.failure.message);
-			}
-		})
-		.fail(function(error){
-			reject(error.responseText);
 		});
 	});
 }
@@ -191,11 +195,11 @@ function deleteMaterial(id)
 function saveMaterial(id, description, siaCode, cutRiteCode, thickness, woodType, grain, isMDF)
 {	
 	return new Promise(function(resolve, reject){
-		$.ajax({
+		ajax.send({
 			"type": "POST",
 			"contentType": "application/json;charset=utf-8",
-			"url": "/Planificateur/parametres/materiel/actions/save.php",
-			"data": JSON.stringify({
+			"url": ROOT_URL + "/parametres/materiel/actions/save.php",
+			"data": {
 				"id": ((id === "") ? null : id), 
 				"description": description, 
 				"siaCode": siaCode, 
@@ -204,23 +208,23 @@ function saveMaterial(id, description, siaCode, cutRiteCode, thickness, woodType
 				"woodType": woodType, 
 				"grain": grain, 
 				"isMDF": isMDF
-			}),
+			},
 			"dataType": "json",
 			"async": true,
 			"cache": false,
-		})
-		.done(function(response){
-			if(response.status === "success")
-			{
-				resolve(response.success.data);
+			"onSuccess": function(response){
+				if(response.status === "success")
+				{
+					resolve(response.success.data);
+				}
+				else
+				{
+					reject(response.failure.message);
+				}
+			},
+			"onFailure": function(error){
+				reject(error);
 			}
-			else
-			{
-				reject(response.failure.message);
-			}
-		})
-		.fail(function(error){
-			reject(error.responseText);
 		});
 	});
 }

@@ -13,10 +13,10 @@
 /*
  * Includes
  */
-include_once __DIR__ . '/../../../lib/config.php';	// Fichier de configuration
-include_once __DIR__ . '/../../../lib/connect.php';	// Classe de connection à la base de données
+require_once __DIR__ . '/../../../lib/config.php';	// Fichier de configuration
+require_once __DIR__ . '/../../../lib/connect.php';	// Classe de connection à la base de données
 
-include_once __DIR__ . '/../model/test.php';	// Classe d'un test
+require_once __DIR__ . '/../model/test.php';	// Classe d'un test
 
 class TestController 
 {
@@ -63,7 +63,7 @@ class TestController
     {
         $stmt = $this->getDBConnection()->getConnection()->prepare("
             SELECT `t`.`id` 
-            FROM `fabplan`.`test` AS `t` 
+            FROM `test` AS `t` 
             ORDER BY `t`.`id` " . ($ascending ? "ASC" : "DESC") . " " . 
             (($quantity === 0) ? "" : " LIMIT :quantity OFFSET :offset") . " " . 
             "FOR SHARE;"
@@ -96,7 +96,7 @@ class TestController
     {
         $stmt = $this->getDBConnection()->getConnection()->prepare("
             SELECT `t`.`id`
-            FROM `fabplan`.`test` AS `t`
+            FROM `test` AS `t`
             WHERE `t`.`estampille` >= :startDate AND `t`.`estampille` <= :endDate
             ORDER BY `t`.`estampille` " . ($ascending ? "ASC" : "DESC") . " " . 
             "FOR SHARE;"

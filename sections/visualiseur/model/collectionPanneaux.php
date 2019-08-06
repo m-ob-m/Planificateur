@@ -9,8 +9,8 @@
  * \details 	Représente une collection de panneaux
  */
 
-include_once __DIR__ . "/panneau.php";
-include_once __DIR__ . "/porte.php";
+require_once __DIR__ . "/panneau.php";
+require_once __DIR__ . "/porte.php";
 
 class CollectionPanneaux
 {

@@ -13,9 +13,9 @@
 /*
  * Includes
  */
-include_once __DIR__ . '/../../../lib/config.php';	// Fichier de configuration
-include_once __DIR__ . '/../../../lib/connect.php';	// Classe de connection � la base de donn�es
-include_once __DIR__ . '/../model/modelTypeParameter.php';	// Classe de parametre
+require_once __DIR__ . '/../../../lib/config.php';	// Fichier de configuration
+require_once __DIR__ . '/../../../lib/connect.php';	// Classe de connection � la base de donn�es
+require_once __DIR__ . '/../model/modelTypeParameter.php';	// Classe de parametre
 
 class modelTypeParameterController
 {

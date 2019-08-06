@@ -1,5 +1,5 @@
 <?php
-include_once __DIR__ . "/../../parameter/parameter.php";
+require_once __DIR__ . "/../../parameter/parameter.php";
 
 /**
  * \name		ModelTypeParameter
@@ -52,7 +52,7 @@ class ModelTypeParameter extends \Parameter
     {
         // Récupérer le générique
         $stmt = $db->getConnection()->prepare(
-            "SELECT `dmd`.* FROM `fabplan`.`door_model_data` AS `dmd`
+            "SELECT `dmd`.* FROM `door_model_data` AS `dmd`
             WHERE `dmd`.`fkDoorModel` = :modelId AND `dmd`.`fkDoorType` = :typeNo AND `dmd`.`paramKey` = :key;"
         );
         $stmt->bindValue(":modelId", $modelId, PDO::PARAM_INT);
@@ -109,8 +109,9 @@ class ModelTypeParameter extends \Parameter
         try
         {
             $stmt = $db->getConnection()->prepare("
-                INSERT INTO `fabplan`.`door_model_data` (`paramKey`, `paramValue`, `fkDoorModel`, `fkDoorType`)
-                VALUES (:key, :value, :modelId, :typeNo);");
+                INSERT INTO `door_model_data` (`paramKey`, `paramValue`, `fkDoorModel`, `fkDoorType`)
+                VALUES (:key, :value, :modelId, :typeNo);"
+            );
             $stmt->bindValue(':key', $this->getKey(), PDO::PARAM_STR);
             $stmt->bindValue(':value', $this->getValue(), PDO::PARAM_STR);
             $stmt->bindValue(':modelId', $this->getModelId(), PDO::PARAM_INT);
@@ -121,6 +122,7 @@ class ModelTypeParameter extends \Parameter
         }
         catch (Exception $e)
         {
+            echo json_encode($this);
             throw $e;
         }
     }
@@ -139,7 +141,7 @@ class ModelTypeParameter extends \Parameter
         try
         {
             $stmt = $db->getConnection()->prepare("
-                UPDATE `fabplan`.`door_model_data` AS `dmd`
+                UPDATE `door_model_data` AS `dmd`
                 SET `paramValue` = :value
                 WHERE `dmd`.`fkDoorModel` = :modelId AND `dmd`.`fkDoorType` = :typeNo AND `dmd`.`paramKey` = :key;
             ");
@@ -168,25 +170,17 @@ class ModelTypeParameter extends \Parameter
      */
     public function delete(\FabPlanConnection $db) : \ModelTypeParameter
     {
-        try
-        {
-            $stmt = $db->getConnection()->prepare("
-                DELETE FROM `fabplan`.`door_model_data`
-                WHERE `door_model_data`.`fkDoorModel` = :modelId 
-                    AND `door_model_data`.`fkDoorType` = :typeNo 
-                    AND `door_model_data`.`paramKey` = :key;
-            ");
-            $stmt->bindValue(':key', $this->getKey(), PDO::PARAM_STR);
-            $stmt->bindValue(':modelId', $this->getModelId(), PDO::PARAM_INT);
-            $stmt->bindValue(':typeNo', $this->getTypeNo(), PDO::PARAM_INT);
-            $stmt->execute();
-            
-            return $this;
-        }
-        catch (Exception $e)
-        {
-            throw $e;
-        }
+        $stmt = $db->getConnection()->prepare("
+            DELETE FROM `door_model_data`
+            WHERE `door_model_data`.`fkDoorModel` = :modelId AND `door_model_data`.`fkDoorType` = :typeNo 
+                AND `door_model_data`.`paramKey` = :key;
+        ");
+        $stmt->bindValue(':key', $this->getKey(), PDO::PARAM_STR);
+        $stmt->bindValue(':modelId', $this->getModelId(), PDO::PARAM_INT);
+        $stmt->bindValue(':typeNo', $this->getTypeNo(), PDO::PARAM_INT);
+        $stmt->execute();
+        
+        return $this;
     }
     
     /**
@@ -268,6 +262,18 @@ class ModelTypeParameter extends \Parameter
     {
         $this->_value = $value;
         return $this;
+    }
+    
+    /**
+     * Get a JSON compatible representation of this object.
+     *
+     * @throws
+     * @author Marc-Olivier Bazin-Maurice
+     * @return array This object in a JSON compatible format
+     */
+    public function jsonSerialize()
+    {
+        return get_object_vars($this);
     }
 }
 ?>

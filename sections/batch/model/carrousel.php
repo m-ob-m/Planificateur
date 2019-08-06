@@ -1,4 +1,8 @@
 <?php
+require_once __DIR__ . "/../../../lib/mpr/GlobalVariablesFile.php";
+
+use \MprGlobalParameters\MprGlobalParametersFile as MprGlobalParametersFile;
+
 /**
 * \name		Carrousel
 * \author    	Mathieu Grenier
@@ -15,26 +19,7 @@ class Carrousel implements JsonSerializable
 	private $_VIDE = "-";			// Valeur d'une case vide
 	private $_outils;					// Outils du carrousel
 	private $_nospaces;					// Outils qui ne peuvent être mis sur le carrousel
-	private $_symbolicToolNames = array(
-	    "_T_CUT" => 130,
-	    "_T_FIN" => 132,
-	    "_PROF_V" => 133,
-	    "_PROF_V2" => 133.2,
-	    "_PROF_V3" => 133.1,
-	    "_T_PCKT" => 134,
-	    "_T_AFF" => 136,
-	    "_TPERAFF" => 137,
-	    "_PROF_A" => 140,
-	    "_PROF_B" => 141,
-	    "_PROF_C" => 142,
-	    "_PROF_D" => 143,
-	    "_PROF_F" => 144,
-	    "_PROF_G" => 145,
-	    "_PROF_Q" => 132,
-	    "_PROF_AA" => 154,
-	    "_TCCSHAK" => 164,
-	    "_T_SPCKT" => 199,
-	);
+	private $_symbolicToolNames = array();
 	
 	/**
 	 * Carrousel constructor
@@ -45,9 +30,21 @@ class Carrousel implements JsonSerializable
 	 */ 
 	public function __construct()
 	{
-		$this->empty();
+		$this->loadGlobalVariableFile()->empty();
 	}
-		
+	
+	/**
+	 * Loads the global parameters file for mpr files and puts the contents to the symbolic tool names array
+	 *
+	 * @throws
+	 * @author Marc-Olivier Bazin-Maurice
+	 * @return \Carrousel This Carrousel
+	 */ 
+	private function loadGlobalVariableFile() : \Carrousel
+	{
+        $this->_symbolicToolNames = (new MprGlobalParametersFile())->parse()->getGlobalParametersAsKeyValuePairs();
+        return $this;
+	}
 	
 	/**
 	 * Carrousel constructor using a csv string as input
@@ -55,9 +52,9 @@ class Carrousel implements JsonSerializable
 	 *
 	 * @throws
 	 * @author Marc-Olivier Bazin-Maurice
-	 * @return Carrousel This Carrousel
+	 * @return \Carrousel This Carrousel
 	 */ 
-	public static function fromCsv(string $csv) :Carrousel
+	public static function fromCsv(string $csv) : \Carrousel
 	{
 	    $tools = str_getcsv($csv, ",");
 	    
@@ -115,7 +112,13 @@ class Carrousel implements JsonSerializable
 	public function addTool($tool, int $position = -1) 
 	{
 	    $toolNumber = $this->getToolNumber($tool);
-	    
+		
+		if($toolNumber == 0)
+		{
+			// 0 is not a valid tool.
+			return;
+		}
+		
 	    if($position === -1)
 	    {
 	        $newPosition = array_search("-", $this->_outils, TRUE);
@@ -159,7 +162,8 @@ class Carrousel implements JsonSerializable
 	 */ 
 	public function toolExists($toolNumber) :bool
 	{	
-	    return ((array_search(strval($toolNumber), array_merge($this->_outils, $this->_nospaces), true) === false) ? false : true);
+	    $toolNumber = strval($toolNumber);
+	    return ((array_search($toolNumber, array_merge($this->_outils, $this->_nospaces), true) === false) ? false : true);
 	}
 	
 	/**
