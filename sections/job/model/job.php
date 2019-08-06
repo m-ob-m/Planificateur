@@ -89,7 +89,7 @@ class Job implements \JsonSerializable
             "SELECT `jt`.`id_job_type` AS `id` 
             FROM `job_type` AS `jt` 
             WHERE `jt`.`job_id` = :id 
-            ORDER BY `jt`.`type_no` ASC, `jt`.`door_model_id` ASC " . 
+            ORDER BY `jt`.`id_job_type` ASC " . 
 	        (new \MYSQLDatabaseLockingReadTypes($databaseConnectionLockingReadType))->toLockingReadString() . ";"
         );
 	    $stmt->bindValue(':id', $id, PDO::PARAM_INT);
