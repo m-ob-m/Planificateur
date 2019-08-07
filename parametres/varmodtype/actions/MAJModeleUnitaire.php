@@ -193,7 +193,6 @@
         
         // Créer le fichier mpr.
         $mpr = new \mprCutrite(__DIR__ . "/../../../lib/" . $generic->getFilename());
-        $mpr->extractMprBlocks();
         try 
         {
             $mpr->makeMprFromTest($test, $generic->getParametersAsKeyDescriptionPairs());
