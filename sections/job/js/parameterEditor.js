@@ -21,6 +21,7 @@ class ParameterEditor{
 				let mprFileInput = document.getElementById("mprFileSelectionInputBox");
 				if(mprFileInput.files.length > 0){
 					await this.readMpr(mprFileInput.files[0]);
+					mprFileInput.value = "";
 				}
 			});
 			this._acceptCallBack = null;

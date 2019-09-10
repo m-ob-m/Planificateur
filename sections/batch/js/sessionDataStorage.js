@@ -19,6 +19,7 @@ async function restoreSessionStorage()
 		await updatePannelsList();
 		document.getElementById("boardSize").value = batch.boardSize;
 		await fillJobsList(batch.jobIds, false);
+		hasChanged(batch.hasChanged);
 	}
 }
 
@@ -43,7 +44,8 @@ function updateSessionStorage()
 		"status": document.getElementById("status").value, 
 		"mprStatus": document.getElementById("mprStatus").value,
 		"comments": document.getElementById("comments").value, 
-		"jobIds": jobIds
+		"jobIds": jobIds,
+		"hasChanged": hasChanged()
 	});
 }
 
@@ -73,5 +75,25 @@ function compareWithSessionStorage()
 		sessionBatch.status === document.getElementById("status").value &&
 		sessionBatch.comments === document.getElementById("comments").value && 
 		sessionBatch.mprStatus === document.getElementById("mprStatus").value && 
+		sessionBatch.hasChanged === hasChanged() &&
 		comparedJobs;
+}
+
+/**
+ * If status is a boolean, sets the status of hasChanged. Otherwise, returns the status of hasChanged.
+ * @param {Boolean|null} [status=null] The new status of hasChanged when setting the status, null when getting the status of hasChanged.
+ * @return {Boolean|null} Null when setting the status of hasChanged, the staus of hasChanged when getting the status
+ */
+function hasChanged(status = null)
+{
+	if ([true, false].includes(status))
+	{
+		hasChanged.status = status;
+		return null;
+	}
+	else
+	{
+		hasChanged.status = typeof hasChanged.status === "undefined" ? false : hasChanged.status;
+		return hasChanged.status;
+	}
 }

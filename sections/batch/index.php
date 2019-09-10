@@ -246,7 +246,7 @@
         						<tr>
         							<td class="firstVisibleColumn" style="background-color: #c6e0b4;">Matériel</td>
         							<td class="lastVisibleColumn">
-        								<select id="material" style="text-align-last: center;" onchange="updatePannelsList();">
+        								<select id="material" style="text-align-last: center;">
         									<option value="0">[Non spécifié]</option>
         									<?php foreach($materials as $material) : ?>
         										<?php $materialId = $material->getId(); ?>
@@ -306,7 +306,7 @@
 										</td>
 									<?php elseif($batch->getMprStatus() === "A"): ?>
 										<td class="etatJaune lastVisibleColumn">En attente</td>
-									<?php elseif($batch->getMprStatus() === "P"): ?>
+									<?php elseif($batch->getMprStatus() === "C"): ?>
 										<td class="etatBleu lastVisibleColumn">En cours</td>
 									<?php elseif($batch->getMprStatus() === "E"): ?>
 										<td class="etatRouge lastVisibleColumn">Erreur</td>
@@ -318,6 +318,8 @@
 												<img src="../../images/search16.png" style="margin-right: 2px;">
 											Visualiser</a>
 										</td>
+									<?php elseif($batch->getMprStatus() === "P"): ?>
+										<td class="etatOrange lastVisibleColumn">Pressant</td>
 									<?php else: ?>
 										<td class="etatRouge lastVisibleColumn">
 											<div style="width: max-content; float: left;">
@@ -432,8 +434,8 @@
     											Commandes à ajouter : 
     										</h5>
         									<input type="text" id="jobNumber" style="flex: 1 1 auto; margin: 5px;">
-        									<button id="addJobButton" type="button" onclick="addJobButtonPressed();" 
-        										style="float: right; width: auto; flex: 0 1 auto; margin: 5px;">
+											<button id="addJobButton" type="button" 
+												style="float: right; width: auto; flex: 0 1 auto; margin: 5px;">
         										Ajouter
         									</button>
         								</div>

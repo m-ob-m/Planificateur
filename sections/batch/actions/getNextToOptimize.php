@@ -51,9 +51,9 @@
                 INNER JOIN `job` AS `j` ON `bj`.`job_id` = `j`.`id_job`
                 INNER JOIN `job_type` AS `jt` ON `j`.`id_job` = `jt`.`job_id`
                 INNER JOIN `job_type_porte` AS `jtp` ON `jt`.`id_job_type` = `jtp`.`job_type_id`
-                WHERE `b`.`etat_mpr` = 'A'
+                WHERE `b`.`etat_mpr` IN ('A', 'P')
                 GROUP BY `b`.`id_batch`, `b`.`nom_batch`, `b`.`panneaux` 
-                ORDER BY `quantity` ASC
+                ORDER BY FIELD(`b`.`etat_mpr`, 'P', 'A'), `quantity` ASC
                 LIMIT 1;
             ");
             $stmt->execute();

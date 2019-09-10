@@ -57,5 +57,5 @@
     define('LABEL_PRINT_SERVER_SHARE_INTERNAL_PATH', "Print_Server");
     define('LABEL_PRINT_SERVER_SHARE_DOMAIN', "");
     define('LABEL_PRINT_SERVER_SHARE_USERNAME', "Print_Server");
-    define('LABEL_PRINT_SERVER_SHARE_PASSWORD', "qwerty");
+    define('LABEL_PRINT_SERVER_SHARE_PASSWORD', "");
 ?>

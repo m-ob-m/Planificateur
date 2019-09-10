@@ -44,9 +44,7 @@
                 foreach($jobType->getParts() as $part)  
                 {
 					$generic = $jobType->getType()->getGeneric();
-					$defaultExternalProfile = $jobType->getType()->getGeneric()->getParametersAsKeyValuePairs()["T_Ext"];
-                    $externalProfile = $jobType->getParametersAsKeyValuePairs()["T_Ext"] ?? $defaultExternalProfile;
-                    $modelId = $jobType->getModel()->getId();
+					$modelId = $jobType->getModel()->getId();
 					$typeNo = $jobType->getType()->getImportNo();
 					$height = ($generic->getHeightParameter() === "LPX") ? $part->getLength() : $part->getWidth();
 					$width = ($generic->getHeightParameter() === "LPX") ? $part->getWidth() : $part->getLength();
@@ -69,8 +67,7 @@
     					"{$width};" .
     					"{$typeNo};" .
     					"{$grain};" .
-    					"{$externalProfile};" .
-    					"{$job->getName()}_{$part->getId()};;;;;;;\n"; 
+    					"{$job->getName()}_{$part->getId()}\n"; 
     			}
     			
     		}
