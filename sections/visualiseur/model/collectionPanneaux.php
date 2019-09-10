@@ -29,7 +29,7 @@ class CollectionPanneaux
 	 * @return CollectionPanneaux
 	 */ 
 	function __construct(\Batch $batch, ?string $pc2FileContents, ?string $cttFileContents)
-	{		
+	{
 		$this->_panneaux = array();
 		$this->createPanneauxFromPc2($batch,$pc2FileContents,$cttFileContents);
 	}
@@ -67,7 +67,6 @@ class CollectionPanneaux
 				}
 			}
 		}
-		
 		$this->first();
 		return $this;
 	}

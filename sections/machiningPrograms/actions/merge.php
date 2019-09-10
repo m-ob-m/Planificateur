@@ -64,9 +64,29 @@
             array_push($filesToDelete, $inputFile);
         }
         
+        $mainFile = preg_replace("/(?<!\r)\n|\r(?!\n)/", "\r\n", file_get_contents($inputFiles[0]));
+        $mainFileVariablesSection = array();
+        preg_match("/\[001\r\n(.*?)\r\n\r\n/s", $mainFile, $mainFileVariablesSection);
+        $globalSessionVariablesMatches = array();
+        $dimensionsFilter = "/(?<=\A|\r\n)(?<key>LPX|LPY)=\"(?<value>.*?)\"\r\nKM=\"(?<description>.*?)\"(?=\z|\r\n)/";
+        preg_match_all($dimensionsFilter, $mainFileVariablesSection[1], $globalSessionVariablesMatches, PREG_SET_ORDER);
+        
+        $globalSessionVariables = array();
+        foreach($globalSessionVariablesMatches as $globalSessionVariablesMatch)
+        {
+            array_push(
+                $globalSessionVariables, 
+                new \MprVariable(
+                    $globalSessionVariablesMatch["key"], 
+                    $globalSessionVariablesMatch["value"], 
+                    $globalSessionVariablesMatch["description"]
+                )
+            );
+        }
+
         try
         {
-            \MprMerge::merge($inputFiles, $outputFolder . $outputFileName);
+            \MprMerge::merge($inputFiles, $outputFolder . $outputFileName, $globalSessionVariables);
         }
         catch(\Exception $e)
         {

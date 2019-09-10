@@ -141,7 +141,7 @@
                     $externalProfile = $inputJobType->externalProfile;
                     if($externalProfile === "" || $externalProfile === null)
                     {
-                        $parameters["T_Ext"] = "0";
+                        $parameters["T_Ext"] = $parameters["T_Ext"] ?? "0";
                     }
                     elseif(preg_match("/\A[A-Z]\*\z/", $externalProfile))
                     {

@@ -62,12 +62,12 @@
 		<title>Fabridor - Liste des valeurs par défaut</title>
 		<meta charset="utf-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1" />
-		<link rel="stylesheet" href="../../assets/css/responsive.css" />
-		<link rel="stylesheet" href="../../assets/css/fabridor.css" />
-		<link rel="stylesheet" href="../../assets/css/loader.css" />
-		<link rel="stylesheet" href="../../assets/css/parametersTable.css"/>
-		<link rel="stylesheet" href="../../assets/css/parametersForm.css"/>
-		<link rel="stylesheet" href="../../assets/css/imageButton.css">
+		<link rel="stylesheet" href="/Planificateur/assets/css/responsive.css" />
+		<link rel="stylesheet" href="/Planificateur/assets/css/fabridor.css" />
+		<link rel="stylesheet" href="/Planificateur/assets/css/loader.css" />
+		<link rel="stylesheet" href="/Planificateur/assets/css/parametersTable.css"/>
+		<link rel="stylesheet" href="/Planificateur/assets/css/parametersForm.css"/>
+		<link rel="stylesheet" href="/Planificateur/assets/css/imageButton.css">
 	</head>
 	<body class="homepage">
 		<div id="page-wrapper">
@@ -163,11 +163,11 @@
 		</div>	
 		
 		<!-- Scripts -->
-		<script type="text/javascript" src="../../assets/js/ajax.js"></script>
-		<script type="text/javascript" src="../../assets/js/docReady.js"></script>
-		<script type="text/javascript" src="../../js/main.js"></script>
-		<script type="text/javascript" src="../../js/toolbox.js"></script>
-		<script type="text/javascript" src="js/main.js"></script>
-		<script type="text/javascript" src="js/index.js"></script>
+		<script type="text/javascript" src="/Planificateur/assets/js/ajax.js"></script>
+		<script type="text/javascript" src="/Planificateur/assets/js/docReady.js"></script>
+		<script type="text/javascript" src="/Planificateur/js/main.js"></script>
+		<script type="text/javascript" src="/Planificateur/js/toolbox.js"></script>
+		<script type="text/javascript" src="/Planificateur/parametres/vardefaut/js/main.js"></script>
+		<script type="text/javascript" src="/Planificateur/parametres/vardefaut/js/index.js"></script>
 	</body>
 </html>

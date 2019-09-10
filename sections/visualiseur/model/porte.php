@@ -107,9 +107,13 @@ class Porte
 				if(strpos($PNL3, "P" . $parts[1]) > -1)
 				{	
 				    // Si PNL3 contient P#, c'est la bonne section
-					$noCommande =  explode("_" , substr(explode("," , $PNL4)[4], 5, 30))[0];
+					$matches = array();
+					preg_match("/(?<=,Comm=)[^,\r\n]*(?=,|\z)/", $PNL4, $matches);
+					$matches2 = array();
+					preg_match("/\A(?P<noCommande>.*)_(?P<idJobTypePorte>\d+)\z/", $matches[0], $matches2);
+					$noCommande = $matches2["noCommande"];
 					$idJobType = explode("_",explode("," , $PNL1)[1])[2];
-					$idJobTypePorte =  explode("_" , substr(explode("," , $PNL4)[4], 5, 30))[1];
+					$idJobTypePorte = $matches2["idJobTypePorte"];
 					$modele = explode("_",explode("," , $PNL1)[1])[0];
 					$nomMpr = explode("," , $PNL1)[1];
 				

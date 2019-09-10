@@ -102,7 +102,7 @@
             "name" => $job->getName(), 
             "deliveryDate" => $job->getDeliveryDate(), 
             "partsAmount" => $partsAmount,
-            "belongsToBatch" => (($batch !== null) ? $batch->getName() : null)
+            "belongsToBatch" => (($batch !== null) ? $batch->getId() : null)
         );
         
         // Retour au javascript

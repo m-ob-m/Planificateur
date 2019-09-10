@@ -14,9 +14,9 @@
 
     try
     {
-        include '../../../lib/config.php';	// Fichier de configuration
-        include '../../../lib/connect.php';	// Classe de connection à la base de données
-        include '../controller/modelTypeController.php';		// Controleur des paramètres de base des portes
+        require_once '../../../lib/config.php';	// Fichier de configuration
+        require_once '../../../lib/connect.php';	// Classe de connection à la base de données
+        require_once '../controller/modelTypeController.php';		// Controleur des paramètres de base des portes
     
         // Initialize the session
         session_start();

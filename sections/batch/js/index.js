@@ -18,25 +18,22 @@ docReady(async function(){
 		endDateInput.value = endDate.format(getExpectedMomentFormat());
 	});
 	
-	await initializeFields();
-	
 	document.getElementById("batchName").addEventListener("keyup", function(key){
-		if(key.keyCode === 13){
-			document.getElementById("jobNumber").focus();
-		}
+		(key.keyCode === 13) ? document.getElementById("jobNumber").focus() : null;
 	});
 
 	document.getElementById("jobNumber").addEventListener("keyup", function(key){
-		if(key.keyCode === 13){
-			document.getElementById("addJobButton").click();
-		}
+		(key.keyCode === 13) ? document.getElementById("addJobButton").click() : null;
 	});
 
 	document.getElementById("batchName").addEventListener("change", () => {hasChanged(true);});
 	document.getElementById("startDate").addEventListener("change", () => {hasChanged(true);});
 	document.getElementById("endDate").addEventListener("change", () => {hasChanged(true);});
 	document.getElementById("fullDay").addEventListener("change", () => {hasChanged(true);});
-	document.getElementById("material").addEventListener("change", () => {hasChanged(true);});
+	document.getElementById("material").addEventListener("change", () => {
+		updatePannelsList();
+		hasChanged(true);
+	});
 	document.getElementById("boardSize").addEventListener("change", () => {hasChanged(true);});
 	document.getElementById("status").addEventListener("change", () => {hasChanged(true);});
 
@@ -56,29 +53,25 @@ docReady(async function(){
 		}, 
 		10000
 	);
-	
-	document.getElementById("jobNumber").focus();
-	hasChanged(false);
-});
 
-/**
- * If status is a boolean, sets the status of hasChanged. Otherwise, returns the status of hasChanged.
- * @param {Boolean|null} [status=null] The new status of hasChanged when setting the status, null when getting the status of hasChanged.
- * @return {Boolean|null} Null when setting the status of hasChanged, the staus of hasChanged when getting the status
- */
-function hasChanged(status = null)
-{
-	if ([true, false].includes(status))
-	{
-		hasChanged.status = status;
-		return null;
-	}
-	else
-	{
-		hasChanged.status = typeof hasChanged.status === "undefined" ? false : hasChanged.status;
-		return hasChanged.status;
-	}
-}
+	document.getElementById("addJobButton").addEventListener("click", async function(){
+		let jobName = document.getElementById("jobNumber").value;
+		try{
+			await addJob(jobName, true)
+			initializeDates();
+			let batchName = document.getElementById("batchName").value;
+			document.getElementById("batchName").value = (batchName === null || batchName === "") ? jobName : batchName;
+			updateSessionStorage();
+			hasChanged(true);
+		}
+		catch(error){
+			showError("L'ajout de la job a échoué.", error);
+		};
+	});
+	
+	await initializeFields();
+	document.getElementById("jobNumber").focus();
+});
 
 /**
  * Initializes some fields on the page.
@@ -99,32 +92,29 @@ async function initializeFields()
 		si les données de session n'ont pas été écrasées par une autre batch entre temps, elles sont restaurées et on peut continuer à 
 		modifier la batch là où on était rendu.
 	*/
-
-	let sessionData = window.sessionStorage;
-	if(typeof sessionData.batch !== "undefined" && document.getElementById("batchId").value === JSON.parse(sessionData.batch).id)
-	{
-		try{
+	try{
+		let sessionData = window.sessionStorage;
+		if(typeof sessionData.batch !== "undefined" && document.getElementById("batchId").value === JSON.parse(sessionData.batch).id)
+		{
+			let mainStatus = document.getElementById("status").value;
 			let mprStatus = document.getElementById("mprStatus").value;
 			await restoreSessionStorage();
+			if(isPositiveInteger(document.getElementById("batchId").value, true, true)){
+				document.getElementById("status").value = mainStatus;
+			}
 			document.getElementById("mprStatus").value = mprStatus;
-			initializeDates();
-			updateSessionStorage();
 		}
-		catch(error){
-			showError("La restauration des données de session a échouée", error);
-		};
-	}
-	else
-	{
-		try{
+		else
+		{
+			hasChanged(false);
 			await getJobs(document.getElementById("batchId").value);
 			await updatePannelsList();
-			initializeDates();
-			updateSessionStorage();
 		}
-		catch(error){
-			showError("La restauration des données pour cette batch a échouée", error);
-		}
+		initializeDates();
+		updateSessionStorage();
+	}
+	catch(error){
+		showError("La restauration des données pour cette batch a échouée", error);
 	}
 }
 
@@ -174,6 +164,7 @@ async function verifyMprStatus(id)
 		let sessionBatch = window.sessionStorage.batch;
 		if(typeof sessionBatch !== "undefined" && ![JSON.parse(sessionBatch).mprStatus, null, ""].includes(mprStatus))
 		{
+			window.sessionStorage.removeItem("batch");
 			window.location.reload();
 		}
 	}
@@ -322,8 +313,10 @@ async function saveConfirm()
 		{
 			document.getElementById("loadingModal").style.display = "block";
 			try{
-				goToBatch(await saveBatch.apply(null, args));
+				let id = await saveBatch.apply(null, args);
 				hasChanged(false);
+				updateSessionStorage();
+				goToBatch(id);
 			}
 			catch(error){
 				showError("La sauvegarde de la batch a échouée", error);
@@ -351,7 +344,7 @@ async function generateConfirm(action = 1)
  */
 async function generatePrograms(id, action = 1)
 {
-	if(compareWithSessionStorage())
+	if(hasChanged() === false && compareWithSessionStorage())
 	{
 		document.getElementById("loadingModal").style.display = "block";
 		try{
@@ -470,8 +463,8 @@ function viewPrograms(batchId)
  * @param {int} jobId The unique identifier of the job to reach.
  * @param {int} batchId The unique identifier of the current batch.
  */
-async function openJob(jobId, batchId)
+function openJob(jobId, batchId)
 {
-	await updateSessionStorage();
+	updateSessionStorage();
 	window.location.assign(ROOT_URL + "/sections/job/index.php?jobId=" + jobId + "&batchId=" + batchId);
 }

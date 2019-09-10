@@ -103,7 +103,7 @@
     function writeLabellinginformationCsvFile(?string $fileContents = null) : void
     {
         $remoteHost = IPAddressToUNCHostString($_SERVER["REMOTE_ADDR"]);
-
+        
         $folder = "\\\\{$remoteHost}\\" . LABEL_PRINT_SERVER_SHARE_INTERNAL_PATH;
         $domain = LABEL_PRINT_SERVER_SHARE_DOMAIN;
         $username = LABEL_PRINT_SERVER_SHARE_USERNAME;
@@ -182,8 +182,8 @@
         }
 
         $output = array();
-        $returnStatus = null;
-        exec($command, $output, $returnStatus);
+		$returnStatus = null;
+		exec($command, $output, $returnStatus);
         //echo $command . "\r\n\r\n" . implode("\r\n", $output) . "\r\n\r\n" . $returnStatus . "\r\n";
 
         if($returnStatus !== 0)
@@ -207,8 +207,8 @@
         $output = array();
         $returnStatus = null;
         exec($command, $output, $returnStatus);
-
         //echo $command . "\r\n\r\n" . implode("\r\n", $output) . "\r\n\r\n" . $returnStatus . "\r\n";
+		
         if($returnStatus !== 0)
         {
             throw new \Exception("Failed to disconnect from {$sharedFolder}.");
@@ -226,26 +226,16 @@
      */
     function testConnectionToSharedFolder($sharedFolder) : bool
     {
-        $command = "net \"use\" " . escapeshellarg($sharedFolder);
+        $command = "dir " . escapeshellarg($sharedFolder);
         $output = array();
         $returnStatus = null;
         exec($command, $output, $returnStatus);
-
-        //echo $command . "\r\n\r\n" . implode("\r\n", $output) . "\r\n\r\n" . $returnStatus . "\r\n";
-        if($returnStatus === 0 && count($output) === 2)
+		//echo $command . "\r\n\r\n" . implode("\r\n", $output) . "\r\n\r\n" . $returnStatus . "\r\n";
+		
+        if($returnStatus === 0)
         {
             // A connection to the folder was established because no domain, username or password were required. The connection now exists.
             return true;
-        }
-        elseif($returnStatus === 0 && count($output) > 2)
-        {
-            // Some information on the connection to the shared folder was returned. The connection already exists.
-            return true;
-        }
-        elseif($returnStatus === 0 && count($output) < 2)
-        {
-            // A username was requested. The connection doesn't already exist.
-            return false;
         }
         else
         {

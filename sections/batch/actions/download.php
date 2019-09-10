@@ -17,6 +17,7 @@
         /* INCLUDE */
         require_once __DIR__ . "/../../../lib/csv/csvCutRite.php";		// Créateur de CSV pour CutRite
         require_once __DIR__ . "/../../../lib/mpr/mprCutRite.php";		// Créateur de MPR pour CutRite
+        require_once __DIR__ . "/../../../lib/numberFunctions/numberFunctions.php";		// Fonctions sur les nombres
         require_once __DIR__ . "/../../../lib/config.php";	// Fichier de configuration
         require_once __DIR__ . "/../../../lib/connect.php";	// Classe de connection à la base de données
         require_once __DIR__ . "/../../../lib/fileFunctions/fileFunctions.php";	// Classe de fonctions liées aux fichiers non natives à PHP
@@ -48,12 +49,21 @@
         $id = $input->batchId ?? null;
         $action = $input->action ?? 1;
         
+        if(!is_positive_integer_or_equivalent_string($id))
+        {
+            throw new \Exception("Veuillez sauvegarder la batch.");
+        }
+
         // Modèles
         $db = new \FabPlanConnection();
         try
         {
             $db->getConnection()->beginTransaction();
             $batch = \Batch::withID($db, $id, MYSQLDatabaseLockingReadTypes::FOR_UPDATE);
+			if($batch === null)
+			{
+				throw new \Exception("Il n'y a pas de batch avec l'identifiant unique {$id}.");
+			}
             if(!\Materiel::withID($db, $batch->getMaterialId())->getEstMDF())
             {
                 throw new \Exception("Seul le nesting de pièces de MDF est supporté.");
@@ -66,7 +76,7 @@
             {
                 case "1":
                     // MaJ état de la batch pour En attente
-                    $batch->setMprStatus("A")->save($db);
+                    $batch->setMprStatus(($batch->getStatus() === "P") ? "P" : "A")->setStatus("E")->save($db);
                     
                     $responseArray["success"]["data"] = null;
                     break;
