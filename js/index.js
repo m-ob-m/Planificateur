@@ -132,12 +132,12 @@ function rescheduleEvent(event)
 	    	"url": "actions/eventDrop.php",
 	        "type": "POST",
 	        "contentType": "application/json;charset=utf-8",
-	        "data": {
+	        "data": JSON.stringify({
 	        	"batchId": event.id, 
 	        	"debut": event.start.format(), 
 	        	"fin": event.end.format(), 
 	        	"allDay":event.allDay
-	        },
+	        }),
 			"dataType": "json",
 			"async": true,
 			"cache": false

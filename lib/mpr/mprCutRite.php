@@ -1,7 +1,7 @@
 <?php
-require_once __DIR__ . "/../../parametres/varmodtypegen/controller/modelTypeGenericController.php";
-require_once __DIR__ . "/../../sections/batch/model/Carrousel.php";
-require_once __DIR__ . "/mprExpressionEvaluator.php";
+require_once $_SERVER["DOCUMENT_ROOT"] . "/Planificateur/parametres/varmodtypegen/controller/modelTypeGenericController.php";
+require_once $_SERVER["DOCUMENT_ROOT"] . "/Planificateur/sections/batch/model/Carrousel.php";
+require_once $_SERVER["DOCUMENT_ROOT"] . "/Planificateur/lib/mpr/mprExpressionEvaluator.php";
 
 /**
  * \name		mprCutrite

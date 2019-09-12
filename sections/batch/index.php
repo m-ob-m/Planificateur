@@ -15,7 +15,7 @@
     */
     
     require_once __DIR__ . "/controller/batchController.php";
-    require_once __DIR__ . "/../../parametres/materiel/controller/materielCtrl.php";
+    require_once __DIR__ . "/../../parametres/material/controller/materialCtrl.php";
     
     // Initialize the session
 	session_start();
@@ -42,7 +42,7 @@
     try
     {
         $db->getConnection()->beginTransaction();
-        $materials = (new \MaterielController())->getMateriels();
+        $materials = (new \MaterialController())->getMaterials();
         
         if(isset($_GET["id"]))
         {

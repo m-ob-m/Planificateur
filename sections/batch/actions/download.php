@@ -15,14 +15,14 @@
     try
     {    
         /* INCLUDE */
-        require_once __DIR__ . "/../../../lib/csv/csvCutRite.php";		// Créateur de CSV pour CutRite
+        require_once __DIR__ . "/../../../lib/cutRite/importCSV.php";		// Créateur de CSV pour CutRite
         require_once __DIR__ . "/../../../lib/mpr/mprCutRite.php";		// Créateur de MPR pour CutRite
         require_once __DIR__ . "/../../../lib/numberFunctions/numberFunctions.php";		// Fonctions sur les nombres
         require_once __DIR__ . "/../../../lib/config.php";	// Fichier de configuration
         require_once __DIR__ . "/../../../lib/connect.php";	// Classe de connection à la base de données
         require_once __DIR__ . "/../../../lib/fileFunctions/fileFunctions.php";	// Classe de fonctions liées aux fichiers non natives à PHP
         require_once __DIR__ . "/../controller/batchController.php";	// Contrôleur de Batch
-        require_once __DIR__ . "/../../../parametres/materiel/controller/materielCtrl.php";	// Contrôleur de Materiel
+        require_once __DIR__ . "/../../../parametres/material/controller/materialCtrl.php";	// Contrôleur de Material
 
         // Initialize the session
         session_start();
@@ -64,7 +64,7 @@
 			{
 				throw new \Exception("Il n'y a pas de batch avec l'identifiant unique {$id}.");
 			}
-            if(!\Materiel::withID($db, $batch->getMaterialId())->getEstMDF())
+            if(!\Material::withID($db, $batch->getMaterialId())->getEstMDF())
             {
                 throw new \Exception("Seul le nesting de pièces de MDF est supporté.");
             }
@@ -221,7 +221,7 @@
             )
         );
         $csvPath = __DIR__ . "/../temp/{$csvName}";
-        $csv = new \CsvCutrite();
+        $csv = new \CutRiteImportCSV();
         $csv->makeCsvFromBatch($batch);
         $csv->makeCsvFile($csvPath);
         return $csvPath;

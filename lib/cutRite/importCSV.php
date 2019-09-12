@@ -2,7 +2,7 @@
     require_once __DIR__ . "/../../parametres/generic/controller/genericController.php";
     
     /**
-    * \name		   CsvCutrite
+    * \name		   CutRiteImportCSV
     * \author    	Mathieu Grenier
     * \version		1.0
     * \date       	2017-01-26
@@ -10,7 +10,7 @@
     * \brief 		Génère un fichier CSV pour l'importation dans CutRite
     * \details 		Génère un fichier CSV pour l'importation dans CutRite
     */
-    class CsvCutrite 
+    class CutRiteImportCSV 
     {
     	private $_csv;	// Contenu du fichier CSV
     
@@ -19,23 +19,24 @@
     	 *
     	 * @throws
     	 * @author Marc-Olivier Bazin-Maurice
-    	 * @return \CsvCutrite This CsvCutrite
+    	 * @return \CutRiteImportCSV This CutRiteImportCSV
     	 */
     	function __construct()
-    	{	
+    	{
+			$this->_csv = "Program;Material Code;Quantity;Length;Width;Grain;Part ID\r\n";
     	}
         
     	/**
          * Converts a job into a csv string 
          *
          * @param \Job $job A Job object
-         * @param \Materiel $material A Materiel object
+         * @param \Material $material A Material object
          *
          * @throws
          * @author Marc-Olivier Bazin-Maurice
          * @return 
          */
-    	public function makeCsvFromJob(\Job $job, \Materiel $material) : void
+    	public function makeCsvFromJob(\Job $job, \Material $material) : void
     	{	
     	    /* @var $jobType JobType */
     		foreach($job->getJobTypes() as $jobType)
@@ -60,14 +61,13 @@
 							$grain = "X";
 						}
 					}
-                    $this->_csv .=  "{$modelId}_{$typeNo}_{$jobType->getId()};" . 
+                    $this->_csv .= "{$modelId}_{$typeNo}_{$jobType->getId()};" . 
                         "{$material->getCodeCutRite()};" . 
                         "{$part->getQuantityToProduce()};" . 
     					"{$height};" .
     					"{$width};" .
-    					"{$typeNo};" .
     					"{$grain};" .
-    					"{$job->getName()}_{$part->getId()}\n"; 
+						"{$part->getId()}\r\n";
     			}
     			
     		}
@@ -88,7 +88,7 @@
     	    /* @var $job Job */
     		foreach($batch->getJobs() as $job)
     		{
-    		    $material = \Materiel::withID(new \FabPlanConnection(), $batch->getMaterialId());
+    		    $material = \Material::withID(new \FabPlanConnection(), $batch->getMaterialId());
     		    $this->makeCsvFromJob($job, $material);
     		}		
     	}

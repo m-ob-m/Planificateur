@@ -6,7 +6,7 @@
  */
 function openMaterial(id = null)
 {
-	let view_URL = [ROOT_URL + "/parametres/materiel/view.php"];
+	let view_URL = [ROOT_URL + "/parametres/material/view.php"];
 	if(id !== null && id !== "")
 	{
 		view_URL.push("?id=", id);

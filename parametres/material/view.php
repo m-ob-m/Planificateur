@@ -15,7 +15,7 @@
 	*/
 
 	/* INCLUDE */
-	require_once __DIR__ . '/controller/materielCtrl.php';		// Classe contrôleur de cette vue
+	require_once __DIR__ . '/controller/materialCtrl.php';		// Classe contrôleur de cette vue
 
 	// Initialize the session
 	session_start();
@@ -43,11 +43,11 @@
 		$db->getConnection()->beginTransaction();
 		if(isset($_GET["id"]))
 		{
-			$material = (new \MaterielController())->getMateriel($_GET["id"]);
+			$material = (new \MaterialController())->getMaterial($_GET["id"]);
 		}
 		else
 		{
-			$material = new \Materiel();
+			$material = new \Material();
 		}
 		$db->getConnection()->commit();
 	}
@@ -128,7 +128,7 @@
 								<tr>
 									<td class="firstVisibleColumn" style="width:200px;">Identificateur</td>
 									<td class="lastVisibleColumn disabled">
-										<input type="text" id="id_materiel" readonly value="<?= $material->getId(); ?>">
+										<input type="text" id="id" readonly value="<?= $material->getId(); ?>">
 									</td>
 								</tr>
 								<tr>
@@ -216,8 +216,8 @@
 			<script type="text/javascript" src="/Planificateur/assets/js/docReady.js"></script>
 			<script type="text/javascript" src="/Planificateur/js/main.js"></script>
 			<script type="text/javascript" src="/planificateur/js/toolbox.js"></script>
-			<script type="text/javascript" src="/Planificateur/parametres/materiel/js/view.js"></script>
-			<script type="text/javascript" src="/Planificateur/parametres/materiel/js/main.js"></script>
+			<script type="text/javascript" src="/Planificateur/parametres/material/js/view.js"></script>
+			<script type="text/javascript" src="/Planificateur/parametres/material/js/main.js"></script>
 
 		</body>
 </html>

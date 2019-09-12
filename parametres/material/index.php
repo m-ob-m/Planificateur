@@ -15,7 +15,7 @@
     */
     
     /* INCLUDE */
-    require_once __DIR__ . '/controller/materielCtrl.php';		// Classe contrôleur de cette vue
+    require_once __DIR__ . '/controller/materialCtrl.php';		// Classe contrôleur de cette vue
 	
 	// Initialize the session
 	session_start();
@@ -41,7 +41,7 @@
     try
     {
         $db->getConnection()->beginTransaction();
-        $materials = (new \MaterielController())->getMateriels();
+        $materials = (new \MaterialController())->getMaterials();
         $db->getConnection()->commit();
     }
     catch(\Exception $e)
@@ -160,9 +160,9 @@
 		<!-- Scripts -->
 		<script type="text/javascript" src="/Planificateur/assets/js/ajax.js"></script>
 		<script type="text/javascript" src="/Planificateur/assets/js/docReady.js"></script>
-		<script type="text/javascript" src="/Planifificateur/js/main.js"></script>
+		<script type="text/javascript" src="/Planificateur/js/main.js"></script>
 		<script type="text/javascript" src="/Planificateur/js/toolbox.js"></script>
-		<script type="text/javascript" src="/Planificateur/parametres/materiel/js/main.js"></script>
+		<script type="text/javascript" src="/Planificateur/parametres/material/js/main.js"></script>
 
 	</body>
 </html>

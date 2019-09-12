@@ -78,7 +78,7 @@ async function deleteConfirm()
 	{
 		document.getElementById("loadingModal").style.display = "block";
 		try{
-			await deleteMaterial(document.getElementById("id_materiel").value);
+			await deleteMaterial(document.getElementById("id").value);
 			goToIndex();
 		}
 		catch(error){
@@ -116,7 +116,7 @@ async function saveConfirm()
 	}
 
 	let args = [
-		document.getElementById("id_materiel").value, 
+		document.getElementById("id").value, 
 		document.getElementById("description").value, 
 		document.getElementById("codeSIA").value, 
 		document.getElementById("codeCutRite").value, 
@@ -157,7 +157,7 @@ function deleteMaterial(id)
 		ajax.send({
 			"type": "POST",
 			"contentType": "application/json;charset=utf-8",
-			"url": ROOT_URL + "/parametres/materiel/actions/delete.php",
+			"url": ROOT_URL + "/parametres/material/actions/delete.php",
 			"data": {"id": id},
 			"dataType": "json",
 			"async": true,
@@ -198,7 +198,7 @@ function saveMaterial(id, description, siaCode, cutRiteCode, thickness, woodType
 		ajax.send({
 			"type": "POST",
 			"contentType": "application/json;charset=utf-8",
-			"url": ROOT_URL + "/parametres/materiel/actions/save.php",
+			"url": ROOT_URL + "/parametres/material/actions/save.php",
 			"data": {
 				"id": ((id === "") ? null : id), 
 				"description": description, 

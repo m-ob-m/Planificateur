@@ -1,51 +1,51 @@
 <?php
 /**
- * \name		CollectionPanneaux
+ * \name		NestedPanelCollection
  * \author    	Mathieu Grenier
  * \version		1.0
  * \date       	2017-02-09
  *
- * \brief 		Représente une collection de panneaux
- * \details 	Représente une collection de panneaux
+ * \brief 		Represents a nested pannels collection in Cut Rite
+ * \details 	Represents a nested pannels collection in Cut Rite
  */
 
-require_once __DIR__ . "/panneau.php";
-require_once __DIR__ . "/porte.php";
+require_once $_SERVER["DOCUMENT_ROOT"] . "/Planificateur/sections/visualiseur/model/nestedPanel.php";
+require_once $_SERVER["DOCUMENT_ROOT"] . "/Planificateur/sections/visualiseur/model/nestedPart.php";
 
-class CollectionPanneaux
+class NestedPanelCollection
 {
-	private $_panneaux;
-	private $_index;
+	private $_panels;
+	private $_currentIndex;
     
 	/**
-	 * CollectionPanneaux constructor
+	 * NestedPanelCollection constructor
 	 *
-	 * @param Batch $batch A Batch object
+	 * @param \Batch $batch A Batch object
 	 * @param string $pc2FileContents The contents of the .pc2 file associated to $batch
 	 * @param string $cttFileContents The contents of the .ctt file associated to $batch
 	 *
 	 * @throws
 	 * @author Marc-Olivier Bazin-Maurice
-	 * @return CollectionPanneaux
+	 * @return \NestedPanelCollection
 	 */ 
 	function __construct(\Batch $batch, ?string $pc2FileContents, ?string $cttFileContents)
 	{
-		$this->_panneaux = array();
-		$this->createPanneauxFromPc2($batch,$pc2FileContents,$cttFileContents);
+		$this->_panels = array();
+		$this->createPanneauxFromPc2($batch, $pc2FileContents, $cttFileContents);
 	}
     
 	/**
-	 * Fills the CollectionPanneaux object with the contents of a .pc2 file and of its associated .ct2 file.
+	 * Fills the NestedPanelCollection object with the contents of a .pc2 file and of its associated .ct2 file.
 	 *
-	 * @param Batch $batch A Batch object
+	 * @param \Batch $batch A Batch object
 	 * @param string $pc2File The contents of the .pc2 file associated to $batch
 	 * @param string $cttFile The contents of the .ctt file associated to $batch
 	 *
 	 * @throws
 	 * @author Marc-Olivier Bazin-Maurice
-	 * @return CollectionPanneaux
+	 * @return \NestedPanelCollection
 	 */ 
-	private function createPanneauxFromPc2(\Batch $batch, ?string $pc2FileContent, ?string $cttFileContent) : \CollectionPanneaux
+	private function createPanneauxFromPc2(\Batch $batch, ?string $pc2FileContent, ?string $cttFileContent) : \NestedPanelCollection
 	{
 		$lines = explode("\r\n", $pc2FileContent);
 				
@@ -57,12 +57,12 @@ class CollectionPanneaux
 				switch (substr($line, 0, 1))
 				{
 					case "0":
-						$this->addPanneau(Panneau::withLine($line));
+						$this->addPanel(\NestedPanel::withPc2Line($line));
 						$this->last();
 						break;
 				
 					case "5":
-						$this->_panneaux[$this->_index]->addPorte(Porte::withLine($batch, $line, $cttFileContent));
+						$this->_panels[$this->_currentIndex]->addPart(\NestedPart::withPc2LineAndCttFile($batch, $line, $cttFileContent));
 						break;
 				}
 			}
@@ -79,25 +79,25 @@ class CollectionPanneaux
 	 *
 	 * @throws
 	 * @author Marc-Olivier Bazin-Maurice
-	 * @return CollectionPanneaux
+	 * @return \NestedPanelCollection
 	 */ 
-	private function setIndex(int $index) : \CollectionPanneaux
+	private function setIndex(int $index) : \NestedPanelCollection
 	{
-		if($index > (count($this->_panneaux) -1))
+		if($index > (count($this->_panels) -1))
 		{
 		    throw new \Exception("Invalid index \"{$index}\" in collection.");
 		}
-		elseif($index < -count($this->_panneaux))
+		elseif($index < -count($this->_panels))
 	    {
 	        throw new \Exception("Invalid index \"{$index}\" in collection.");
 	    }
 	    elseif($index < 0)
 	    {
-	        $this->_index = count($this->_panneaux) + $index;
+	        $this->_currentIndex = count($this->_panels) + $index;
 	    }
 	    else 
 	    {
-	        $this->_index = $index;
+	        $this->_currentIndex = $index;
 	    }
 	    return $this;
 	}
@@ -111,21 +111,21 @@ class CollectionPanneaux
 	 */ 
 	public function getIndex() : int
 	{
-	    return $this->_index;
+	    return $this->_currentIndex;
 	}
 	
 	/**
-	 * Adds a pannel to the collection.
+	 * Adds a NestedPanel to the NestedPanelCollection.
 	 *
-	 * @param Panneau $panneau The pannel to add to the collection
+	 * @param \NestedPanel $panel The NestedPanel to add to the NestedPanelCollection
 	 *
 	 * @throws
 	 * @author Marc-Olivier Bazin-Maurice
-	 * @return CollectionPanneaux
+	 * @return \NestedPanelCollection
 	 */
-	private function addPanneau(\Panneau $panneau) : \CollectionPanneaux
+	private function addPanel(\NestedPanel $panel) : \NestedPanelCollection
 	{
-	    array_push($this->_panneaux, $panneau);
+	    array_push($this->_panels, $panel);
 	    return $this;
 	}
 	
@@ -134,26 +134,26 @@ class CollectionPanneaux
 	 *
 	 * @throws
 	 * @author Marc-Olivier Bazin-Maurice
-	 * @return CollectionPanneaux
+	 * @return \NestedPanelCollection
 	 */
-	private function removePanneau() : \CollectionPanneaux
+	private function removePanel() : \NestedPanelCollection
 	{
-	    array_splice($this->_panneaux, $this->getIndex(), 1);
+	    array_splice($this->_panels, $this->getIndex(), 1);
 	    return $this;
 	}
 	
 	/**
-	 * Returns a pannel from the collection.
+	 * Returns a panel from the collection.
 	 *
-	 * @param optional int $index The index of the pannel in the collection (if null, current element is returned)
+	 * @param int|null [$index = null] The index of the panel in the collection (if null, current element is returned)
 	 *
 	 * @throws
 	 * @author Marc-Olivier Bazin-Maurice
-	 * @return CollectionPanneaux
+	 * @return \NestedPanel
 	 */
-	public function getPanneau(?int $index = null) : \Panneau
+	public function getPanneau(?int $index = null) : \NestedPanel
 	{
-	    return  $this->_panneaux($this->getIndex());
+	    return  $this->_panels($index ?? $this->getIndex());
 	}
 	
 	/**
@@ -228,15 +228,15 @@ class CollectionPanneaux
 	
 
 	/**
-	 * Get the array of pannels in the collection.
+	 * Get the array of NestedPanel in the collection.
 	 *
 	 * @throws
 	 * @author Marc-Olivier Bazin-Maurice
-	 * @return array[Panneau] The array of pannels in the collection
+	 * @return \NestedPanel[] The array of NestedPanel in the collection
 	 */
-	public function getPanneaux()
+	public function getPanels()
 	{	
-		return $this->_panneaux;	
+		return $this->_panels;	
 	}
 }
 ?>

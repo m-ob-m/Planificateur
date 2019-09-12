@@ -81,7 +81,7 @@
     								Paramètres</a>
     								<ul>
     									<li>
-    										<a href="parametres/materiel/index.php" class="imageButton">
+    										<a href="parametres/material/index.php" class="imageButton">
     											<img src="images/inventory.png"> 
     										Matériel</a>
     									</li>
