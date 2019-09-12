@@ -5,8 +5,8 @@
      * \version		1.0
      * \date       	2018-04-18
      *
-     * \brief 		Sauvegarde un Materiel
-     * \details     Sauvegarde un Materiel
+     * \brief 		Sauvegarde un Material
+     * \details     Sauvegarde un Material
      */
     
     // Structure de retour vers javascript

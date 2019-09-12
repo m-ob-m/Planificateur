@@ -8,10 +8,10 @@
      * \version 	1.0
      */
 
-    require_once $SERVER["DOCUMENT_ROOT"] . '/Planificateur/lib/config.php';	// Fichier de configuration
-    require_once $SERVER["DOCUMENT_ROOT"] . '/Planificateur/lib/connect.php';	// Classe de connection à la base de données
-    require_once $SERVER["DOCUMENT_ROOT"] . '/Planificateur/sections/batch/model/batch.php';	// Modèle d'une batch
-    require_once $SERVER["DOCUMENT_ROOT"] . '/Planificateur/controller/planificateur.php';		// Classe controleur de la vue
+    require_once $_SERVER["DOCUMENT_ROOT"] . '/Planificateur/lib/config.php';	// Fichier de configuration
+    require_once $_SERVER["DOCUMENT_ROOT"] . '/Planificateur/lib/connect.php';	// Classe de connection à la base de données
+    require_once $_SERVER["DOCUMENT_ROOT"] . '/Planificateur/sections/batch/model/batch.php';	// Modèle d'une batch
+    require_once $_SERVER["DOCUMENT_ROOT"] . '/Planificateur/controller/planificateur.php';		// Classe controleur de la vue
 
     // Structure de retour vers javascript
     $responseArray = array("status" => null, "success" => array("data" => null), "failure" => array("message" => null));

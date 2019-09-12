@@ -17,7 +17,7 @@
         // INCLUDE
         require_once __DIR__ . '/../../../lib/config.php';	// Fichier de configuration
         require_once __DIR__ . '/../../../lib/connect.php';	// Classe de connection à la base de données
-        require_once __DIR__ . '/../controller/materielCtrl.php';
+        require_once __DIR__ . '/../controller/materialCtrl.php';
 
         // Initialize the session
         session_start();
@@ -42,7 +42,7 @@
         
         $id = $_GET["materialId"] ?? null;
         $accessDbPath = __DIR__ . "/../temp/mmatv9.mdb";
-        $material = \Materiel::withID($db, $id);
+        $material = \Material::withID($db, $id);
         $boards = array();
         
         if($material !== null)

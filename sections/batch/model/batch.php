@@ -88,7 +88,7 @@ class Batch implements JsonSerializable
 	{
 	    // Récupérer le test
 	    $stmt = $db->getConnection()->prepare(
-            "SELECT `b`.`id_batch` AS `id`, `b`.`materiel_id` AS `materialId`, `b`.`panneaux` AS `boardSize`, 
+            "SELECT `b`.`id_batch` AS `id`, `b`.`material_id` AS `materialId`, `b`.`panneaux` AS `boardSize`, 
                 `b`.`nom_batch` AS `name`, `b`.`date_debut` AS `startDate`, `b`.`date_fin` AS `endDate`, 
                 `b`.`jour_complet` AS `fullDay`, `b`.`commentaire` AS `comments`, `b`.`etat` AS `status`, 
                 `b`.`etat_mpr` AS `mprStatus`, `b`.`carrousel` AS `carrousel`, `b`.`estampille` AS `timestamp`
@@ -143,7 +143,7 @@ class Batch implements JsonSerializable
 	{
 	    // Récupérer le test
 	    $stmt = $db->getConnection()->prepare(
-            "SELECT `b`.`id_batch` AS `id`, `b`.`materiel_id` AS `materialId`, `b`.`panneaux` AS `boardSize`, 
+            "SELECT `b`.`id_batch` AS `id`, `b`.`material_id` AS `materialId`, `b`.`panneaux` AS `boardSize`, 
                 `b`.`nom_batch` AS `name`, `b`.`date_debut` AS `startDate`, `b`.`date_fin` AS `endDate`, 
                 `b`.`jour_complet` AS `fullDay`, `b`.`commentaire` AS `comments`, `b`.`etat` AS `status`, 
                 `b`.`etat_mpr` AS `mprStatus`, `b`.`carrousel` AS `carrousel`, `b`.`estampille` AS `timestamp`
@@ -631,7 +631,7 @@ class Batch implements JsonSerializable
 	{
 	    // Création d'un type de test
 	    $stmt = $db->getConnection()->prepare("
-            INSERT INTO `batch` (`materiel_id`, `panneaux`, `nom_batch`, `date_debut`, `date_fin`, `jour_complet`, 
+            INSERT INTO `batch` (`material_id`, `panneaux`, `nom_batch`, `date_debut`, `date_fin`, `jour_complet`, 
                 `commentaire`, `etat`, `etat_mpr`, `carrousel`) 
             VALUES (:materialId, :boardSize, :name, :start, :end, :fullDay, :comments, :status, :mprStatus, :carrousel);
         ");
@@ -672,7 +672,7 @@ class Batch implements JsonSerializable
 	    // Mise à jour d'un Batch
 	    $stmt = $db->getConnection()->prepare("
             UPDATE `batch` AS `b`
-            SET `materiel_id` = :materialId, `panneaux` = :boardSize, `nom_batch` = :name, `date_debut` = :start, 
+            SET `material_id` = :materialId, `panneaux` = :boardSize, `nom_batch` = :name, `date_debut` = :start, 
                 `date_fin` = :end, `jour_complet` = :fullDay, `commentaire` = :comments, `etat` = :status, 
                 `etat_mpr` = :mprStatus, `carrousel` = :carrousel
             WHERE `id_batch` = :id;
@@ -917,6 +917,12 @@ class Batch implements JsonSerializable
         	                {
         	                    $this->_carrousel->addTool("168");
         	                }
+						}
+						
+						$tool = \MprExpression\Evaluator::evaluate($parameters["T_Ext"] ?? 0, null, $parameters);
+        	            if($tool <> 0 && !$this->_carrousel->toolExists($tool))
+        	            {
+        	                $this->_carrousel->addTool($tool);
         	            }
         	            
         	            $tool = \MprExpression\Evaluator::evaluate("_T_CUT", null, $parameters);

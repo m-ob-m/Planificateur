@@ -10,7 +10,7 @@
     */
     
     require_once __DIR__ . "/../batch/controller/batchController.php";
-    require_once __DIR__ . "/model/collectionPanneaux.php";
+    require_once __DIR__ . "/model/nestedPanelCollection.php";
     require_once __DIR__ . "/../../lib/clientInformation/clientInformation.php";
 
     /* 
@@ -57,7 +57,7 @@
     $collection = null;
     try
     {
-        $collection = (new \CollectionPanneaux($batch, $pc2FileContents, $cttFileContents));
+        $collection = (new \NestedPanelCollection($batch, $pc2FileContents, $cttFileContents));
     }
     catch(\Exception $e)
     {
@@ -133,21 +133,21 @@
         </div>
 		<div style="display: flex; flex-flow: row;">
 			<div style="flex: 1 1 auto;">
-			<?php if($collection !== null && !empty($collection->getPanneaux())): ?>
-            	<?php foreach($collection->getPanneaux() as $index => $panneau): ?>
+			<?php if($collection !== null && !empty($collection->getPanels())): ?>
+            	<?php foreach($collection->getPanels() as $index => $panel): ?>
         			<div class="pannelContainer" style="page-break-after: always;">
                     	<!-- Entete de navigation (on veut l'avoir sur chaque page lors de l'impression) -->
                     	<div style="width: 100%; margin-top: 2px; margin-bottom: 2px; text-align: center; overflow: hidden;">
                             <button title="Premier" class="no-print goToFirst">&lt;&lt;</button>
                             <button title="Précédent" class="no-print goToPrevious">&lt;</button>
                     		<div id="index" style="display: inline-block; border: 1px black solid; padding: 2px;"><?= 
-                                ($index + 1) . " / " . count($collection->getPanneaux()); 
+                                ($index + 1) . " / " . count($collection->getPanels()); 
                             ?></div>
                             <button title="Suivant" class="no-print goToNext">&gt;</button>
                             <button title="Dernier" class="no-print goToLast">&gt;&gt;</button>
                             <button class="no-print printAll">Imprimer tout</button> 
                     		<div id="quantity" style="display: inline-block; border: 1px black solid; padding: 2px;">Qté : <?= 
-                                $panneau->getQuantite(); 
+                                $panel->getQuantity(); 
                             ?></div>
                     		<div id="batchName" style="display: inline-block; border: 1px black solid;  padding: 2px;"><?= 
                                 $batch->getName(); 
@@ -163,19 +163,22 @@
                                 <?php copy($sourceFilePath, $destinationFilePath); ?>
                         		<div class="pannel">
                         			<img src="temp/panel_<?= $sourceFileName; ?>">
-                        			<?php foreach($panneau->getPortes() as $porte): ?>
-                        				<?php $idjt = $porte->getIdJobType(); ?>
-                        				<?php $idjtp = $porte->getIdJobTypePorte(); ?>
-                        				<?php $mpr = $porte->getNomMpr(); ?>
-                        				<?php $l = $porte->getViewLeft(); ?>
-                    				    <?php $t = $porte->getViewTop() - 30; // Haut de pièce décalé de 30px vers le bas. ?>
-    									<?php $w = $porte->getViewHeight(); ?>
-                    				    <?php $h = $porte->getViewWidth(); ?>
+                        			<?php foreach($panel->getParts() as $part): ?>
+                        				<?php $idjtp = $part->getJobTypePorteId(); ?>
+										<?php $jobTypePorte = \JobTypePorte::withID(new \FabplanConnection(), $idjtp); ?>
+										<?php $jobType = \JobType::withID(new \FabplanConnection(), $jobTypePorte->getJobTypeId()); ?>
+										<?php $job = \Job::withID(new \FabplanConnection(), $jobType->getJobId()); ?>
+										<?php $model = $jobType->getModel(); ?>
+                        				<?php $mpr = $part->getMprName(); ?>
+                        				<?php $l = $part->getViewLeft(); ?>
+                    				    <?php $t = $part->getViewTop() - 30; // Haut de pièce décalé de 30px vers le bas. ?>
+    									<?php $w = $part->getViewHeight(); ?>
+                    				    <?php $h = $part->getViewWidth(); ?>
     									<div class="porte no-print" data-id="<?= $idjtp; ?>" 
     										style="left: <?= $l; ?>px; top: <?= $t; ?>px; width: <?= $w; ?>px; height: <?= $h; ?>px;">
-                        					<?= $porte->getNoCommande(); ?><br>
-                        					<?= \Model::withID(new \FabplanConnection(), $porte->getModele())->getDescription(); ?><br>
-                        					<?= $porte->getHauteurPo() . " X " . $porte->getLargeurPo(); ?>
+                        					<?= $job->getName(); ?><br>
+                        					<?= $model->getDescription(); ?><br>
+                        					<?= $part->getHeightIn() . " X " . $part->getWidthIn(); ?>
                         				</div>
                         			<?php endforeach; ?>
                         		</div>
