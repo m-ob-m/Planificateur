@@ -190,7 +190,7 @@ class MachiningProgramViewer
             pannel = this.currentPannel;
         }
 
-        pannel.style.display = null;
+        pannel.style.display = "flex";
         return this;
     }
 

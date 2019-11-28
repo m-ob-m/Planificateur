@@ -124,7 +124,7 @@
 
 
 <!DOCTYPE HTML>
-<html>
+<html style="height: 100%;">
 	<head>
 		<title><?= $batch->getName(); ?></title>
 		<meta charset="utf-8" />
@@ -134,14 +134,14 @@
 		<link rel="stylesheet" href="../../assets/css/parametersTable.css"/>
 		<link rel="stylesheet" href="../../assets/css/imageButton.css">
 	</head>
-	<body style="background-image: none; background-color: #FFFFFF;">
-		<div style="display: flex; flex-flow: row;">
-			<div style="flex: 1 1 auto;">
+	<body style="background-image: none; background-color: #FFFFFF; height: 100%;">
+		<div style="display: flex; flex-flow: row; height: 100%;">
+			<div style="flex: 1 1 auto; height: 100%;">
 			<?php if($collection !== null && !empty($collection->getPanels())): ?>
             	<?php foreach($collection->getPanels() as $index => $panel): ?>
-        			<div class="pannelContainer" style="page-break-after: always;">
+        			<div class="pannelContainer" style="height: 100%; display: flex; flex-direction: column;">
                     	<!-- Entete de navigation (on veut l'avoir sur chaque page lors de l'impression) -->
-                    	<div style="width: 100%; margin-top: 2px; margin-bottom: 2px; text-align: center; overflow: hidden;">
+                    	<div style="width: 100%; padding-top: 2px; padding-bottom: 2px; text-align: center; overflow: hidden; flex: 0 0 auto;">
                             <button title="Premier" class="no-print goToFirst">&lt;&lt;</button>
                             <button title="Précédent" class="no-print goToPrevious">&lt;</button>
                     		<div id="index" style="display: inline-block; border: 1px black solid; padding: 2px;"><?= 
@@ -162,34 +162,31 @@
                     		Sortir</button>
                     	</div>
                     	
-                    	<div style="display: flex; flex-flow: row;">
-                        	<div style="flex: 1 1 auto; float: left;"></div>
-                        	<div style="flex: 0 1 auto;">
-                        		<?php $sourceFileName = $batch->getName() . fillZero($index + 1, 4) . ".jpg";?>
-                        		<?php $sourceFilePath = CR_FABRIDOR . "SYSTEM_DATA\\DATA\\" . $sourceFileName; ?>
-                        		<?php $destinationFilePath = __DIR__ . "/temp/panel_{$sourceFileName}"; ?>
+                        <div style="flex: 1 1 auto; display: flex; flex-flow: row; height: 100%;">
+                            <div style="flex: 1 1 auto; float: left;"></div>
+                            <div class="pannel" style="max-width: 100%; max-height: 100%;">
+                                <?php $sourceFileName = $batch->getName() . fillZero($index + 1, 4) . ".jpg";?>
+                                <?php $sourceFilePath = CR_FABRIDOR . "SYSTEM_DATA\\DATA\\" . $sourceFileName; ?>
+                                <?php $destinationFilePath = __DIR__ . "/temp/panel_{$sourceFileName}"; ?>
                                 <?php copy($sourceFilePath, $destinationFilePath); ?>
-                        		<div class="pannel">
-                        			<img src="temp/panel_<?= $sourceFileName; ?>">
-                        			<?php foreach($panel->getParts() as $part): ?>
-                        				<?php $idjtp = $part->getJobTypePorteId(); ?>
-										<?php $jobTypePorte = \JobTypePorte::withID(new \FabplanConnection(), $idjtp); ?>
-										<?php $jobType = \JobType::withID(new \FabplanConnection(), $jobTypePorte->getJobTypeId()); ?>
-										<?php $job = \Job::withID(new \FabplanConnection(), $jobType->getJobId()); ?>
-										<?php $model = $jobType->getModel(); ?>
-                        				<?php $mpr = $part->getMprName(); ?>
-                        				<?php $l = $part->getViewLeft(); ?>
-                    				    <?php $t = $part->getViewTop() - 30; // Haut de pièce décalé de 30px vers le bas. ?>
-    									<?php $w = $part->getViewHeight(); ?>
-                    				    <?php $h = $part->getViewWidth(); ?>
-    									<div class="porte no-print" data-id="<?= $idjtp; ?>" 
-    										style="left: <?= $l; ?>px; top: <?= $t; ?>px; width: <?= $w; ?>px; height: <?= $h; ?>px;">
-                        					<?= $job->getName(); ?><br>
-                        					<?= $model->getDescription(); ?><br>
-                        					<?= $part->getHeightIn() . " X " . $part->getWidthIn(); ?>
-                        				</div>
-                        			<?php endforeach; ?>
-                        		</div>
+                                <img src="temp/panel_<?= $sourceFileName; ?>" style="max-height:100%; max-width: 100%;">
+                                <?php foreach($panel->getParts() as $part): ?>
+                                    <?php $idjtp = $part->getJobTypePorteId(); ?>
+                                    <?php $jobTypePorte = \JobTypePorte::withID(new \FabplanConnection(), $idjtp); ?>
+                                    <?php $jobType = \JobType::withID(new \FabplanConnection(), $jobTypePorte->getJobTypeId()); ?>
+                                    <?php $job = \Job::withID(new \FabplanConnection(), $jobType->getJobId()); ?>
+                                    <?php $model = $jobType->getModel(); ?>
+                                    <?php $mpr = $part->getMprName(); ?>
+                                    <?php $l = 100 * ($part->getXCoordinate() - (in_array($part->getRotation(), array(0, 180)) ? $part->getHeight() : $part->getWidth()) / 2) / $panel->getLength(); ?>
+                                    <?php $t = 100 * ($part->getYCoordinate() - (in_array($part->getRotation(), array(0, 180)) ? $part->getWidth() : $part->getHeight()) / 2) / $panel->getWidth(); // Haut de pièce décalé de 30px vers le bas. ?>
+                                    <?php $w = 100 * (in_array($part->getRotation(), array(0, 180)) ? $part->getHeight() : $part->getWidth()) / $panel->getLength(); ?>
+                                    <?php $h = 100 * (in_array($part->getRotation(), array(0, 180)) ? $part->getWidth() : $part->getHeight()) / $panel->getWidth(); ?>
+                                    <div class="porte no-print" style="left: <?= $l; ?>%; top: <?= $t; ?>%; width: <?= $w; ?>%; height: <?= $h; ?>%;">
+                                        <?= $job->getName(); ?><br>
+                                        <?= $model->getDescription(); ?><br>
+                                        <?= $part->getHeightIn() . " X " . $part->getWidthIn(); ?>
+                                    </div>
+                                <?php endforeach; ?>
                             </div>
                             <div style="flex: 1 1 auto; float: right;"></div>
                     	</div>
