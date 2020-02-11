@@ -1,6 +1,6 @@
 <?php
-require_once __DIR__ . "/../../varmodtype/model/modelTypeParameter.php";
-require_once __DIR__ . "/../../generic/model/generic.php";
+require_once $_SERVER["DOCUMENT_ROOT"] . "/Planificateur/parametres/varmodtype/model/modelTypeParameter.php";
+require_once $_SERVER["DOCUMENT_ROOT"] . "/Planificateur/parametres/generic/model/generic.php";
 
 /**
  * \name		type.php
@@ -62,7 +62,7 @@ class Type implements \JsonSerializable
 	        "SELECT `dt`.* FROM `door_types` AS `dt` WHERE `dt`.`id` = :id " . 
 	        (new \MYSQLDatabaseLockingReadTypes($databaseConnectionLockingReadType))->toLockingReadString() . ";"
         );
-	    $stmt->bindValue(':id', $id, PDO::PARAM_INT);
+	    $stmt->bindValue(":id", $id, PDO::PARAM_INT);
 	    $stmt->execute();
 	    
 	    if ($row = $stmt->fetch())	// Récupération de l'instance de matériel
@@ -97,7 +97,7 @@ class Type implements \JsonSerializable
             WHERE `dt`.`importNo` = :importNo " .
 	        (new \MYSQLDatabaseLockingReadTypes($dbConnectionLockingReadType))->toLockingReadString() . ";"
 	    );
-	    $stmt->bindValue(':importNo', $importNo, PDO::PARAM_INT);
+	    $stmt->bindValue(":importNo", $importNo, PDO::PARAM_INT);
 	    $stmt->execute();
 	    
 	    if ($row = $stmt->fetch())	// Récupération de l'instance de matériel
@@ -173,8 +173,8 @@ class Type implements \JsonSerializable
             INSERT INTO `door_types` (`importNo`, `description`, `generic_id`)
             VALUES (:importNo, :description, :generic_id);
         ");
-        $stmt->bindValue(':importNo', $this->getImportNo(), PDO::PARAM_INT);
-        $stmt->bindValue(':description', $this->getDescription(), PDO::PARAM_STR);
+        $stmt->bindValue(":importNo", $this->getImportNo(), PDO::PARAM_INT);
+        $stmt->bindValue(":description", $this->getDescription(), PDO::PARAM_STR);
         $stmt->bindValue(":generic_id", $this->getGeneric()->getId(), PDO::PARAM_INT);
         $stmt->execute();
         $this->_id = intval($db->getConnection()->lastInsertId());
@@ -199,10 +199,10 @@ class Type implements \JsonSerializable
             SET `importNo` = :importNo, `description` = :description, `generic_id` = :genericId
             WHERE `id` = :id;
         ");
-        $stmt->bindValue(':importNo', $this->getImportNo(), PDO::PARAM_INT);
-        $stmt->bindValue(':description', $this->getDescription(), PDO::PARAM_STR);
+        $stmt->bindValue(":importNo", $this->getImportNo(), PDO::PARAM_INT);
+        $stmt->bindValue(":description", $this->getDescription(), PDO::PARAM_STR);
         $stmt->bindValue(":genericId", $this->getGeneric()->getId(), PDO::PARAM_INT);
-        $stmt->bindValue(':id', $this->getId(), PDO::PARAM_INT);
+        $stmt->bindValue(":id", $this->getId(), PDO::PARAM_INT);
         $stmt->execute();
         
         return $this;
@@ -228,13 +228,13 @@ class Type implements \JsonSerializable
     	    $stmt = $db->getConnection()->prepare("
                 DELETE FROM `door_model_data` WHERE `fkDoorType` = :importNo;
             ");
-    	    $stmt->bindValue(':importNo', $this->getImportNo(), PDO::PARAM_INT);
+    	    $stmt->bindValue(":importNo", $this->getImportNo(), PDO::PARAM_INT);
     	    $stmt->execute();
     	    
             $stmt = $db->getConnection()->prepare("
                 DELETE FROM `door_types` WHERE `id` = :id;
             ");
-            $stmt->bindValue(':id', $this->getId(), PDO::PARAM_INT);
+            $stmt->bindValue(":id", $this->getId(), PDO::PARAM_INT);
             $stmt->execute();
 	    }
         
@@ -255,7 +255,7 @@ class Type implements \JsonSerializable
 	    $stmt= $db->getConnection()->prepare("
             SELECT `dt`.`timestamp` FROM `door_types` AS `dt` WHERE `dt`.`id` = :id;
         ");
-	    $stmt->bindValue(':id', $this->getId(), PDO::PARAM_INT);
+	    $stmt->bindValue(":id", $this->getId(), PDO::PARAM_INT);
 	    $stmt->execute();
 	    
 	    if($row = $stmt->fetch())

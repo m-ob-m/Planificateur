@@ -15,16 +15,15 @@
     try
     {
         // INCLUDE
-        require_once __DIR__ . '/../../../lib/config.php';	// Fichier de configuration
-        require_once __DIR__ . '/../../../lib/connect.php';	// Classe de connection à la base de données
-        require_once __DIR__ . '/../controller/materialCtrl.php';
-
+        require_once $_SERVER["DOCUMENT_ROOT"] . "/Planificateur/parametres/material/controller/materialCtrl.php";
+        require_once $_SERVER["DOCUMENT_ROOT"] . "/Planificateur/lib/connect.php";
+        
         // Initialize the session
         session_start();
             
         // Check if the user is logged in, if not then redirect him to login page
         if(!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true){
-            if(!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest')
+            if(!empty($_SERVER["HTTP_X_REQUESTED_WITH"]) && strtolower($_SERVER["HTTP_X_REQUESTED_WITH"]) == "xmlhttprequest")
             {
                 throw new \Exception("You are not logged in.");
             }
@@ -35,6 +34,9 @@
             exit;
         }
 
+        // Getting a connection to the database.
+	    $db = new \FabPlanConnection();
+
         // Closing the session to let other scripts use it.
         session_write_close();
 
@@ -43,7 +45,6 @@
         // Vérification des paramètres
         $id = (isset($input->id) ? $input->id : null);
         
-        $db = new \FabPlanConnection();
         try
         {
             $db->getConnection()->beginTransaction();

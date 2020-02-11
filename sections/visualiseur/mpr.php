@@ -10,7 +10,7 @@
 	*/
 
 	// INCLUDE
-	include '../../lib/config.php';	// Fichier de configuration
+	require_once $_SERVER["DOCUMENT_ROOT"] . "/Planificateur/lib/config.php";
 
 	$mprPath = CR_FABRIDOR . "SYSTEM_DATA\\mpr\\" . $_GET["mprName"];
 	$mprFile = fopen($mprPath, "r") or die("Unable to open mpr file!");
@@ -20,7 +20,7 @@
                                                                             
 	// Check if the user is logged in, if not then redirect him to login page
 	if(!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true){
-		if(!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest')
+		if(!empty($_SERVER["HTTP_X_REQUESTED_WITH"]) && strtolower($_SERVER["HTTP_X_REQUESTED_WITH"]) == "xmlhttprequest")
 		{
 			throw new \Exception("You are not logged in.");
 		}

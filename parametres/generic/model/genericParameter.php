@@ -1,5 +1,5 @@
 <?php
-require_once __DIR__ . "/../../parameter/parameter.php";
+require_once $_SERVER["DOCUMENT_ROOT"] . "/Planificateur/parametres/parameter/parameter.php";
 
 /**
  * \name		GenericParameter
@@ -122,11 +122,11 @@ class GenericParameter extends \Parameter implements \JsonSerializable
         $stmt = $db->getConnection()->prepare("
             INSERT INTO `generic_parameters` (`generic_id`, `parameter_key`, `parameter_value`, `description`, `quick_edit`) 
             VALUES (:genericId, :parameterKey, :parameterValue, :description, :quickEdit);");
-        $stmt->bindValue(':genericId', $this->getGenericId(), PDO::PARAM_INT);
-        $stmt->bindValue(':parameterKey', $this->getKey(), PDO::PARAM_STR);
-        $stmt->bindValue(':parameterValue', $this->getValue(), PDO::PARAM_STR);
-        $stmt->bindValue(':description', $this->getDescription(), PDO::PARAM_STR);
-        $stmt->bindValue(':quickEdit', $this->getQuickEdit(), PDO::PARAM_INT);
+        $stmt->bindValue(":genericId", $this->getGenericId(), PDO::PARAM_INT);
+        $stmt->bindValue(":parameterKey", $this->getKey(), PDO::PARAM_STR);
+        $stmt->bindValue(":parameterValue", $this->getValue(), PDO::PARAM_STR);
+        $stmt->bindValue(":description", $this->getDescription(), PDO::PARAM_STR);
+        $stmt->bindValue(":quickEdit", $this->getQuickEdit(), PDO::PARAM_INT);
         $stmt->execute();
         
         $this->setId(intval($db->getConnection()->lastInsertId()));
@@ -150,11 +150,11 @@ class GenericParameter extends \Parameter implements \JsonSerializable
             SET `parameter_value` = :parameterValue, `description` = :description, `quick_edit` = :quickEdit
             WHERE `generic_id` = :genericId AND `parameter_key` = :parameterKey;
         ");
-        $stmt->bindValue(':genericId', $this->getGenericId(), PDO::PARAM_INT);
-        $stmt->bindValue(':parameterKey', $this->getKey(), PDO::PARAM_STR);
-        $stmt->bindValue(':parameterValue', $this->getValue(), PDO::PARAM_STR);
-        $stmt->bindValue(':description', $this->getDescription(), PDO::PARAM_STR);
-        $stmt->bindValue(':quickEdit', $this->getQuickEdit(), PDO::PARAM_INT);
+        $stmt->bindValue(":genericId", $this->getGenericId(), PDO::PARAM_INT);
+        $stmt->bindValue(":parameterKey", $this->getKey(), PDO::PARAM_STR);
+        $stmt->bindValue(":parameterValue", $this->getValue(), PDO::PARAM_STR);
+        $stmt->bindValue(":description", $this->getDescription(), PDO::PARAM_STR);
+        $stmt->bindValue(":quickEdit", $this->getQuickEdit(), PDO::PARAM_INT);
         $stmt->execute();
         
         return $this;
@@ -175,8 +175,8 @@ class GenericParameter extends \Parameter implements \JsonSerializable
             DELETE FROM `generic_parameters` 
             WHERE `generic_parameters`.`generic_id` = :genericId AND `generic_parameters`.`parameter_key` = :parameterKey;
         ");
-        $stmt->bindValue(':genericId', $this->getGenericId(), PDO::PARAM_INT);
-        $stmt->bindValue(':parameterKey', $this->getKey(), PDO::PARAM_STR);
+        $stmt->bindValue(":genericId", $this->getGenericId(), PDO::PARAM_INT);
+        $stmt->bindValue(":parameterKey", $this->getKey(), PDO::PARAM_STR);
         $stmt->execute();
         
         return $this;

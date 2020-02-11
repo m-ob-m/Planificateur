@@ -14,16 +14,17 @@
      Free for personal and commercial use under the CCA 3.0 license (html5up.net/license)
      */
     
-    /* INCLUDE */
-    require_once __DIR__ . '/../type/controller/typeController.php';		// Classe contrôleur de Type
-    require_once __DIR__ . '/../model/controller/modelController.php';		// Classe contrôleur de Model
+	/* INCLUDE */
+	require_once $_SERVER["DOCUMENT_ROOT"] . "/Planificateur/lib/connect.php";
+    require_once $_SERVER["DOCUMENT_ROOT"] . "/Planificateur/parametres/type/controller/typeController.php";
+    require_once $_SERVER["DOCUMENT_ROOT"] . "/Planificateur/parametres/model/controller/modelController.php";
     
     // Initialize the session
 	session_start();
                                     
 	// Check if the user is logged in, if not then redirect him to login page
 	if(!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true){
-		if(!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest')
+		if(!empty($_SERVER["HTTP_X_REQUESTED_WITH"]) && strtolower($_SERVER["HTTP_X_REQUESTED_WITH"]) == "xmlhttprequest")
 		{
 			throw new \Exception("You are not logged in.");
 		}
@@ -34,18 +35,20 @@
 		exit;
 	}
 
+	// Getting a connection to the database.
+	$db = new \FabPlanConnection();
+		
 	// Closing the session to let other scripts use it.
 	session_write_close();
     
     $selectedModelId = isset($_GET["modelId"]) ? $_GET["modelId"] : 7000;
     $selectedTypeNo = isset($_GET["typeNo"]) ? $_GET["typeNo"] : 0;
     
-    $db = new \FabPlanConnection();
     try
     {
         $db->getConnection()->beginTransaction();
-        $types = (new \TypeController())->getTypes();
-        $models = (new \ModelController())->getModels();
+        $types = (new \TypeController($db))->getTypes();
+        $models = (new \ModelController($db))->getModels();
         $db->getConnection()->commit();
     }
     catch(\Exception $e)
@@ -171,16 +174,6 @@
 					</table>
 				</div>
 			</div>
-		</div>
-		
-		<!--  Fenetre Modal pour message d'erreurs -->
-		<div id="errMsgModal" class="modal" onclick='this.style.display = "none";'>
-			<div id="errMsg" class="modal-content" style='color:#FF0000;'></div>
-		</div>
-		
-		<!--  Fenetre Modal pour message de validation -->
-		<div id="validationMsgModal" class="modal" onclick='this.style.display = "none";'>
-			<div id="validationMsg" class="modal-content" style='color:#FF0000;'></div>
 		</div>
 		
 		<!--  Fenetre Modal pour chargement -->

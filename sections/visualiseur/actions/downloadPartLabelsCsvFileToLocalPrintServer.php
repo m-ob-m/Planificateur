@@ -16,16 +16,33 @@
     try
     {
         // INCLUDE
-        require_once __DIR__ . "/../../../lib/numberFunctions/numberFunctions.php";
-        require_once __DIR__ . "/../../job/controller/jobController.php";
-        require_once __DIR__ . "/../../../parametres/type/controller/typeController.php";
-        require_once __DIR__ . "/../../../parametres/model/controller/modelController.php";
-        require_once __DIR__ . "/../../../parametres/generic/controller/genericController.php";
+        require_once $_SERVER["DOCUMENT_ROOT"] . "/Planificateur/lib/numberFunctions/numberFunctions.php";
+        require_once $_SERVER["DOCUMENT_ROOT"] . "/Planificateur/sections/job/controller/jobController.php";
+        require_once $_SERVER["DOCUMENT_ROOT"] . "/Planificateur/parametres/type/controller/typeController.php";
+        require_once $_SERVER["DOCUMENT_ROOT"] . "/Planificateur/parametres/model/controller/modelController.php";
+        require_once $_SERVER["DOCUMENT_ROOT"] . "/Planificateur/parametres/generic/controller/genericController.php";
 
-        /* 
-        * No session required to open this page! Be careful concerning what you put here. 
-        * Advanced user account control might become available in a later release.
-        */
+        // Initialize the session
+        session_start();
+                                                                                                
+        // Check if the user is logged in, if not then redirect him to login page
+        if(!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true){
+            if(!empty($_SERVER["HTTP_X_REQUESTED_WITH"]) && strtolower($_SERVER["HTTP_X_REQUESTED_WITH"]) == "xmlhttprequest")
+            {
+                throw new \Exception("You are not logged in.");
+            }
+            else
+            {
+                header("location: /Planificateur/lib/account/logIn.php");
+            }
+            exit;
+        }
+    
+        // Getting a connection to the database.
+        $db = new \FabPlanConnection();
+
+        // Closing the session to let other scripts use it.
+        session_write_close();
 
         // Vérification des paramètres
         $partIDs = $inputData->id ?? null;
@@ -40,7 +57,6 @@
         }
 
         $fileContents = "";
-        $db = new \FabPlanConnection();
         try
         {
             $db->getConnection()->beginTransaction();
@@ -259,7 +275,7 @@
         {
             return $ip;
         }
-        elseif(filter_var($_SERVER['REMOTE_ADDR'], FILTER_VALIDATE_IP, FILTER_FLAG_IPV6))
+        elseif(filter_var($_SERVER["REMOTE_ADDR"], FILTER_VALIDATE_IP, FILTER_FLAG_IPV6))
         {
             return preg_replace(["/:/", "/%/"], ["-", "s"], $_SERVER["REMOTE_ADDR"]) . ".ipv6-literal.net";
         }

@@ -10,11 +10,33 @@
  */
 
 // INCLUDE
-include_once __DIR__ . "/../../../lib/numberFunctions/numberFunctions.php";
-include_once __DIR__ . "/../../job/controller/jobController.php";
-include_once __DIR__ . "/../../../parametres/type/controller/typeController.php";
-include_once __DIR__ . "/../../../parametres/model/controller/modelController.php";
-include_once __DIR__ . "/../../../parametres/generic/controller/genericController.php";
+require_once $_SERVER["DOCUMENT_ROOT"] . "/Planificateur/lib/numberFunctions/numberFunctions.php";
+require_once $_SERVER["DOCUMENT_ROOT"] . "/Planificateur/sections/job/controller/jobController.php";
+require_once $_SERVER["DOCUMENT_ROOT"] . "/Planificateur/parametres/type/controller/typeController.php";
+require_once $_SERVER["DOCUMENT_ROOT"] . "/Planificateur/parametres/model/controller/modelController.php";
+require_once $_SERVER["DOCUMENT_ROOT"] . "/Planificateur/parametres/generic/controller/genericController.php";
+
+// Initialize the session
+session_start();
+                                                                            
+// Check if the user is logged in, if not then redirect him to login page
+if(!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true){
+    if(!empty($_SERVER["HTTP_X_REQUESTED_WITH"]) && strtolower($_SERVER["HTTP_X_REQUESTED_WITH"]) == "xmlhttprequest")
+    {
+        throw new \Exception("You are not logged in.");
+    }
+    else
+    {
+        header("location: /Planificateur/lib/account/logIn.php");
+    }
+    exit;
+}
+
+// Getting a connection to the database.
+$db = new \FabPlanConnection();
+
+// Closing the session to let other scripts use it.
+session_write_close();
 
 //Structure de retour vers javascript
 $responseArray = array("status" => null, "success" => array("data" => null), "failure" => array("message" => null));
@@ -24,7 +46,6 @@ try
     // Vérification des paramètres
     $id = $_GET["id"] ?? null;
     
-    $db = new \FabPlanConnection();
     try
     {
         $db->getConnection()->beginTransaction();

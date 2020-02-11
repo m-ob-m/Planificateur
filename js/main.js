@@ -18,17 +18,23 @@ function showError(title, message)
 	let closeMessageTextNode = document.createElement("h1");
 	closeMessageTextNode.textContent = "Cliquer sur cette fenetre pour la fermer...";
 
-	let errorMessageContainer = document.getElementById("errMsg");
-	while(errorMessageContainer.childElementCount > 0)
-	{
-		errorMessageContainer.firstElementChild.remove();
-	}
+	let errorMessageContainer = document.createElement("div");
+	errorMessageContainer.classList.add("modal-content");
+	errorMessageContainer.style.color = "#FF0000";
 	errorMessageContainer.appendChild(errorTitleTextNode);
 	errorMessageContainer.appendChild(document.createElement("hr"));
 	errorMessageContainer.appendChild(errorMessageTextNode);
 	errorMessageContainer.appendChild(document.createElement("hr"));
 	errorMessageContainer.appendChild(closeMessageTextNode);
-	document.getElementById("errMsgModal").style.display = "block";
+
+	let errorMessageWindow = document.createElement("div");
+	errorMessageWindow.classList.add("modal");
+	errorMessageWindow.appendChild(errorMessageContainer);
+	errorMessageWindow.addEventListener("click", function(){this.remove();});
+	errorMessageWindow.id = "errMsgModal";
+	errorMessageWindow.style.display = "block";
+
+	document.getElementsByTagName("body")[0].appendChild(errorMessageWindow);
 }
 
 /** Creates a new image button (include imageButton.css to obtain a formatted button)
@@ -48,7 +54,7 @@ function imageButton(imagePath, text, callback, parameters = [], thisElement = n
 	let textSpan = document.createElement("span");
 	textSpan.textContent = text;
 
-	let imageButton = document.createElement('a');
+	let imageButton = document.createElement("a");
 	imageButton.href = "javascript: void(0);";
 	imageButton.classList.add("imageButton");
 	imageButton.addEventListener("click", function(){return callback.apply(thisElement, parameters);});
@@ -66,8 +72,10 @@ function imageButton(imagePath, text, callback, parameters = [], thisElement = n
  */
 function askConfirmation(title, message)
 {
-	return new Promise(function(resolve, reject)
+	return new Promise(function(resolve)
 	{
+		let confirmationMessageWindow = document.createElement("div");
+
 		let confirmationTitleTextNode = document.createElement("h4");
 		confirmationTitleTextNode.textContent = title;
 
@@ -87,7 +95,10 @@ function askConfirmation(title, message)
 		noButton.style.FlexShrink = 1;
 		noButton.style.FlexBasis = "auto";
 		noButton.textContent = "Non";
-		noButton.addEventListener("click", function(){resolve(false);});
+		noButton.addEventListener("click", function(){
+			confirmationMessageWindow.remove();
+			resolve(false);
+		});
 
 		let yesButton = document.createElement("button");
 		yesButton.type = "button";
@@ -99,7 +110,10 @@ function askConfirmation(title, message)
 		yesButton.style.FlexShrink = 1;
 		yesButton.style.FlexBasis = "auto";
 		yesButton.textContent = "Oui";
-		yesButton.addEventListener("click", function(){resolve(true);});
+		yesButton.addEventListener("click", function(){
+			confirmationMessageWindow.remove();
+			resolve(true);
+		});
 
 		let buttonsContainer = document.createElement("div");
 		buttonsContainer.style.textAlign = "center";
@@ -108,11 +122,9 @@ function askConfirmation(title, message)
 		buttonsContainer.appendChild(noButton);
 		buttonsContainer.appendChild(yesButton);
 		
-		let confirmationMessageContainer = document.getElementById("validationMsg");
-		while(confirmationMessageContainer.childElementCount > 1)
-		{
-			confirmationMessageContainer.firstElementChild.remove();
-		}
+		let confirmationMessageContainer = document.createElement("div");
+		confirmationMessageContainer.classList.add("modal-content");
+		confirmationMessageContainer.style.color = "#FF0000";
 		confirmationMessageContainer.appendChild(confirmationTitleTextNode);
 		confirmationMessageContainer.appendChild(document.createElement("hr"));
 		confirmationMessageContainer.appendChild(confirmationMessageTextNode);
@@ -120,7 +132,13 @@ function askConfirmation(title, message)
 		confirmationMessageContainer.appendChild(buttonsContainer);
 		confirmationMessageContainer.appendChild(document.createElement("hr"));
 		confirmationMessageContainer.appendChild(closeMessageTextNode);
-		document.getElementById("validationMsgModal").style.display = "block";
+
+		confirmationMessageWindow.classList.add("modal");
+		confirmationMessageWindow.appendChild(confirmationMessageContainer);
+		confirmationMessageWindow.id = "validationMsgModal";
+		confirmationMessageWindow.style.display = "block";
+
+		document.getElementsByTagName("body")[0].appendChild(confirmationMessageWindow);
 	});
 }
 

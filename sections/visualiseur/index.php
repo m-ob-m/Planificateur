@@ -9,15 +9,15 @@
     * \details 		Menu qui visualise les panneaux de Nest
     */
     
-    require_once __DIR__ . "/../batch/controller/batchController.php";
-    require_once __DIR__ . "/model/nestedPanelCollection.php";
+    require_once $_SERVER["DOCUMENT_ROOT"] . "/Planificateur/sections/batch/controller/batchController.php";
+    require_once $_SERVER["DOCUMENT_ROOT"] . "/Planificateur/sections/visualiseur/model/nestedPanelCollection.php";
    
     // Initialize the session
     session_start();
                                                                             
     // Check if the user is logged in, if not then redirect him to login page
     if(!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true){
-        if(!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest')
+        if(!empty($_SERVER["HTTP_X_REQUESTED_WITH"]) && strtolower($_SERVER["HTTP_X_REQUESTED_WITH"]) == "xmlhttprequest")
         {
             throw new \Exception("You are not logged in.");
         }
@@ -28,12 +28,17 @@
         exit;
     }
 
+    
+    // Getting a connection to the database.
+    $db = new \FabPlanConnection();
+
     // Closing the session to let other scripts use it.
     session_write_close();
     
+	set_time_limit(60);
+	
     $error = null;
     $batch = null;
-    $db = new \FabPlanConnection();
     try
     {
         $db->getConnection()->beginTransaction();
@@ -79,7 +84,7 @@
     
     $now = time();
     
-    $tempDirectory = __DIR__ . "/temp/";
+    $tempDirectory = $_SERVER["DOCUMENT_ROOT"] . "/Planificateur/sections/visualiseur/temp/";
     if (!file_exists($tempDirectory)) {
         mkdir($tempDirectory, 0777, true);
     }
@@ -124,7 +129,7 @@
 
 
 <!DOCTYPE HTML>
-<html style="height: 100%;">
+<html>
 	<head>
 		<title><?= $batch->getName(); ?></title>
 		<meta charset="utf-8" />
@@ -134,14 +139,14 @@
 		<link rel="stylesheet" href="../../assets/css/parametersTable.css"/>
 		<link rel="stylesheet" href="../../assets/css/imageButton.css">
 	</head>
-	<body style="background-image: none; background-color: #FFFFFF; height: 100%;">
-		<div style="display: flex; flex-flow: row; height: 100%;">
-			<div style="flex: 1 1 auto; height: 100%;">
+	<body style="background-image: none; background-color: #FFFFFF;">
+		<div style="display: flex; flex-flow: row;">
+			<div style="flex: 1 1 auto;">
 			<?php if($collection !== null && !empty($collection->getPanels())): ?>
             	<?php foreach($collection->getPanels() as $index => $panel): ?>
-        			<div class="pannelContainer" style="height: 100%; display: flex; flex-direction: column;">
+        			<div class="pannelContainer" style="page-break-after: always;">
                     	<!-- Entete de navigation (on veut l'avoir sur chaque page lors de l'impression) -->
-                    	<div style="width: 100%; padding-top: 2px; padding-bottom: 2px; text-align: center; overflow: hidden; flex: 0 0 auto;">
+                    	<div style="width: 100%; margin-top: 2px; margin-bottom: 2px; text-align: center; overflow: hidden;">
                             <button title="Premier" class="no-print goToFirst">&lt;&lt;</button>
                             <button title="Précédent" class="no-print goToPrevious">&lt;</button>
                     		<div id="index" style="display: inline-block; border: 1px black solid; padding: 2px;"><?= 
@@ -162,31 +167,35 @@
                     		Sortir</button>
                     	</div>
                     	
-                        <div style="flex: 1 1 auto; display: flex; flex-flow: row; height: 100%;">
-                            <div style="flex: 1 1 auto; float: left;"></div>
-                            <div class="pannel" style="max-width: 100%; max-height: 100%;">
-                                <?php $sourceFileName = $batch->getName() . fillZero($index + 1, 4) . ".jpg";?>
-                                <?php $sourceFilePath = CR_FABRIDOR . "SYSTEM_DATA\\DATA\\" . $sourceFileName; ?>
-                                <?php $destinationFilePath = __DIR__ . "/temp/panel_{$sourceFileName}"; ?>
+                    	<div style="display: flex; flex-flow: row;">
+                        	<div style="flex: 1 1 auto; float: left;"></div>
+                        	<div style="flex: 0 1 auto;">
+                        		<?php $sourceFileName = $batch->getName() . fillZero($index + 1, 4) . ".jpg";?>
+                        		<?php $sourceFilePath = CR_FABRIDOR . "SYSTEM_DATA\\DATA\\" . $sourceFileName; ?>
+                                <?php $destinationRootPath = "/Planificateur/sections/visualiseur/temp/panel_{$sourceFileName}"; ?>
+                        		<?php $destinationFilePath = $_SERVER["DOCUMENT_ROOT"] . $destinationRootPath; ?>
                                 <?php copy($sourceFilePath, $destinationFilePath); ?>
-                                <img src="temp/panel_<?= $sourceFileName; ?>" style="max-height:100%; max-width: 100%;">
-                                <?php foreach($panel->getParts() as $part): ?>
-                                    <?php $idjtp = $part->getJobTypePorteId(); ?>
-                                    <?php $jobTypePorte = \JobTypePorte::withID(new \FabplanConnection(), $idjtp); ?>
-                                    <?php $jobType = \JobType::withID(new \FabplanConnection(), $jobTypePorte->getJobTypeId()); ?>
-                                    <?php $job = \Job::withID(new \FabplanConnection(), $jobType->getJobId()); ?>
-                                    <?php $model = $jobType->getModel(); ?>
-                                    <?php $mpr = $part->getMprName(); ?>
-                                    <?php $l = 100 * ($part->getXCoordinate() - (in_array($part->getRotation(), array(0, 180)) ? $part->getHeight() : $part->getWidth()) / 2) / $panel->getLength(); ?>
-                                    <?php $t = 100 * ($part->getYCoordinate() - (in_array($part->getRotation(), array(0, 180)) ? $part->getWidth() : $part->getHeight()) / 2) / $panel->getWidth(); // Haut de pièce décalé de 30px vers le bas. ?>
-                                    <?php $w = 100 * (in_array($part->getRotation(), array(0, 180)) ? $part->getHeight() : $part->getWidth()) / $panel->getLength(); ?>
-                                    <?php $h = 100 * (in_array($part->getRotation(), array(0, 180)) ? $part->getWidth() : $part->getHeight()) / $panel->getWidth(); ?>
-                                    <div class="porte no-print" style="left: <?= $l; ?>%; top: <?= $t; ?>%; width: <?= $w; ?>%; height: <?= $h; ?>%;">
-                                        <?= $job->getName(); ?><br>
-                                        <?= $model->getDescription(); ?><br>
-                                        <?= $part->getHeightIn() . " X " . $part->getWidthIn(); ?>
-                                    </div>
-                                <?php endforeach; ?>
+                        		<div class="pannel">
+                        			<img src="temp/panel_<?= $sourceFileName; ?>">
+                        			<?php foreach($panel->getParts() as $part): ?>
+                        				<?php $idjtp = $part->getJobTypePorteId(); ?>
+										<?php $jobTypePorte = \JobTypePorte::withID(new \FabplanConnection(), $idjtp); ?>
+										<?php $jobType = \JobType::withID(new \FabplanConnection(), $jobTypePorte->getJobTypeId()); ?>
+										<?php $job = \Job::withID(new \FabplanConnection(), $jobType->getJobId()); ?>
+										<?php $model = $jobType->getModel(); ?>
+                        				<?php $mpr = $part->getMprName(); ?>
+                        				<?php $l = $part->getViewLeft(); ?>
+                    				    <?php $t = $part->getViewTop() - 30; // Haut de pièce décalé de 30px vers le bas. ?>
+    									<?php $w = $part->getViewHeight(); ?>
+                    				    <?php $h = $part->getViewWidth(); ?>
+    									<div class="porte no-print" data-id="<?= $idjtp; ?>" 
+    										style="left: <?= $l; ?>px; top: <?= $t; ?>px; width: <?= $w; ?>px; height: <?= $h; ?>px;">
+                        					<?= $job->getName(); ?><br>
+                        					<?= $model->getDescription(); ?><br>
+                        					<?= $part->getHeightIn() . " X " . $part->getWidthIn(); ?>
+                        				</div>
+                        			<?php endforeach; ?>
+                        		</div>
                             </div>
                             <div style="flex: 1 1 auto; float: right;"></div>
                     	</div>
@@ -213,11 +222,6 @@
         		</table>
         	</div>
     	</div>
-    	
-    	<!--  Fenêtre modale pour messages d'erreur -->
-		<div id="errMsgModal" class="modal" onclick='this.style.display = "none";'>
-			<div id="errMsg" class="modal-content" style='color:#FF0000;'></div>
-		</div>
     	
     	<script type="text/javascript" src="../../assets/js/ajax.js"></script>
 		<script type="text/javascript" src="../../assets/js/docReady.js"></script>

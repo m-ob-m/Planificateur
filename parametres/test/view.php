@@ -15,16 +15,16 @@
      */
     
     /* INCLUDE */
-    require_once __DIR__ . '/../type/controller/typeController.php';		// Classe contrôleur la Type
-    require_once __DIR__ . '/../model/controller/modelController.php';		// Classe contrôleur de Model
-	require_once __DIR__ . '/../test/controller/testController.php';        // Classe contrôleur de Test
+    require_once $_SERVER["DOCUMENT_ROOT"] . "/Planificateur/parametres/type/controller/typeController.php";
+    require_once $_SERVER["DOCUMENT_ROOT"] . "/Planificateur/parametres/model/controller/modelController.php";
+	require_once $_SERVER["DOCUMENT_ROOT"] . "/Planificateur/parametres/test/controller/testController.php";
 	
 	// Initialize the session
 	session_start();
         
 	// Check if the user is logged in, if not then redirect him to login page
 	if(!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true){
-		if(!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest')
+		if(!empty($_SERVER["HTTP_X_REQUESTED_WITH"]) && strtolower($_SERVER["HTTP_X_REQUESTED_WITH"]) == "xmlhttprequest")
 		{
 			throw new \Exception("You are not logged in.");
 		}
@@ -35,18 +35,20 @@
 		exit;
 	}
 
+	// Getting a connection to the database.
+	$db = new \FabPlanConnection();
+	
 	// Closing the session to let other scripts use it.
 	session_write_close();
     
     $types = array();
     $models = array();
     $test = null;
-    $db = new \FabPlanConnection();
     try
     {
         $db->getConnection()->beginTransaction();
-        $types = (new \TypeController())->getTypes();
-        $models = (new \ModelController())->getModels();
+        $types = (new \TypeController($db))->getTypes();
+        $models = (new \ModelController($db))->getModels();
         $defaultModel = $models[0] ?? null;
         $defaultType = $types[0] ?? null;
         $test = isset($_GET["id"]) ? \Test::withID($db, $_GET["id"]) : new \Test(null, "", $defaultModel, $defaultType);
@@ -177,16 +179,6 @@
 					<!-- Insert parameters editor here -->
 				</div>
 			</div>
-		</div>
-		
-		<!--  Fenetre Modal pour message d'erreurs -->
-		<div id="errMsgModal" class="modal" onclick='this.style.display = "none";'>
-			<div id="errMsg" class="modal-content" style='color:#FF0000;'></div>
-		</div>
-		
-		<!--  Fenetre Modal pour message de validation -->
-		<div id="validationMsgModal" class="modal" onclick='this.style.display = "none";'>
-			<div id="validationMsg" class="modal-content" style='color:#FF0000;'></div>
 		</div>
 		
 		<!--  Fenetre Modal pour chargement -->

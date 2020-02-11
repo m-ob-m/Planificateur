@@ -14,16 +14,15 @@
 
     try
     {
-        require_once '../../../lib/config.php';	// Fichier de configuration
-        require_once '../../../lib/connect.php';	// Classe de connection à la base de données
-        require_once '../controller/modelTypeController.php';		// Controleur des paramètres de base des portes
+        require_once "../../../lib/connect.php";	// Classe de connection à la base de données
+        require_once "../controller/modelTypeController.php";		// Controleur des paramètres de base des portes
     
         // Initialize the session
         session_start();
                                     
         // Check if the user is logged in, if not then redirect him to login page
         if(!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true){
-            if(!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest')
+            if(!empty($_SERVER["HTTP_X_REQUESTED_WITH"]) && strtolower($_SERVER["HTTP_X_REQUESTED_WITH"]) == "xmlhttprequest")
             {
                 throw new \Exception("You are not logged in.");
             }
@@ -33,12 +32,14 @@
             }
             exit;
         }
-    
+
+        // Getting a connection to the database.
+        $db = new \FabPlanConnection();
+        
         // Closing the session to let other scripts use it.
         session_write_close();
 
         $input =  json_decode(file_get_contents("php://input"));
-        $db = new FabPlanConnection();
         
         // Vérification des paramètres
         $modelId = $input->modelId ?? null;
@@ -68,7 +69,6 @@
         foreach($newParameters as $newParameter)
         {
             $modelTypeParameter = new \ModelTypeParameter($newParameter->key, $newParameter->value, $modelId, $typeNo);
-            $db = new \FabPlanConnection();
             try
             {
                 $db->getConnection()->beginTransaction();
@@ -87,10 +87,6 @@
                 $db->getConnection()->rollback();
                 throw $e;
             }
-            finally
-            {
-                $db = null;
-            }
         }
         
         // Retour au javascript
@@ -104,6 +100,7 @@
     }
     finally
     {
+		$db = null;
         echo json_encode($responseArray);
     }
 ?>

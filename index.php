@@ -15,19 +15,17 @@
      */
     
     /* INCLUDE */
-    require_once __DIR__ . '/lib/config.php';	// Fichier de configuration
-    require_once __DIR__ . '/lib/connect.php';	// Classe de connection à la base de données
-    
-    require_once __DIR__ . '/sections/batch/model/batch.php';	// Modèle d'une batch
-    require_once __DIR__ . '/sections/job/model/job.php';		// Modèle d'une job
-	require_once __DIR__ . '/controller/planificateur.php';		// Classe controleur de cette vue
+    require_once $_SERVER["DOCUMENT_ROOT"] . "/Planificateur/lib/connect.php";
+    require_once $_SERVER["DOCUMENT_ROOT"] . "/Planificateur/sections/batch/model/batch.php";
+    require_once $_SERVER["DOCUMENT_ROOT"] . "/Planificateur/sections/job/model/job.php";
+	require_once $_SERVER["DOCUMENT_ROOT"] . "/Planificateur/controller/planificateur.php";
 	
 	// Initialize the session
 	session_start();
                                                                         
 	// Check if the user is logged in, if not then redirect him to login page
 	if(!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true){
-		if(!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest')
+		if(!empty($_SERVER["HTTP_X_REQUESTED_WITH"]) && strtolower($_SERVER["HTTP_X_REQUESTED_WITH"]) == "xmlhttprequest")
 		{
 			throw new \Exception("You are not logged in.");
 		}
@@ -49,8 +47,8 @@
 		<link rel="stylesheet" href="/Planificateur/assets/css/fabridor.css" />
 		<link rel="stylesheet" href="/Planificateur/assets/css/loader.css" />
 		<link rel="stylesheet" href="/Planificateur/assets/css/imageButton.css" />
-		<link rel='stylesheet' href='/Planificateur/lib/fullcalendar/fullcalendar.css' />
-		<link rel='stylesheet' href='/Planificateur/css/index.css' />
+		<link rel="stylesheet" href="/Planificateur/lib/fullcalendar/fullcalendar.css" />
+		<link rel="stylesheet" href="/Planificateur/css/index.css" />
 	</head>
 	<body class="homepage" style="height:100%;">
 		<div id="page-wrapper" style="display:flex; flex-direction:column; height:100%;">
@@ -169,13 +167,13 @@
     									<img src="images/help16.png">
     								Légende</a>
     								<ul class="legend">
-    									<li class="state" style='background-color: #0b5788;'>Entrée</li>
-    									<li class="state" style='background-color: #127031;'>En exécution</li>
-    									<li class="state" style='background-color: #848482;'>Attente</li>
-    									<li class="state" style='background-color: #CC6600;'>Pressant</li>
-    									<li class="state" style='background-color: #990012;'>En retard</li>
-    									<li class="state" style='background-color: #DAA520;'>Non-livrée</li>
-    									<li class="state" style='background-color: #3B3131;'>Terminée</li>
+    									<li class="state" style="background-color: #0b5788;">Entrée</li>
+    									<li class="state" style="background-color: #127031;">En exécution</li>
+    									<li class="state" style="background-color: #848482;">Attente</li>
+    									<li class="state" style="background-color: #CC6600;">Pressant</li>
+    									<li class="state" style="background-color: #990012;">En retard</li>
+    									<li class="state" style="background-color: #DAA520;">Non-livrée</li>
+    									<li class="state" style="background-color: #3B3131;">Terminée</li>
     								</ul>
     							</li>
 							</ul>
@@ -195,19 +193,8 @@
 			<!-- Features -->
 			<div id="features-wrapper" class="container" 
 				style="flex:1 1 auto; min-height:300px; position:relative; padding-bottom:0px; margin-bottom:1.5em;"> 
-				<div id='calendar' style="height:100%; position:absolute;"></div>
+				<div id="calendar" style="height:100%; position:absolute;"></div>
 			</div>
-
-			<!--  Fenetre Modal pour message d'erreurs -->
-    		<div id="errMsgModal" class="modal" onclick='this.style.display = "none";' style="z-index:4;">
-    			<div id="errMsg" class="modal-content" style='color:#FF0000;'></div>
-    		</div>
-    		
-    		<!--  Fenetre Modal pour message de validation -->
-    		<div id="validationMsgModal" class="modal" onclick='this.style.display = "none";' style="z-index:4;">
-                <!-- Modal content -->
-    			<div id="validationMsg" class="modal-content" style='color:#FF0000;'></div>
-    		</div>
     		
     		<!--  Fenetre Modal pour chargement -->
     		<div id="loadingModal" class="modal loader-modal" style="z-index:4;">

@@ -13,9 +13,7 @@
 /*
  * Includes
 */
-require_once __DIR__ . '/../../../lib/config.php';		// Fichier de configuration
-require_once __DIR__ . '/../../../lib/connect.php';	    // Classe de connection à la base de données
-require_once __DIR__ . '/../model/batch.php';			// Classe d'une batch
+require_once $_SERVER["DOCUMENT_ROOT"] . "/Planificateur/sections/batch/model/batch.php";
 
 class BatchController
 {
@@ -23,14 +21,15 @@ class BatchController
     
     /**
      * BatchController constructor
+     * @param \FabplanConnection A database
      *
      * @throws
      * @author Marc-Olivier Bazin-Maurice
-     * @return BatchController This BatchController
+     * @return \BatchController This BatchController
      */
-    function __construct()
+    function __construct(\FabplanConnection $db)
     {
-        $this->connect();
+        $this->_db = $db;
     }
     
     /**
@@ -40,11 +39,11 @@ class BatchController
      *
      * @throws
      * @author Marc-Olivier Bazin-Maurice
-     * @return Batch The Batch that has this id (null if none)
+     * @return \Batch The Batch that has this id (null if none)
      */
-    function getBatch(?int $id) : ?Batch
+    function getBatch(?int $id) : ?\Batch
     {
-        return Batch::withID($this->getDBConnection(), $id);
+        return Batch::withID($this->_db, $id);
     }
     
     /**
@@ -56,53 +55,28 @@ class BatchController
      *
      * @throws
      * @author Marc-Olivier Bazin-Maurice
-     * @return Batch array The array of Batch objects requested
+     * @return \Batch[] The array of Batch objects requested
      */
     function getBatches(int $offset = 0, int $quantity = 0, bool $ascending = true) : array
     {
-        $stmt = $this->getDBConnection()->getConnection()->prepare("
+        $stmt = $this->_db->getConnection()->prepare("
             SELECT `b`.`id`
             FROM `batch` AS `b`
             ORDER BY `t`.`id` " . (($ascending === true) ? "ASC" : "DESC") .
             (($quantity === 0) ? "" : " LIMIT :quantity OFFSET :offset") .
             "FOR SHARE;"
         );
-        $stmt->bindValue(":quantity", $quantity, PDO::PARAM_INT);
-        $stmt->bindValue(":offset", $offset, PDO::PARAM_INT);
+        $stmt->bindValue(":quantity", $quantity, \PDO::PARAM_INT);
+        $stmt->bindValue(":offset", $offset, \PDO::PARAM_INT);
         $stmt->execute();
         
         $batches = array();
-        while($row = $stmt->fetch(PDO::FETCH_ASSOC))
+        while($row = $stmt->fetch(\PDO::FETCH_ASSOC))
         {
-            array_push($batches, Batch::withID($this->getDBConnection(), $row["id"]));
+            array_push($batches, \Batch::withID($this->_db, $row["id"]));
         }
         
         return $batches;
-    }
-    
-    /**
-     * Get the connection to the database
-     *
-     * @throws
-     * @author Marc-Olivier Bazin-Maurice
-     * @return FabplanConnection The connection to the database
-     */
-    function getDBConnection() : FabPlanConnection
-    {
-        return $this->_db;
-    }
-    
-    /**
-     * Set the connection to the database
-     *
-     * @throws
-     * @author Marc-Olivier Bazin-Maurice
-     * @return BatchController This BatchController
-     */
-    function connect()
-    {
-        $this->_db = new FabPlanConnection();
-        return $this;
     }
 }
 ?>

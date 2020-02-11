@@ -71,7 +71,7 @@ class Material  implements JsonSerializable
             "SELECT `m`.* FROM `material` AS `m` WHERE `m`.`id` = :id " . 
             (new \MYSQLDatabaseLockingReadTypes($databaseConnectionLockingReadType))->toLockingReadString() . ";"
         );
-	    $stmt->bindValue(':id', $id, PDO::PARAM_INT);
+	    $stmt->bindValue(":id", $id, PDO::PARAM_INT);
 	    $stmt->execute();
 	    
 	    if ($row = $stmt->fetch())	// Récupération de l'instance de matériel
@@ -105,7 +105,7 @@ class Material  implements JsonSerializable
             "SELECT `m`.* FROM `material` AS `m` WHERE `m`.`codeCutRite` = :cutRiteCode " . 
             (new \MYSQLDatabaseLockingReadTypes($databaseConnectionLockingReadType))->toLockingReadString() . ";"
         );
-	    $stmt->bindValue(':cutRiteCode', $cutRiteCode, PDO::PARAM_STR);
+	    $stmt->bindValue(":cutRiteCode", $cutRiteCode, PDO::PARAM_STR);
 	    $stmt->execute();
 	    
 	    if ($row = $stmt->fetch())	// Récupération de l'instance de matériel
@@ -214,7 +214,7 @@ class Material  implements JsonSerializable
                 `essence` = :woodType, `grain` = :hasGrain, `est_mdf` = :isMDF
             WHERE `id` = :id;
         ");
-	    $stmt->bindValue(':id', $this->getId(), PDO::PARAM_INT);
+	    $stmt->bindValue(":id", $this->getId(), PDO::PARAM_INT);
 	    $stmt->bindValue(":siaCode", $this->getCodeSIA(), PDO::PARAM_STR);
 	    $stmt->bindValue(":cutRiteCode", $this->getCodeCutRite(), PDO::PARAM_STR);
 	    $stmt->bindValue(":description", $this->getDescription(), PDO::PARAM_STR);
@@ -245,7 +245,7 @@ class Material  implements JsonSerializable
 	    else
 	    {
     	    $stmt = $db->getConnection()->prepare("DELETE FROM `material` WHERE `material`.`id` = :id;");
-    	    $stmt->bindValue(':id', $this->getId(), PDO::PARAM_INT);
+    	    $stmt->bindValue(":id", $this->getId(), PDO::PARAM_INT);
     	    $stmt->execute();
 	    }
 	    
@@ -266,7 +266,7 @@ class Material  implements JsonSerializable
 	    $stmt= $db->getConnection()->prepare("
             SELECT `m`.`estampille` AS `timestamp` FROM `material` AS `m` WHERE `m`.`id` = :id;
         ");
-	    $stmt->bindValue(':id', $this->getId(), PDO::PARAM_INT);
+	    $stmt->bindValue(":id", $this->getId(), PDO::PARAM_INT);
 	    $stmt->execute();
 	    
 	    if($row = $stmt->fetch())

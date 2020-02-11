@@ -1,8 +1,8 @@
 <?php
 
-require_once __DIR__ . "/carrousel.php";
-require_once __DIR__ . "/../../job/model/job.php";
-require_once __DIR__ . "/../../../lib/mpr/mprExpressionEvaluator.php";
+require_once $_SERVER["DOCUMENT_ROOT"] . "/Planificateur/sections/batch/model/carrousel.php";
+require_once $_SERVER["DOCUMENT_ROOT"] . "/Planificateur/sections/job/model/job.php";
+require_once $_SERVER["DOCUMENT_ROOT"] . "/Planificateur/lib/mpr/mprExpressionEvaluator.php";
 
 /**
 * \name		Batch
@@ -96,7 +96,7 @@ class Batch implements JsonSerializable
             WHERE `b`.`id_batch` = :id " . 
 	        (new \MYSQLDatabaseLockingReadTypes($databaseConnectionLockingReadType))->toLockingReadString() . ";"
         );
-	    $stmt->bindValue(':id', $id, PDO::PARAM_INT);
+	    $stmt->bindValue(":id", $id, PDO::PARAM_INT);
 	    $stmt->execute();
 	    
 	    if ($row = $stmt->fetch())	// Récupération de l'instance de Batch
@@ -117,7 +117,7 @@ class Batch implements JsonSerializable
             WHERE `bj`.`batch_id` = :batchId " . 
             (new \MYSQLDatabaseLockingReadTypes($databaseConnectionLockingReadType))->toLockingReadString() . ";"
         );
-	    $stmt->bindValue(':batchId', $id, PDO::PARAM_INT);
+	    $stmt->bindValue(":batchId", $id, PDO::PARAM_INT);
 	    $stmt->execute();
 	    
 	    while($row = $stmt->fetch())	// Récupération de l'instance Job
@@ -151,7 +151,7 @@ class Batch implements JsonSerializable
             WHERE `b`.`nom_batch` = :name " . 
 	        (new \MYSQLDatabaseLockingReadTypes($databaseConnectionLockingReadType))->toLockingReadString() . ";"
         );
-	    $stmt->bindValue(':name', $name, PDO::PARAM_INT);
+	    $stmt->bindValue(":name", $name, PDO::PARAM_INT);
 	    $stmt->execute();
 	    
 	    if ($row = $stmt->fetch())	// Récupération de l'instance de Batch
@@ -172,7 +172,7 @@ class Batch implements JsonSerializable
             WHERE `bj`.`batch_id` = :batchId " . 
             (new \MYSQLDatabaseLockingReadTypes($databaseConnectionLockingReadType))->toLockingReadString() . ";"
         );
-	    $stmt->bindValue(':batchId', $instance->getId(), PDO::PARAM_INT);
+	    $stmt->bindValue(":batchId", $instance->getId(), PDO::PARAM_INT);
 	    $stmt->execute();
 	    
 	    while($row = $stmt->fetch())	// Récupération de l'instance Job
@@ -635,16 +635,16 @@ class Batch implements JsonSerializable
                 `commentaire`, `etat`, `etat_mpr`, `carrousel`) 
             VALUES (:materialId, :boardSize, :name, :start, :end, :fullDay, :comments, :status, :mprStatus, :carrousel);
         ");
-	    $stmt->bindValue(':materialId', $this->getMaterialId(), PDO::PARAM_INT);
+	    $stmt->bindValue(":materialId", $this->getMaterialId(), PDO::PARAM_INT);
 	    $stmt->bindValue(":boardSize", $this->getBoardSize(), PDO::PARAM_STR);
-	    $stmt->bindValue(':name', $this->getName(), PDO::PARAM_STR);
-	    $stmt->bindValue(':start', $this->getStart(), PDO::PARAM_STR);
-	    $stmt->bindValue(':end', $this->getEnd(), PDO::PARAM_STR);
-	    $stmt->bindValue(':fullDay', $this->getFullDay(), PDO::PARAM_STR);
-	    $stmt->bindValue(':comments', $this->getComments(), PDO::PARAM_STR);
-	    $stmt->bindValue(':status', $this->getStatus(), PDO::PARAM_STR);
-	    $stmt->bindValue(':mprStatus', $this->getMprStatus(), PDO::PARAM_STR);
-	    $stmt->bindValue(':carrousel', $this->getCarrousel()->toCsv(), PDO::PARAM_STR);
+	    $stmt->bindValue(":name", $this->getName(), PDO::PARAM_STR);
+	    $stmt->bindValue(":start", $this->getStart(), PDO::PARAM_STR);
+	    $stmt->bindValue(":end", $this->getEnd(), PDO::PARAM_STR);
+	    $stmt->bindValue(":fullDay", $this->getFullDay(), PDO::PARAM_STR);
+	    $stmt->bindValue(":comments", $this->getComments(), PDO::PARAM_STR);
+	    $stmt->bindValue(":status", $this->getStatus(), PDO::PARAM_STR);
+	    $stmt->bindValue(":mprStatus", $this->getMprStatus(), PDO::PARAM_STR);
+	    $stmt->bindValue(":carrousel", $this->getCarrousel()->toCsv(), PDO::PARAM_STR);
 	    $stmt->execute();
 	    $this->setId(intval($db->getConnection()->lastInsertId()));
 	    
@@ -677,17 +677,17 @@ class Batch implements JsonSerializable
                 `etat_mpr` = :mprStatus, `carrousel` = :carrousel
             WHERE `id_batch` = :id;
         ");
-	    $stmt->bindValue(':id', $this->getId(), PDO::PARAM_INT);
-	    $stmt->bindValue(':materialId', $this->getMaterialId(), PDO::PARAM_INT);
+	    $stmt->bindValue(":id", $this->getId(), PDO::PARAM_INT);
+	    $stmt->bindValue(":materialId", $this->getMaterialId(), PDO::PARAM_INT);
 	    $stmt->bindValue(":boardSize", $this->getBoardSize(), PDO::PARAM_STR);
-	    $stmt->bindValue(':name', $this->getName(), PDO::PARAM_STR);
-	    $stmt->bindValue(':start', $this->getStart(), PDO::PARAM_STR);
-	    $stmt->bindValue(':end', $this->getEnd(), PDO::PARAM_STR);
-	    $stmt->bindValue(':fullDay', $this->getFullDay(), PDO::PARAM_STR);
-	    $stmt->bindValue(':comments', $this->getComments(), PDO::PARAM_STR);
-	    $stmt->bindValue(':status', $this->getStatus(), PDO::PARAM_STR);
-	    $stmt->bindValue(':mprStatus', $this->getMprStatus(), PDO::PARAM_STR);
-	    $stmt->bindValue(':carrousel', $this->getCarrousel()->toCsv(), PDO::PARAM_STR);
+	    $stmt->bindValue(":name", $this->getName(), PDO::PARAM_STR);
+	    $stmt->bindValue(":start", $this->getStart(), PDO::PARAM_STR);
+	    $stmt->bindValue(":end", $this->getEnd(), PDO::PARAM_STR);
+	    $stmt->bindValue(":fullDay", $this->getFullDay(), PDO::PARAM_STR);
+	    $stmt->bindValue(":comments", $this->getComments(), PDO::PARAM_STR);
+	    $stmt->bindValue(":status", $this->getStatus(), PDO::PARAM_STR);
+	    $stmt->bindValue(":mprStatus", $this->getMprStatus(), PDO::PARAM_STR);
+	    $stmt->bindValue(":carrousel", $this->getCarrousel()->toCsv(), PDO::PARAM_STR);
 	    $stmt->execute();
 	    
 	    //Mettre à jour les liens entre les jobs et la batch
@@ -723,7 +723,7 @@ class Batch implements JsonSerializable
     	    }
     	    
     	    $stmt = $db->getConnection()->prepare("DELETE FROM `batch` WHERE `id_batch` = :id;");
-    	    $stmt->bindValue(':id', $this->getId(), PDO::PARAM_INT);
+    	    $stmt->bindValue(":id", $this->getId(), PDO::PARAM_INT);
     	    $stmt->execute();
 	    }
 	    
@@ -744,7 +744,7 @@ class Batch implements JsonSerializable
 	    $stmt= $db->getConnection()->prepare("
             SELECT `b`.`estampille` FROM `batch` AS `b` WHERE `b`.`id_batch` = :id;
         ");
-	    $stmt->bindValue(':id', $this->getId(), PDO::PARAM_INT);
+	    $stmt->bindValue(":id", $this->getId(), PDO::PARAM_INT);
 	    $stmt->execute();
 	    
 	    if($row = $stmt->fetch())
@@ -769,7 +769,7 @@ class Batch implements JsonSerializable
 	private function unlinkAllJobs(FabPlanConnection $db) : Batch
 	{
 	    $stmt = $db->getConnection()->prepare("DELETE FROM `batch_job` WHERE `batch_id` = :batchId;");
-	    $stmt->bindValue(':batchId', $this->getId(), PDO::PARAM_INT);
+	    $stmt->bindValue(":batchId", $this->getId(), PDO::PARAM_INT);
 	    $stmt->execute();
 	    
 	    return $this;
@@ -788,8 +788,8 @@ class Batch implements JsonSerializable
 	private function unlinkJob(Job $job, FabPlanConnection $db) : Batch
 	{
 	    $stmt = $db->getConnection()->prepare("DELETE FROM `batch_job` WHERE `batch_id` = :batchId AND `job_id`= :jobId;");
-	    $stmt->bindValue(':batchId', $this->getId(), PDO::PARAM_INT);
-	    $stmt->bindValue(':jobId', $job->getId(), PDO::PARAM_INT);
+	    $stmt->bindValue(":batchId", $this->getId(), PDO::PARAM_INT);
+	    $stmt->bindValue(":jobId", $job->getId(), PDO::PARAM_INT);
 	    $stmt->execute();
 	    
 	    return $this;
@@ -808,8 +808,8 @@ class Batch implements JsonSerializable
 	private function linkJob(\Job $job, \FabPlanConnection $db) : \Batch
 	{
 	    $stmt = $db->getConnection()->prepare("INSERT INTO `batch_job`(`batch_id`, `job_id`) VALUES(:batchId, :jobId);");
-	    $stmt->bindValue(':batchId', $this->getId(), PDO::PARAM_INT);
-	    $stmt->bindValue(':jobId', $job->getId(), PDO::PARAM_INT);
+	    $stmt->bindValue(":batchId", $this->getId(), PDO::PARAM_INT);
+	    $stmt->bindValue(":jobId", $job->getId(), PDO::PARAM_INT);
 	    $stmt->execute();
 	    
 	    return $this;

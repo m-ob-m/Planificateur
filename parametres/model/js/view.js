@@ -92,7 +92,7 @@ function saveModel(id, description, copyParametersFrom)
 				"description": description, 
 				"copyParametersFrom": (copyParametersFrom !== "") ? copyParametersFrom : null
 			},
-			"dataType": 'json',
+			"dataType": "json",
 			"async": true,
 			"cache": false,
 			"onSuccess": function(response){

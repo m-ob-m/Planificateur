@@ -1,6 +1,6 @@
 <?php 
-	require_once __DIR__ . "/UnexpectedVariableFormatException.php";
-	require_once __DIR__ . "/UnexpectedMprMergeInputfileParametersFormatException.php";
+	require_once $_SERVER["DOCUMENT_ROOT"] . "/Planificateur/lib/mpr/mprmerge/UnexpectedVariableFormatException.php";
+	require_once $_SERVER["DOCUMENT_ROOT"] . "/Planificateur/lib/mpr/mprmerge/UnexpectedMprMergeInputfileParametersFormatException.php";
 	
 	class MprMergeInputFile implements \JsonSerializable
     {
