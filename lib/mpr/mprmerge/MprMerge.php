@@ -1,6 +1,6 @@
 <?php 
-    require_once __DIR__ . "/MprMergeInputFile.php";
-    require_once __DIR__ . "/MprVariable.php";
+    require_once $_SERVER["DOCUMENT_ROOT"] . "/Planificateur/lib/mpr/mprmerge/MprMergeInputFile.php";
+    require_once $_SERVER["DOCUMENT_ROOT"] . "/Planificateur/lib/mpr/mprmerge/MprVariable.php";
     
     /**
      * \MprMerge
@@ -116,7 +116,8 @@
                         "Wegopti" => "1", 
                         "QuickandDirty" => "1",
                         "MakeLinear" => "1"
-                    )
+                    ), 
+                    $parameterFile
                 );
                 
                 try
@@ -126,7 +127,7 @@
                     $commandStatus = null;
                     $commandOutput = null;
                     exec(
-                        "\"{$application}\" \"-f={$mergerFile}\" \"-m={$parameterFile}\"", 
+                        "\"{$application}\" \"-f={$mergerFile}\"", 
                         $commandOutput, 
                         $commandStatus
                     );
@@ -157,17 +158,16 @@
         /**
          * Merge function
          *
-         * @param array[\MprMergeInputFile | \stdClass | string] $inputFiles An array containing the input files and 
-         *                                                                   their parameters.
+         * @param \MprMergeInputFile[]|\stdClass[]|string[] $inputFiles An array containing the input files and their parameters.
          * @param string $outputFilePath The desired path of the output mpr file.
-         *
-         * @throws \UnexpectedMprMergeInputFileParametersFormatException If the functions fails to generate a valid 
-         *                                                               .mrg file.
+         * @param \MprVariable[]|\stdClass[]  $variables The global variables specific to this session of mprmerge.exe. 
+         * 
+         * @throws \UnexpectedMprMergeInputFileParametersFormatException If the functions fails to generate a valid .mrg file.
          * @throws \UnexpectedVariableFormatException If the variables are not provided in a valid format.
          * @author Marc-Olivier Bazin-Maurice
          * @return
          */ 
-        public static function merge(array $inputFiles, string $outputFilePath) : void
+        public static function merge(array $inputFiles, string $outputFilePath, array $variables = array()) : void
         {
             $instance = new self();
             
@@ -191,36 +191,49 @@
                 }
             }
             
-            $mergerFile = $instance->createTemporaryMergerFile(
-                $outputFilePath,
-                $inputFiles,
-                array(
-                    "FileReplace" => "1",
-                    "VariableIndex" => "1",
-                    "ContourInsert" => "1",
-                    "NewCoordWithOffset" => "1",
-                    "Optimize" => "1",
-                    "Wegopti" => "1",
-                    "UseInternalVar" => "1",
-                    "CountPart" => "1",
-                    "KeepOrder" => "1"
-                )
-            );
-            
-            try
-            {
-                // Perform linearization
-                $application = "C:\\Program Files (x86)\\Homag Group\\woodWOP6\\mprmerge.exe";
-                $commandStatus = null;
-                $commandOutput = null;
-                exec(
-                    "\"{$application}\" \"-f={$mergerFile}\"", 
-                    $commandOutput, 
-                    $commandStatus
+            $parameterFile = $instance->createTemporaryVariableFile($variables);
+
+            try{
+                $mergerFile = $instance->createTemporaryMergerFile(
+                    $outputFilePath,
+                    $inputFiles,
+                    array(
+                        "FileReplace" => "1",
+                        "VariableIndex" => "1",
+                        "ContourInsert" => "1",
+                        "NewCoordWithOffset" => "1",
+                        "Optimize" => "1",
+                        "Wegopti" => "1",
+                        "UseInternalVar" => "0",
+                        "CountPart" => "1",
+                        "KeepOrder" => "0"
+                    ),
+                    $parameterFile
                 );
-                if($commandStatus !== 0)
+                
+                try
                 {
-                    throw new \Exception("Error {$commandStatus}: " . implode("\r\n", $commandOutput));
+                    // Perform linearization
+                    $application = "C:\\Program Files (x86)\\Homag Group\\woodWOP6\\mprmerge.exe";
+                    $commandStatus = null;
+                    $commandOutput = null;
+                    exec(
+                        "\"{$application}\" \"-f={$mergerFile}\"", 
+                        $commandOutput, 
+                        $commandStatus
+                    );
+                    if($commandStatus !== 0)
+                    {
+                        throw new \Exception("Error {$commandStatus}: " . implode("\r\n", $commandOutput));
+                    }
+                }
+                catch(\Exception $e)
+                {
+                    throw $e;
+                }
+                finally
+                {
+                    unlink($mergerFile);
                 }
             }
             catch(\Exception $e)
@@ -229,7 +242,7 @@
             }
             finally
             {
-                unlink($mergerFile);
+                unlink($parameterFile);
             }
         }
         
@@ -275,14 +288,15 @@
          *
          * @param string $outputFile The path of the output file.
          * @param \MprMergeInputFile[] | \MprMergeInputFile $inputFiles The inputFiles and their parameters.
-         * @param string[] $options An associative array of options to apply to mprmerge.exe. By default, the numeric 
-         *                         ones are all set to 0.
-         *
+         * @param string[] $options An array of options to apply to mprmerge.exe. By default, the numeric ones are all set to 0.
+         * @param string $variableFile The file containing the global variables specific to this session of mprmerge.exe.
+         * 
          * @throws \Exception If the temporary file could not be created.
          * @author Marc-Olivier Bazin-Maurice
          * @return string The path of the temporary merger file.
          */ 
-        private function createTemporaryMergerFile(string $outputFile, $inputFiles, array $options = array()) : string
+        private function createTemporaryMergerFile(string $outputFile, $inputFiles, array $options = array(), 
+            ?string $variableFile = null) : string
         {
             $timestamp = round(microtime(true) * 1000);
             $mergerFilePath = sys_get_temp_dir() . "\\ComponentLevelMerger{$timestamp}.mrg";
@@ -309,6 +323,14 @@
             "[Destination]\r\n" . 
             "FileName={$outputFile}\r\n" . 
             "\r\n";
+
+            if($variableFile !== null)
+            {
+                $mergerData .= "\r\n" . 
+                "[Master]\r\n" . 
+                "FileName={$variableFile}\r\n" . 
+                "\r\n";
+            }
             
             $index = 1;
             foreach($inputFiles as $inputFile)

@@ -74,7 +74,7 @@ class JobTypePorte implements JsonSerializable
             WHERE `jtp`.`id_job_type_porte` = :id " . 
             (new \MYSQLDatabaseLockingReadTypes($databaseConnectionLockingReadType))->toLockingReadString() . ";"
         );
-        $stmt->bindValue(':id', $id, PDO::PARAM_INT);
+        $stmt->bindValue(":id", $id, PDO::PARAM_INT);
         $stmt->execute();
         
         $instance = null;
@@ -152,13 +152,13 @@ class JobTypePorte implements JsonSerializable
                 `longueur`, `largeur`, `grain`, `terminer`)
             VALUES (:jobTypeId, :quantityToProduce, :producedQuantity, :length, :width, :grain, :done);
         ");
-        $stmt->bindValue(':jobTypeId', $this->getJobTypeId(), PDO::PARAM_INT);
-        $stmt->bindValue(':quantityToProduce', $this->getQuantityToProduce(), PDO::PARAM_INT);
-        $stmt->bindValue(':producedQuantity', $this->getProducedQuantity(), PDO::PARAM_INT);
-        $stmt->bindValue(':length', (string)$this->getLength(), PDO::PARAM_STR);
-        $stmt->bindValue(':width', (string)$this->getWidth(), PDO::PARAM_STR);
-        $stmt->bindValue(':grain', $this->getGrain(), PDO::PARAM_STR);
-        $stmt->bindValue(':done', $this->getDone(), PDO::PARAM_STR);
+        $stmt->bindValue(":jobTypeId", $this->getJobTypeId(), PDO::PARAM_INT);
+        $stmt->bindValue(":quantityToProduce", $this->getQuantityToProduce(), PDO::PARAM_INT);
+        $stmt->bindValue(":producedQuantity", $this->getProducedQuantity(), PDO::PARAM_INT);
+        $stmt->bindValue(":length", (string)$this->getLength(), PDO::PARAM_STR);
+        $stmt->bindValue(":width", (string)$this->getWidth(), PDO::PARAM_STR);
+        $stmt->bindValue(":grain", $this->getGrain(), PDO::PARAM_STR);
+        $stmt->bindValue(":done", $this->getDone(), PDO::PARAM_STR);
         $success = $stmt->execute();
         $this->setId(intval($db->getConnection()->lastInsertId()));
         
@@ -182,14 +182,14 @@ class JobTypePorte implements JsonSerializable
                 `longueur` = :length, `largeur` = :width, `grain`= :grain, `terminer` = :done
             WHERE `id_job_type_porte` = :id;
         ");
-        $stmt->bindValue(':id', $this->getId(), PDO::PARAM_INT);
-        $stmt->bindValue(':jobTypeId', $this->getJobTypeId(), PDO::PARAM_INT);
-        $stmt->bindValue(':quantityToProduce', $this->getQuantityToProduce(), PDO::PARAM_INT);
-        $stmt->bindValue(':producedQuantity', $this->getProducedQuantity(), PDO::PARAM_INT);
-        $stmt->bindValue(':length', (string)$this->getLength(), PDO::PARAM_STR);
-        $stmt->bindValue(':width', (string)$this->getWidth(), PDO::PARAM_STR);
-        $stmt->bindValue(':grain', $this->getGrain(), PDO::PARAM_STR);
-        $stmt->bindValue(':done', $this->getDone(), PDO::PARAM_STR);
+        $stmt->bindValue(":id", $this->getId(), PDO::PARAM_INT);
+        $stmt->bindValue(":jobTypeId", $this->getJobTypeId(), PDO::PARAM_INT);
+        $stmt->bindValue(":quantityToProduce", $this->getQuantityToProduce(), PDO::PARAM_INT);
+        $stmt->bindValue(":producedQuantity", $this->getProducedQuantity(), PDO::PARAM_INT);
+        $stmt->bindValue(":length", (string)$this->getLength(), PDO::PARAM_STR);
+        $stmt->bindValue(":width", (string)$this->getWidth(), PDO::PARAM_STR);
+        $stmt->bindValue(":grain", $this->getGrain(), PDO::PARAM_STR);
+        $stmt->bindValue(":done", $this->getDone(), PDO::PARAM_STR);
         $success = $stmt->execute();
         
         return $this;
@@ -216,7 +216,7 @@ class JobTypePorte implements JsonSerializable
                     DELETE FROM `job_type_porte`
                     WHERE `id_job_type_porte` = :id;
                 ");
-            $stmt->bindValue(':id', $this->getId(), PDO::PARAM_INT);
+            $stmt->bindValue(":id", $this->getId(), PDO::PARAM_INT);
             $stmt->execute();
         }
         
@@ -237,7 +237,7 @@ class JobTypePorte implements JsonSerializable
         $stmt= $db->getConnection()->prepare("
             SELECT `jtp`.`estampille` FROM `job_type_porte` AS `jtp` WHERE `jtp`.`id_job_type_porte` = :id;
         ");
-        $stmt->bindValue(':id', $this->getId(), PDO::PARAM_INT);
+        $stmt->bindValue(":id", $this->getId(), PDO::PARAM_INT);
         $stmt->execute();
         
         if($row = $stmt->fetch())

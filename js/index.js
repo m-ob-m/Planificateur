@@ -26,8 +26,8 @@ function retrieveEvents()
 	        "type": "GET",
 	        "contentType": "application/json;charset=utf-8",
 	        "data": {
-	        	"start": $('#calendar').fullCalendar('getCalendar').view.start.format("Y/M/D"), 
-	        	"end": $('#calendar').fullCalendar('getCalendar').view.end.format("Y/M/D")
+	        	"start": $("#calendar").fullCalendar("getCalendar").view.start.format("Y/M/D"), 
+	        	"end": $("#calendar").fullCalendar("getCalendar").view.end.format("Y/M/D")
 	        },
 			"dataType": "json",
 			"async": true,
@@ -56,8 +56,8 @@ function retrieveEvents()
  */
 function updateEventsCalendar(events)
 {
-	$("#calendar").fullCalendar('removeEvents');
-	$("#calendar").fullCalendar('addEventSource', events);
+	$("#calendar").fullCalendar("removeEvents");
+	$("#calendar").fullCalendar("addEventSource", events);
 }
 
 /**
@@ -65,11 +65,11 @@ function updateEventsCalendar(events)
  */
 $(function(){
     // Chargement du calendrier
-    $('#calendar').fullCalendar({
+    $("#calendar").fullCalendar({
     	"contentHeight": "9999",
 		"height": "9999",
-		"header": {"left": 'prev,next today', "center": 'title', "right": 'month, agendaWeek, agendaDay, listMonth'},
-		"locale": 'fr-ca',
+		"header": {"left": "prev,next today", "center": "title", "right": "month, agendaWeek, agendaDay, listMonth"},
+		"locale": "fr-ca",
 		"navLinks": true, // can click day/week names to navigate views
 		"eventLimit": true, // allow "more" link when too many events
 		"eventDrop": function(event, delta, revertFunc){
@@ -81,23 +81,23 @@ $(function(){
 		},
 	    "windowResize":  function(view) 
 	    {
-	        $('#calendar').fullCalendar('option', 'height', $("#calendar").height());
+	        $("#calendar").fullCalendar("option", "height", $("#calendar").height());
 	    }
     });
-    $('#calendar').css({"width": "100%"});
+    $("#calendar").css({"width": "100%"});
 
     
-    $('.fc-prev-button, .fc-next-button, .fc-month-button, .fc-agendaWeek-button, .fc-agendaDay-button, .fc-listMonth-button')
+    $(".fc-prev-button, .fc-next-button, .fc-month-button, .fc-agendaWeek-button, .fc-agendaDay-button, .fc-listMonth-button")
     .click(function(){
     	reloadEvents();
     });
     
-    $('.fc-agendaWeek-button, .fc-agendaDay-button, .fc-listMonth-button').click(function(){
+    $(".fc-agendaWeek-button, .fc-agendaDay-button, .fc-listMonth-button").click(function(){
     	$("html").css({"height": "100%"});
     	$("#calendar").fullCalendar("option", "height", "auto");
     });
     
-    $('.fc-month-button').click(function(){
+    $(".fc-month-button").click(function(){
     	$("html").css({"height": "125%"});
     	$("#calendar").fullCalendar("option", "height", $("#calendar").height());
     });
@@ -112,7 +112,7 @@ async function reschedule(event)
 {
 	try {
 		event.color = await rescheduleEvent(event);
-		$('#calendar').fullCalendar('updateEvent', event);
+		$("#calendar").fullCalendar("updateEvent", event);
 	}
 	catch (error) {
 		showError("Le changement de planification de l'évènement a échoué", error);
@@ -132,12 +132,12 @@ function rescheduleEvent(event)
 	    	"url": "actions/eventDrop.php",
 	        "type": "POST",
 	        "contentType": "application/json;charset=utf-8",
-	        "data": {
+	        "data": JSON.stringify({
 	        	"batchId": event.id, 
 	        	"debut": event.start.format(), 
 	        	"fin": event.end.format(), 
 	        	"allDay":event.allDay
-	        },
+	        }),
 			"dataType": "json",
 			"async": true,
 			"cache": false
@@ -171,7 +171,7 @@ function getBatchIdFromJobName(jobName)
             "type": "POST",
             "contentType": "application/json;charset=utf-8",
             "data": JSON.stringify({"productionNumber": jobName}),
-            "dataType": 'json',
+            "dataType": "json",
             "async": true,
             "cache": false,
 		})
@@ -256,7 +256,7 @@ function getBatchIdFromJobName(jobName)
             "type": "POST",
             "contentType": "application/json;charset=utf-8",
             "data": JSON.stringify({"productionNumber": jobName}),
-            "dataType": 'json',
+            "dataType": "json",
             "async": true,
             "cache": false,
 		})

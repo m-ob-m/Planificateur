@@ -13,17 +13,24 @@
 /*
  * Includes
 */
-require_once __DIR__ .  '/../../../lib/config.php';	// Fichier de configuration
-require_once __DIR__ .  '/../../../lib/connect.php';	// Classe de connection à la base de données
-require_once __DIR__ .  '/../model/type.php';	// Classe de Type
+require_once $_SERVER["DOCUMENT_ROOT"] . "/Planificateur/parametres/type/model/type.php";
 
 class TypeController {
 
 	private $_db;
-    
-	function __construct()
+	
+	/**
+	 * Get a Type by id
+	 *
+	 * @param \FabplanConnection $db A database
+	 *
+	 * @throws
+	 * @author Marc-Olivier Bazin-Maurice
+	 * @return \TypeController This TypeController
+	 */
+	function __construct(\FabplanConnection $db)
 	{
-		$this->connect();	
+		$this->_db = $db;	
 	}
 	
 	/**
@@ -33,11 +40,11 @@ class TypeController {
 	 *
 	 * @throws
 	 * @author Marc-Olivier Bazin-Maurice
-	 * @return Type The Type that has this id (null if none)
+	 * @return \Type The Type that has this id (null if none)
 	 */
-	function getType(?int $id) : ?Type
+	function getType(?int $id) : ?\Type
 	{
-	    return Type::withID($this->getDBConnection(), $id);
+	    return \Type::withID($this->_db, $id);
 	}
     
 	/**
@@ -49,25 +56,25 @@ class TypeController {
 	 *
 	 * @throws
 	 * @author Marc-Olivier Bazin-Maurice
-	 * @return Type array The array of Type objects requested
+	 * @return \Type array The array of Type objects requested
 	 */
 	function getTypes(int $offset = 0, int $quantity = 0, bool $ascending = true) : array
 	{
-	    $stmt = $this->getDBConnection()->getConnection()->prepare("
+	    $stmt = $this->_db->getConnection()->prepare("
             SELECT `dt`.`id` AS `id`
             FROM `door_types` AS `dt`
             ORDER BY `dt`.`importNo` " . (($ascending === true) ? "ASC" : "DESC") .
 	        (($quantity === 0) ? "" : " LIMIT :quantity OFFSET :offset") .
 	        ";"
-	        );
-	    $stmt->bindValue(":quantity", $quantity, PDO::PARAM_INT);
-	    $stmt->bindValue(":offset", $offset, PDO::PARAM_INT);
+	    );
+	    $stmt->bindValue(":quantity", $quantity, \PDO::PARAM_INT);
+	    $stmt->bindValue(":offset", $offset, \PDO::PARAM_INT);
 	    $stmt->execute();
 	    
 	    $types = array();
-	    while($row = $stmt->fetch(PDO::FETCH_ASSOC))
+	    while($row = $stmt->fetch(\PDO::FETCH_ASSOC))
 	    {
-	        array_push($types, Type::withID($this->getDBConnection(), $row["id"]));
+	        array_push($types, \Type::withID($this->_db, $row["id"]));
 	    }
 	    return $types;
 	}
@@ -79,17 +86,17 @@ class TypeController {
 	 *
 	 * @throws
 	 * @author Marc-Olivier Bazin-Maurice
-	 * @return Type The Type that has this import number (null if none)
+	 * @return \Type The Type that has this import number (null if none)
 	 */
-	function getTypeByImportNo(?int $importNo) : ?Type
+	function getTypeByImportNo(?int $importNo) : ?\Type
 	{
-	    $stmt = $this->getDBConnection()->getConnection()->prepare("
+	    $stmt = $this->_db->getConnection()->prepare("
             SELECT `dt`.`id` AS `id`
             FROM `door_types` AS `dt`
             WHERE `dt`.`importNo` = :importNo
             ;"
 	    );
-	    $stmt->bindValue(":importNo", $importNo, PDO::PARAM_INT);
+	    $stmt->bindValue(":importNo", $importNo, \PDO::PARAM_INT);
 	    $stmt->execute();
 	    
 	    if($row = $stmt->fetch())
@@ -98,33 +105,8 @@ class TypeController {
 	    }
 	    else
 	    {
-	        throw new Exception("No type with import number \" {$importNo}\" was found.");
+	        throw new \Exception("No type with import number \" {$importNo}\" was found.");
 	    }
 	}
-	
-	/**
-	 * Connect to the database
-	 *
-	 * @throws
-	 * @author Marc-Olivier Bazin-Maurice
-	 * @return TestController This TestController
-	 */ 
-	private function connect()
-	{
-	    $this->_db = new FabPlanConnection();
-	    return $this;
-	}
-
-	/**
-	 * Get the connection to the database
-	 *
-	 * @throws
-	 * @author Marc-Olivier Bazin-Maurice
-	 * @return FabplanConnection The connection to the database
-	 */ 
-    public function getDBConnection() :FabPlanConnection
-    {
-        return $this->_db;
-    }
 }
 ?>

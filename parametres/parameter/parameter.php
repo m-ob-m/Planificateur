@@ -1,5 +1,5 @@
 <?php
-abstract class Parameter implements JsonSerializable
+abstract class Parameter implements \JsonSerializable
 {
     protected $_key;
     protected $_value; /* Accessors to this property should be defined in child classes. */
@@ -12,7 +12,7 @@ abstract class Parameter implements JsonSerializable
      *
      * @throws
      * @author Marc-Olivier Bazin-Maurice
-     * @return Parameter
+     * @return \Parameter
      */
     public function __construct(string $key)
     {
@@ -38,7 +38,7 @@ abstract class Parameter implements JsonSerializable
      *
      * @throws
      * @author Marc-Olivier Bazin-Maurice
-     * @return Parameter This Parameter (for method chaining)
+     * @return \Parameter This Parameter (for method chaining)
      */
     public function setKey(string $key) : Parameter
     {
@@ -51,9 +51,9 @@ abstract class Parameter implements JsonSerializable
      *
      * @throws
      * @author Marc-Olivier Bazin-Maurice
-     * @return array This object in a JSON compatible format
+     * @return [] This object in a JSON compatible format
      */
-    public function jsonSerialize()
+    public function jsonSerialize() : array
     {
         return get_object_vars($this);
     }

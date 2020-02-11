@@ -15,8 +15,7 @@
         else
         { 
             // Include config file
-            require_once __DIR__ . "/../config.php";
-            require_once __DIR__ . "/../connect.php";
+            require_once $_SERVER["DOCUMENT_ROOT"] . "/Planificateur/lib/connect.php";
             
             // Define variables and initialize with empty values
             $username = $password = "";
@@ -48,61 +47,68 @@
                     $password = trim($credentials->password);
                 }
                 
-                // Prepare a select statement
-                $sql = "SELECT id, username, password FROM users WHERE username = :username";
-                $pdo = (new \FabplanConnection())->getConnection();
-                if($stmt = $pdo->prepare($sql))
+                // Open a PDO connection to Fabplan with the authentication user
+                $pdo = null;
+                try{
+                    $pdo = (new \FabplanConnection(DATABASE_AUTHENTICATION_USER_NAME))->getConnection();
+                }
+                catch(\Exception $e)
                 {
-                    // Bind variables to the prepared statement as parameters
-                    $stmt->bindParam(":username", $param_username, PDO::PARAM_STR);
-                    
-                    // Set parameters
-                    $param_username = trim($credentials->username);
-                    
-                    // Attempt to execute the prepared statement
-                    if($stmt->execute())
+                    echo $e->getMessage();
+                }
+
+                if($pdo !== null)
+                {
+                    // Prepare a select statement
+                    $stmt = $pdo->prepare("
+                        SELECT `u`.`id` AS `id`, `u`.`password` AS `password`
+                        FROM `users` AS `u` 
+                        WHERE `u`.`username` = :username;
+                    ");
+                    if($stmt)
                     {
-                        // Check if username exists, if yes then verify password
-                        if($stmt->rowCount() == 1)
+                        // Bind variables to the prepared statement as parameters
+                        $stmt->bindParam(":username", $credentials->username, PDO::PARAM_STR);
+                        
+                        // Attempt to execute the prepared statement
+                        if($stmt->execute())
                         {
-                            $row = $stmt->fetch();
-                            $id = $row["id"];
-                            $username = $row["username"];
-                            $hashed_password = $row["password"];
-                            if(password_verify($password, $hashed_password))
-                            {                                
-                                // Store data in session variables
-                                $_SESSION["loggedin"] = true;
-                                $_SESSION["id"] = $id;
-                                $_SESSION["username"] = $username;                            
-                                
-                                // Successfully logged in.
-                            }
+                            // Check if username exists, if yes then verify password
+                            if($stmt->rowCount() == 1)
+                            {
+                                if($row = $stmt->fetch())
+                                {
+                                    $id = $row["id"];
+    
+                                    if(password_verify($password, $row["password"]))
+                                    {
+                                        // Store data in session variables
+                                        $_SESSION["loggedin"] = true;
+                                        $_SESSION["id"] = $id;
+                                        $_SESSION["username"] = $username;
+                                    }
+                                    else
+                                    {
+                                        // Display an error message if password is not valid
+                                        $password_err = "The password you entered was not valid.";
+                                    }
+                                }
+                            } 
                             else
                             {
-                                throw new \Exception("Password is not valid.");
+                                throw new \Exception("Username does not exist.");
                             }
                         } 
                         else
                         {
-                            throw new \Exception("Username does not exist.");
+                            throw new \Exception("Failed to query database. Please try again later.");
                         }
-                    } 
-                    else
-                    {
-                        throw new \Exception("Failed to query database. Please try again later.");
                     }
                 }
                 else
                 {
                     throw new \Exception("Failed to prepare query to database. Please try again later.");
                 }
-                
-                // Close statement
-                unset($stmt);
-                
-                // Close connection
-                unset($pdo);
             }
         }
 

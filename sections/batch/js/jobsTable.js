@@ -40,7 +40,7 @@ async function addJob(identifier, isName = false)
 		{
 			try{
 				let job = await getJobSummary(identifier, isName);
-				if(job.belongsToBatch === null || job.belongsToBatch === document.getElementById("batchName").value)
+				if(job.belongsToBatch === null || job.belongsToBatch === parseInt(document.getElementById("batchId").value))
 				{
 					document.getElementById("orders").getElementsByTagName("tbody")[0].appendChild(newJob(job));
 					document.getElementById("jobNumber").value = "";
@@ -49,8 +49,7 @@ async function addJob(identifier, isName = false)
 				else
 				{
 					let identifierString = (isName ? "le nom " : "l'identifiant numérique unique ") + identifier;
-					let batch = job.belongsToBatch;
-					reject("La job identifiée par " + identifierString + " appartient déjà à la batch nommée \"" + batch + "\".");
+					reject("La job identifiée par " + identifierString + " appartient déjà à une batch.");
 				}
 			}
 			catch(error){
@@ -58,28 +57,6 @@ async function addJob(identifier, isName = false)
 			}
 		}
 	});
-}
-
-/**
- * Callback for the onclick event of the "Add Job" button.
- */
-async function addJobButtonPressed()
-{
-	let jobName = document.getElementById("jobNumber").value;
-	try{
-		await addJob(jobName, true)
-		initializeDates();
-		let batchName = document.getElementById("batchName").value;
-		if(batchName === null || batchName === "")
-		{
-			document.getElementById("batchName").value = jobName;
-		}
-		updateSessionStorage();
-		hasChanged(true);
-	}
-	catch(error){
-		showError("L'ajout de la job a échoué.", error);
-	};
 }
 
 /**
@@ -111,21 +88,21 @@ function newJob(job)
 	let nameCell = document.createElement("td");
 	nameCell.classList.add("jobNameCell");
 	nameCell.textContent = job.name;
-	nameCell.addEventListener("click", async function(){
-		await openJob.apply(this.parentElement, [job.id, document.getElementById("batchId").value]);
+	nameCell.addEventListener("click", function(){
+		openJob.apply(this.parentElement, [job.id, document.getElementById("batchId").value]);
 	});
 
 	let deliveryDateCell = document.createElement("td");
 	deliveryDateCell.textContent = (job.deliveryDate !== null) ? job.deliveryDate : "";
-	deliveryDateCell.addEventListener("click", async function(){
-		await openJob.apply(this.parentElement, [job.id, document.getElementById("batchId").value]);
+	deliveryDateCell.addEventListener("click", function(){
+		openJob.apply(this.parentElement, [job.id, document.getElementById("batchId").value]);
 	});
 
 	let partsAmountCell = document.createElement("td");
 	partsAmountCell.classList.add("lastVisibleColumn");
 	partsAmountCell.textContent = job.partsAmount;
-	partsAmountCell.addEventListener("click", async function(){
-		await openJob.apply(this.parentElement, [job.id, document.getElementById("batchId").value]);
+	partsAmountCell.addEventListener("click", function(){
+		openJob.apply(this.parentElement, [job.id, document.getElementById("batchId").value]);
 	});
 
 	row.style.cursor = "pointer";

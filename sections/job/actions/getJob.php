@@ -15,19 +15,18 @@
     try
     {        
         // INCLUDE
-        require_once __DIR__ . '/../../../lib/config.php';	// Fichier de configuration
-        require_once __DIR__ . '/../../../lib/connect.php';	// Classe de connection à la base de données
-        require_once __DIR__ . '/../controller/jobController.php'; // Classe contrôleur de la classe Job
-        require_once __DIR__ . '/../../../parametres/model/controller/modelController.php'; // Classe contrôleur de la classe Model
-        require_once __DIR__ . '/../../../parametres/type/controller/typeController.php'; // Classe contrôleur de la classe Type
-        require_once __DIR__ . '/../../../parametres/generic/controller/genericController.php'; // Classe contrôleur de la classe Generic
+        require_once $_SERVER["DOCUMENT_ROOT"] . "/Planificateur/lib/connect.php";
+        require_once $_SERVER["DOCUMENT_ROOT"] . "/Planificateur/sections/job/controller/jobController.php";
+        require_once $_SERVER["DOCUMENT_ROOT"] . "/Planificateur/parametres/model/controller/modelController.php";
+        require_once $_SERVER["DOCUMENT_ROOT"] . "/Planificateur/parametres/type/controller/typeController.php";
+        require_once $_SERVER["DOCUMENT_ROOT"] . "/Planificateur/parametres/generic/controller/genericController.php";
 
         // Initialize the session
         session_start();
                                                                                             
         // Check if the user is logged in, if not then redirect him to login page
         if(!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true){
-            if(!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest')
+            if(!empty($_SERVER["HTTP_X_REQUESTED_WITH"]) && strtolower($_SERVER["HTTP_X_REQUESTED_WITH"]) == "xmlhttprequest")
             {
                 throw new \Exception("You are not logged in.");
             }
@@ -37,6 +36,9 @@
             }
             exit;
         }
+
+        // Getting a connection to the database.
+        $db = new \FabPlanConnection();
 
         // Closing the session to let other scripts use it.
         session_write_close();
@@ -50,7 +52,6 @@
         }
         
         $job = null;
-        $db = new \FabPlanConnection();
         try
         {
             $db->getConnection()->beginTransaction();

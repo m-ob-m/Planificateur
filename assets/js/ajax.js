@@ -2,7 +2,7 @@
 
 let ajax = {};
 ajax.x = function () {
-    if (typeof XMLHttpRequest !== 'undefined') {
+    if (typeof XMLHttpRequest !== "undefined") {
         return new XMLHttpRequest();
     }
     let versions = [
@@ -43,14 +43,14 @@ ajax.send = function (options) {
 
     let x = ajax.x();
 
-    x.onloadstart = onStart && {}.toString.call(onStart) === '[object Function]' ? onStart : null;
-    x.onprogress = onProgress && {}.toString.call(onProgress) === '[object Function]' ? onProgress : null;
-    x.onloadend = onEnd && {}.toString.call(onEnd) === '[object Function]' ? onEnd : null;
-    x.onabort = onAbort && {}.toString.call(onAbort) === '[object Function]' ? onAbort : null;
-    x.ontimeout = onTimeOut && {}.toString.call(onTimeOut) === '[object Function]' ? onTimeOut : null;
+    x.onloadstart = onStart && {}.toString.call(onStart) === "[object Function]" ? onStart : null;
+    x.onprogress = onProgress && {}.toString.call(onProgress) === "[object Function]" ? onProgress : null;
+    x.onloadend = onEnd && {}.toString.call(onEnd) === "[object Function]" ? onEnd : null;
+    x.onabort = onAbort && {}.toString.call(onAbort) === "[object Function]" ? onAbort : null;
+    x.ontimeout = onTimeOut && {}.toString.call(onTimeOut) === "[object Function]" ? onTimeOut : null;
     x.onload = function () {
         if (x.readyState == 4) {
-            if(onSuccess && {}.toString.call(onSuccess) === '[object Function]')
+            if(onSuccess && {}.toString.call(onSuccess) === "[object Function]")
             {
                 let responseData = null;
                 try{
@@ -64,13 +64,13 @@ ajax.send = function (options) {
                 onSuccess(responseData);
             }
         }
-        else if(onFailure && {}.toString.call(onFailure) === '[object Function]')
+        else if(onFailure && {}.toString.call(onFailure) === "[object Function]")
         {
             onFailure(x.responseText);
         }
     };
     x.onerror = function(){
-        if(onFailure && {}.toString.call(onFailure) === '[object Function]')
+        if(onFailure && {}.toString.call(onFailure) === "[object Function]")
         {
             onFailure(x.responseText);
         }
@@ -79,36 +79,36 @@ ajax.send = function (options) {
     if(type === "GET") {
         let query = [];
         for (let key in data) {
-            query.push(encodeURIComponent(key) + '=' + encodeURIComponent(data[key]));
+            query.push(encodeURIComponent(key) + "=" + encodeURIComponent(data[key]));
         }
         !cache ? query.push("_=" + Date.now()) : null;
-        url += (query.length ? '?' + query.join('&') : '');
+        url += (query.length ? "?" + query.join("&") : "");
         data = null;
     }
     else if (type === "POST") {
         let TypeContentIsString = typeof contentType === "string" || contentType instanceof String;
         let contentTypeMain = TypeContentIsString ? contentType.split(";")[0] : null;
         let contentTypeIsJson = ["application/json", "application/ld+json"].includes(contentTypeMain);
-        if(contentTypeIsJson && typeof data === 'object' && data !== null) {
+        if(contentTypeIsJson && typeof data === "object" && data !== null) {
             data = JSON.stringify(data);
         }
         else if(contentTypeMain === "application/x-www-form-urlencoded") {
             let query = [];
             for (let key in data) {
-                query.push(encodeURIComponent(key) + '=' + encodeURIComponent(data[key]));
+                query.push(encodeURIComponent(key) + "=" + encodeURIComponent(data[key]));
             }
-            data =  query.join('&');
+            data =  query.join("&");
         }
         let query = [];
         !cache ? query.push("_=" + Date.now()) : null;
-        url += (query.length ? '?' + query.join('&') : '');
+        url += (query.length ? "?" + query.join("&") : "");
     }
 
     x.open(type, url, async);
     x.setRequestHeader("X-Requested-With", "XMLHttpRequest");
     if(type === "POST" && contentType !== null && contentType !== "")
     {
-        x.setRequestHeader('Content-type', contentType);
+        x.setRequestHeader("Content-type", contentType);
     }
     x.send(data)
 };

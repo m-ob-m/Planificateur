@@ -15,20 +15,20 @@
     try
     {    
         /* INCLUDE */
-        require_once __DIR__ . "/../../../lib/csv/csvCutRite.php";		// Créateur de CSV pour CutRite
-        require_once __DIR__ . "/../../../lib/mpr/mprCutRite.php";		// Créateur de MPR pour CutRite
-        require_once __DIR__ . "/../../../lib/config.php";	// Fichier de configuration
-        require_once __DIR__ . "/../../../lib/connect.php";	// Classe de connection à la base de données
-        require_once __DIR__ . "/../../../lib/fileFunctions/fileFunctions.php";	// Classe de fonctions liées aux fichiers non natives à PHP
-        require_once __DIR__ . "/../controller/batchController.php";	// Contrôleur de Batch
-        require_once __DIR__ . "/../../../parametres/materiel/controller/materielCtrl.php";	// Contrôleur de Materiel
+        require_once $_SERVER["DOCUMENT_ROOT"] . "/Planificateur/lib/cutRite/importCSV.php";
+        require_once $_SERVER["DOCUMENT_ROOT"] . "/Planificateur/lib/mpr/mprCutRite.php";
+        require_once $_SERVER["DOCUMENT_ROOT"] . "/Planificateur/lib/numberFunctions/numberFunctions.php";
+        require_once $_SERVER["DOCUMENT_ROOT"] . "/Planificateur/lib/connect.php";
+        require_once $_SERVER["DOCUMENT_ROOT"] . "/Planificateur/lib/fileFunctions/fileFunctions.php";
+        require_once $_SERVER["DOCUMENT_ROOT"] . "/Planificateur/sections/batch/controller/batchController.php";
+        require_once $_SERVER["DOCUMENT_ROOT"] . "/Planificateur/parametres/material/controller/materialCtrl.php";
 
         // Initialize the session
         session_start();
                                                 
         // Check if the user is logged in, if not then redirect him to login page
         if(!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true){
-            if(!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest')
+            if(!empty($_SERVER["HTTP_X_REQUESTED_WITH"]) && strtolower($_SERVER["HTTP_X_REQUESTED_WITH"]) == "xmlhttprequest")
             {
                 throw new \Exception("You are not logged in.");
             }
@@ -39,6 +39,9 @@
             exit;
         }
 
+        // Getting a connection to the database.
+        $db = new \FabPlanConnection();
+
         // Closing the session to let other scripts use it.
         session_write_close();
 
@@ -48,13 +51,21 @@
         $id = $input->batchId ?? null;
         $action = $input->action ?? 1;
         
+        if(!is_positive_integer_or_equivalent_string($id))
+        {
+            throw new \Exception("Veuillez sauvegarder la batch.");
+        }
+
         // Modèles
-        $db = new \FabPlanConnection();
         try
         {
             $db->getConnection()->beginTransaction();
             $batch = \Batch::withID($db, $id, MYSQLDatabaseLockingReadTypes::FOR_UPDATE);
-            if(!\Materiel::withID($db, $batch->getMaterialId())->getEstMDF())
+			if($batch === null)
+			{
+				throw new \Exception("Il n'y a pas de batch avec l'identifiant unique {$id}.");
+			}
+            if(!\Material::withID($db, $batch->getMaterialId())->getEstMDF())
             {
                 throw new \Exception("Seul le nesting de pièces de MDF est supporté.");
             }
@@ -66,7 +77,7 @@
             {
                 case "1":
                     // MaJ état de la batch pour En attente
-                    $batch->setMprStatus("A")->save($db);
+                    $batch->setMprStatus(($batch->getStatus() === "P") ? "P" : "A")->setStatus("E")->save($db);
                     
                     $responseArray["success"]["data"] = null;
                     break;
@@ -134,7 +145,7 @@
     {
         /* Nettoyage des fichiers temporaires. */
         $KEEP_FILES_FOR_X_DAYS = 31;
-        $temporaryFolder = __DIR__ . "/../temp";
+        $temporaryFolder = $_SERVER["DOCUMENT_ROOT"] . "/Planificateur/sections/batch/temp";
         (new \FileFunctions\TemporaryFolder($temporaryFolder))->clean($KEEP_FILES_FOR_X_DAYS * 24 * 60 * 60);
         
         $filesToDelete  = array();
@@ -174,6 +185,10 @@
         {
             foreach($job->getJobTypes() as $jobType)
             {
+                if($jobType->getModel()->getId() === 1)
+                {
+                    throw new \Exception("Une section avec un modèle générique a été trouvé dans la job \"{$job->getName()}\".");
+                }
                 $mprPath = createMprForJobType($jobType);
                 $zip->addFile($mprPath, basename($mprPath));
                 array_push($filesToDelete, $mprPath);
@@ -210,8 +225,8 @@
                 "fullyPortable" => true
             )
         );
-        $csvPath = __DIR__ . "/../temp/{$csvName}";
-        $csv = new \CsvCutrite();
+        $csvPath = $_SERVER["DOCUMENT_ROOT"] . "/Planificateur/sections/batch/temp/{$csvName}";
+        $csv = new \CutRiteImportCSV();
         $csv->makeCsvFromBatch($batch);
         $csv->makeCsvFile($csvPath);
         return $csvPath;
@@ -237,9 +252,9 @@
                 "fullyPortable" => true
             )
         );
-        $mprPath = __DIR__ . "/../temp/{$mprName}";
+        $mprPath = $_SERVER["DOCUMENT_ROOT"] . "/Planificateur/sections/batch/temp/{$mprName}";
         
-        $mpr = new \mprCutrite(realpath(__DIR__ . "/../../../lib/generique.mpr"));
+        $mpr = new \mprCutrite(realpath($_SERVER["DOCUMENT_ROOT"] . "/Planificateur/lib/generique.mpr"));
         $mpr->makeMprFromJobType($jobType);
         $mpr->makeMprFile($mprPath);
         return $mprPath;

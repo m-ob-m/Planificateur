@@ -14,11 +14,10 @@
 * tels les JobType et TestType)
 */
 
-require_once __DIR__ . '/../../../lib/config.php';	// Fichier de configuration
-require_once __DIR__ . '/../../../lib/connect.php';	// Classe de connection à la base de données
-require_once __DIR__ . '/modelTypeGenericParameter.php'; // Classe de paramètres pour cet objet
-require_once __DIR__ . '/../../varmodtype/model/modelType.php'; // Classe de combinaison modèle-type
-require_once __DIR__ . '/../../type/controller/typeController.php'; // Classe de combinaison modèle-type
+require_once $_SERVER["DOCUMENT_ROOT"] . "/Planificateur/lib/connect.php";
+require_once $_SERVER["DOCUMENT_ROOT"] . "/Planificateur/parametres/varmodtypegen/model//modelTypeGenericParameter.php";
+require_once $_SERVER["DOCUMENT_ROOT"] . "/Planificateur/parametres/varmodtype/model/modelType.php";
+require_once $_SERVER["DOCUMENT_ROOT"] . "/Planificateur/parametres/type/controller/typeController.php";
 
 class ModelTypeGeneric extends \ModelType implements \JsonSerializable
 {    
@@ -63,17 +62,17 @@ class ModelTypeGeneric extends \ModelType implements \JsonSerializable
         		AND `dmd`.`fkDoorModel` = `dm`.`id_door_model` AND `dmd`.`fkDoorType` = `dt`.`importNo`
             ORDER BY `gp`.`id` ASC;
         ");
-	    $stmt->bindValue(':modelId', $modelId, PDO::PARAM_INT);
-	    $stmt->bindValue(':typeNo', $typeNo, PDO::PARAM_INT);
+	    $stmt->bindValue(":modelId", $modelId, PDO::PARAM_INT);
+	    $stmt->bindValue(":typeNo", $typeNo, PDO::PARAM_INT);
 	    $stmt->execute();
 	    
 	    $this->setParameters(array());
 	    foreach($stmt->fetchAll() as $row)
 	    {
-	        $key = $row['key'];
-	        $specific = (($row['specificValue'] === "") ? null : $row['specificValue']);
+	        $key = $row["key"];
+	        $specific = (($row["specificValue"] === "") ? null : $row["specificValue"]);
 	        $description = $row["description"];
-	        $default = (($row['genericValue'] === "") ? null : $row['genericValue']);
+	        $default = (($row["genericValue"] === "") ? null : $row["genericValue"]);
 	        array_push(
 	            $this->_parameters, 
 	            new \ModelTypeGenericParameter($key, $specific, $modelId, $typeNo, $description, $default)

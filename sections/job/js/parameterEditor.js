@@ -21,6 +21,7 @@ class ParameterEditor{
 				let mprFileInput = document.getElementById("mprFileSelectionInputBox");
 				if(mprFileInput.files.length > 0){
 					await this.readMpr(mprFileInput.files[0]);
+					mprFileInput.value = "";
 				}
 			});
 			this._acceptCallBack = null;
@@ -51,7 +52,7 @@ class ParameterEditor{
 				this.reload(await this.retrieveModelTypeGenericParameters());
 			}
 		}
-		catch{
+		catch(error){
 			showError("Le chargement de l'éditeur de paramètres a échoué.", error);
 		}
 		finally{
@@ -156,10 +157,11 @@ class ParameterEditor{
 	 * @return {ParameterEditor} This ParameterEditor
 	 */
 	reload(parametersOrMprFile = []){
+		this.emptyParametersTable();
 		if(isArray(parametersOrMprFile))
 		{
+			document.getElementById("mprFileContents").value = "";
 			let parametersTableBody = document.getElementById("parametersArray").getElementsByTagName("tbody")[0];
-			this.emptyParametersTable();
 			parametersOrMprFile.map((parameter) => {
 				parametersTableBody.appendChild(this.newParameterRow(parameter));
 			});

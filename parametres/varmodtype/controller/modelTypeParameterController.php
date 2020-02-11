@@ -13,25 +13,23 @@
 /*
  * Includes
  */
-require_once __DIR__ . '/../../../lib/config.php';	// Fichier de configuration
-require_once __DIR__ . '/../../../lib/connect.php';	// Classe de connection � la base de donn�es
-require_once __DIR__ . '/../model/modelTypeParameter.php';	// Classe de parametre
+require_once $_SERVER["DOCUMENT_ROOT"] . "/Planificateur/parametres/model/modelTypeParameter.php";
 
-class modelTypeParameterController
+class ModelTypeParameterController
 {
     private $_db;
-    private $_modelType;
     
     /**
      * ModelTypeParameterController
+     * @param \FabplanConnection $db A database
      *
      * @throws
      * @author Marc-Olivier Bazin-Maurice
-     * @return ModelTypeController
+     * @return \ModelTypeParameterController
      */
-    function __construct()
+    function __construct(\FabplanConnection $db)
     {
-        $this->_db = new FabPlanConnection();
+        $this->_db = $db;
     }
     
     /**
@@ -43,17 +41,11 @@ class modelTypeParameterController
      *
      * @throws
      * @author Marc-Olivier Bazin-Maurice
-     * @return ModelTypeParameter The ModelTypeParameter object with $modelId as model id and $typeNo as type import no and $key as key
+     * @return \ModelTypeParameter The ModelTypeParameter object with $modelId as model id and $typeNo as type import no and $key as key
      */
-    public function getModelTypeParameter(int $modelId, int $typeNo, string $key) : ?ModelTypeParameter
+    public function getModelTypeParameter(int $modelId, int $typeNo, string $key) : ?\ModelTypeParameter
     {
-        $this->_modelType = ModelTypeParameter::withID($this->connexion(), $modelId, $typeNo, $key);
-        return $this->_modelType;
-    }
-    
-    public function connexion()
-    {
-        return $this->_db;
+        return \ModelTypeParameter::withID($this->_db, $modelId, $typeNo, $key);
     }
 }
 

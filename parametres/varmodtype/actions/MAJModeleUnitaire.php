@@ -14,22 +14,21 @@
     $lock = null;
     try
     {
-        require_once __DIR__ . '/../../../lib/mpr/mprCutRite.php';  // Créateur de MPR pour CutRite
-        require_once __DIR__ . '/../../test/controller/testController.php'; //Contrôleur de Test
-        require_once __DIR__ . '/../../model/controller/modelController.php'; //Contrôleur de Modele
-        require_once __DIR__ . '/../../type/controller/typeController.php'; //Contrôleur de Type
-        require_once __DIR__ . '/../../generic/controller/genericController.php'; //Contrôleur de Type
-        require_once __DIR__ . '/../../varmodtypegen/controller/modelTypeGenericController.php'; //Contrôleur de Type
-        require_once __DIR__ . '/../../../lib/config.php';	// Fichier de configuration
-        require_once __DIR__ . '/../../../lib/connect.php';	// Classe de connection à la base de données
-        require_once __DIR__ . "/../../../lib/fileFunctions/fileFunctions.php"; //Fonctions sur les fichiers
+        require_once $_SERVER["DOCUMENT_ROOT"] . "/Planificateur/lib/mpr/mprCutRite.php";
+        require_once $_SERVER["DOCUMENT_ROOT"] . "/Planificateur/parametres/test/controller/testController.php";
+        require_once $_SERVER["DOCUMENT_ROOT"] . "/Planificateur/parametres/model/controller/modelController.php";
+        require_once $_SERVER["DOCUMENT_ROOT"] . "/Planificateur/parametres/type/controller/typeController.php";
+        require_once $_SERVER["DOCUMENT_ROOT"] . "/Planificateur/parametres/generic/controller/genericController.php";
+        require_once $_SERVER["DOCUMENT_ROOT"] . "/Planificateur/parametres/varmodtypegen/controller/modelTypeGenericController.php";
+        require_once $_SERVER["DOCUMENT_ROOT"] . "/Planificateur/lib/connect.php";
+        require_once $_SERVER["DOCUMENT_ROOT"] . "/Planificateur/lib/fileFunctions/fileFunctions.php";
         
         // Initialize the session
         session_start();
                                 
         // Check if the user is logged in, if not then redirect him to login page
         if(!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true){
-            if(!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest')
+            if(!empty($_SERVER["HTTP_X_REQUESTED_WITH"]) && strtolower($_SERVER["HTTP_X_REQUESTED_WITH"]) == "xmlhttprequest")
             {
                 throw new \Exception("You are not logged in.");
             }
@@ -39,14 +38,17 @@
             }
             exit;
         }
-    
+            
+        // Getting a connection to the database.
+        $db = new \FabPlanConnection();
+
         // Closing the session to let other scripts use it.
         session_write_close();
 
         set_time_limit(3600); // Pour éviter les erreurs de dépassement du temps alloué, on augmente le temps alloué.
 
         $lockName = sys_get_temp_dir() . "/MAJModeleUnitaire.tmp";
-        if(!$lock = fopen($lockName, 'c'))
+        if(!$lock = fopen($lockName, "c"))
         {
             throw new \Exception("Le verrou d'application ne peut pas être créé.");
         }
@@ -64,7 +66,7 @@
         $modelId = isset($input->modelId) ? $input->modelId : null;
         $typeNo = isset($input->typeNo) ? $input->typeNo : null;
         
-        GenerateUnitaryPrograms($modelId, $typeNo);
+        GenerateUnitaryPrograms($db, $modelId, $typeNo);
         
         // Retour au javascript
         $responseArray["status"] = "success";
@@ -104,7 +106,8 @@
     
     /**
      * Main unitary program generation function that creates a test that is used to subsequently make every unitary program
-     *
+     * 
+     * @param \FabplanConnection $db The database to fetch the parameters from
      * @param int $modelId The model ID for which unitary programs must be generated (null means all)
      * @param int $typeId The type ID for which unitary programs must be generated (null means all)
      *
@@ -112,10 +115,8 @@
      * @author Marc-Olivier Bazin-Maurice
      * @return
      */ 
-    function GenerateUnitaryPrograms(?int $modelId, ?int $typeNo) : void
+    function GenerateUnitaryPrograms(\FabplanConnection $db, ?int $modelId, ?int $typeNo) : void
     {
-        $modelTypeGenericsToUpdate = array();
-        $db = new \FabPlanConnection();
         try
         {
             $db->getConnection()->beginTransaction();
@@ -124,7 +125,7 @@
             $modelsToUpdate = null;
             if($modelId === null)
             {
-                $modelsToUpdate = (new \ModelController())->getModels();
+                $modelsToUpdate = (new \ModelController($db))->getModels();
             }
             else
             {
@@ -134,7 +135,7 @@
             $typesToUpdate = null;
             if($typeNo === null)
             {
-                $typesToUpdate = (new \TypeController())->getTypes();
+                $typesToUpdate = (new \TypeController($db))->getTypes();
             }
             else
             {
@@ -192,8 +193,7 @@
         $generic = $type->getGeneric();
         
         // Créer le fichier mpr.
-        $mpr = new \mprCutrite(__DIR__ . "/../../../lib/" . $generic->getFilename());
-        $mpr->extractMprBlocks();
+        $mpr = new \mprCutrite($_SERVER["DOCUMENT_ROOT"] . "/Planificateur/lib/" . $generic->getFilename());
         try 
         {
             $mpr->makeMprFromTest($test, $generic->getParametersAsKeyDescriptionPairs());

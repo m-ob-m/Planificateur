@@ -8,24 +8,37 @@
      * \brief 		Récupère les Job contenus dans un Batch
      * \details     Récupère les Job contenus dans un Batch
      */
-
-    require_once __DIR__ . '/../../../lib/config.php';	// Fichier de configuration
-    require_once __DIR__ . '/../../../lib/connect.php';	// Classe de connection à la base de données
-    require_once __DIR__ . '/../controller/batchController.php'; // Contrôleur d'un Batch
-    require_once __DIR__ . '/../../job/controller/jobController.php'; // Contrôleur d'un Batch
-
-    /* 
-     * No session required to open this page! Be careful concerning what you put here. 
-     * Advanced user account control might become available in a later release.
-     */
+    require_once $_SERVER["DOCUMENT_ROOT"] . "/Planificateur/lib/connect.php";
+    require_once $_SERVER["DOCUMENT_ROOT"] . "/Planificateur/sections/batch/controller/batchController.php";
+    require_once $_SERVER["DOCUMENT_ROOT"] . "/Planificateur/sections/job/controller/jobController.php";
     
     // Structure de retour vers javascript
     $responseArray = array("status" => null, "success" => array("data" => null), "failure" => array("message" => null));
 
+    // Initialize the session
+    session_start();
+                                                                            
+    // Check if the user is logged in, if not then redirect him to login page
+    if(!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true){
+        if(!empty($_SERVER["HTTP_X_REQUESTED_WITH"]) && strtolower($_SERVER["HTTP_X_REQUESTED_WITH"]) == "xmlhttprequest")
+        {
+            throw new \Exception("You are not logged in.");
+        }
+        else
+        {
+            header("location: /Planificateur/lib/account/logIn.php");
+        }
+        exit;
+    }
+
+    // Getting a connection to the database.
+    $db = new \FabPlanConnection();
+
+    // Closing the session to let other scripts use it.
+    session_write_close();
+
     try
-    {
-        $db = new FabPlanConnection();
-        
+    {        
         // Vérification des paramètres
         if(isset($_GET["name"]) && trim($_GET["name"]) !== "")
         {

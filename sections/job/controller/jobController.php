@@ -13,9 +13,7 @@
 /*
  * Includes
 */
-require_once __DIR__ . '/../../../lib/config.php';		// Fichier de configuration
-require_once __DIR__ . '/../../../lib/connect.php';	    // Classe de connection à la base de données
-require_once __DIR__ . '/../model/job.php';			// Classe d'une job
+require_once $_SERVER["DOCUMENT_ROOT"] . "/Planificateur/sections/job/model/job.php";
 
 class JobController
 {
@@ -24,13 +22,15 @@ class JobController
     /**
      * JobController constructor
      *
+     * @param \FabplanConnection $db A database
+     * 
      * @throws
      * @author Marc-Olivier Bazin-Maurice
      * @return \JobController This JobController
      */
-    function __construct()
+    function __construct(\FabplanConnection $db)
     {
-        $this->connect();
+        $this->_db = $db;
     }
     
     /**
@@ -40,11 +40,11 @@ class JobController
      *
      * @throws
      * @author Marc-Olivier Bazin-Maurice
-     * @return Job The Job that has this id (null if none)
+     * @return \Job The Job that has this id (null if none)
      */
     function getJob(int $id) : ?Job
     {
-        return \Job::withID($this->getDBConnection(), $id);
+        return \Job::withID($this->_db, $id);
     }
     
     /**
@@ -54,11 +54,11 @@ class JobController
      *
      * @throws
      * @author Marc-Olivier Bazin-Maurice
-     * @return Job The Job that has this name (null if none)
+     * @return \Job The Job that has this name (null if none)
      */
-    function getJobByName(string $name) : ?Job
+    function getJobByName(string $name) : ?\Job
     {
-        $stmt = $this->getDBConnection()->getConnection()->prepare("
+        $stmt = $this->_db->getConnection()->prepare("
             SELECT `j`.`id_job` AS `id` FROM `job` AS `j` 
             WHERE `j`.`numero` = :name;
         ");
@@ -67,7 +67,7 @@ class JobController
         
         if($row = $stmt->fetch())
         {
-            return \Job::withID($this->getDBConnection(), $row["id"]);
+            return \Job::withID($this->_db, $row["id"]);
         }
         else
         {
@@ -88,7 +88,7 @@ class JobController
      */
     function getJobs(int $offset = 0, int $quantity = 0, bool $ascending = true) : array
     {
-        $stmt = $this->getDBConnection()->getConnection()->prepare("
+        $stmt = $this->_db->getConnection()->prepare("
             SELECT `j`.`id`
             FROM `job` AS `j`
             ORDER BY `j`.`id_job` " . (($ascending === true) ? "ASC" : "DESC") .
@@ -102,35 +102,10 @@ class JobController
         $jobs = array();
         while($row = $stmt->fetch(\PDO::FETCH_ASSOC))
         {
-            array_push($jobs, \Job::withID($this->getDBConnection(), $row["id"]));
+            array_push($jobs, \Job::withID($this->_db, $row["id"]));
         }
         
         return $jobs;
-    }
-    
-    /**
-     * Get the connection to the database
-     *
-     * @throws
-     * @author Marc-Olivier Bazin-Maurice
-     * @return \FabplanConnection The connection to the database
-     */
-    function getDBConnection() : \FabPlanConnection
-    {
-        return $this->_db;
-    }
-    
-    /**
-     * Set the connection to the database
-     *
-     * @throws
-     * @author Marc-Olivier Bazin-Maurice
-     * @return JobController This JobController
-     */
-    function connect()
-    {
-        $this->_db = new \FabPlanConnection();
-        return $this;
     }
 }
 ?>

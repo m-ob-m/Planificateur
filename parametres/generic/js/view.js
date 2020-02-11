@@ -106,7 +106,7 @@ function saveGeneric(id, filename, description, heightParameter, copyParametersF
 				"heightParameter": heightParameter,
 				"copyParametersFrom": ((copyParametersFrom !== "") ? copyParametersFrom : null)
 			},
-			"dataType": 'json',
+			"dataType": "json",
 			"async": true,
 			"cache": false,
 			"onSuccess": function(response){

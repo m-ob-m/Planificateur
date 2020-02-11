@@ -13,10 +13,7 @@
 /*
  * Includes
  */
-require_once __DIR__ . '/../../../lib/config.php';	// Fichier de configuration
-require_once __DIR__ . '/../../../lib/connect.php';	// Classe de connection à la base de données
-
-require_once __DIR__ . '/../model/test.php';	// Classe d'un test
+require_once $_SERVER["DOCUMENT_ROOT"] . "/Planificateur/parametres/test/model/test.php";
 
 class TestController 
 {
@@ -24,14 +21,15 @@ class TestController
     
     /**
      * TestController constructor
+     * @param \FabplanConnection $db A database
      *
      * @throws
      * @author Marc-Olivier Bazin-Maurice
-     * @return TestController This TestController
+     * @return \TestController This TestController
      */ 
-    function __construct()
+    function __construct($db)
     {
-        $this->connect();
+        $this->_db = $db;
     }   
     
     /**
@@ -45,7 +43,7 @@ class TestController
      */ 
     function getTest(?int $id) : ?Test
     {
-        return Test::withID($this->getDBConnection(), $id);
+        return \Test::withID($this->_db, $id);
     }
     
     /**
@@ -57,25 +55,25 @@ class TestController
      *
      * @throws
      * @author Marc-Olivier Bazin-Maurice
-     * @return Test array The array of Test objects requested
+     * @return \Test array The array of Test objects requested
      */ 
     function getTests(int $offset = 0, int $quantity = 0, bool $ascending = true) : array
     {
-        $stmt = $this->getDBConnection()->getConnection()->prepare("
+        $stmt = $this->_db->getConnection()->prepare("
             SELECT `t`.`id` 
             FROM `test` AS `t` 
             ORDER BY `t`.`id` " . ($ascending ? "ASC" : "DESC") . " " . 
             (($quantity === 0) ? "" : " LIMIT :quantity OFFSET :offset") . " " . 
             "FOR SHARE;"
         );
-        $stmt->bindValue(":quantity", $quantity, PDO::PARAM_INT);
-        $stmt->bindValue(":offset", $offset, PDO::PARAM_INT);
+        $stmt->bindValue(":quantity", $quantity, \PDO::PARAM_INT);
+        $stmt->bindValue(":offset", $offset, \PDO::PARAM_INT);
         $stmt->execute();
         
         $tests = array();
-        while($row = $stmt->fetch(PDO::FETCH_ASSOC))
+        while($row = $stmt->fetch(\PDO::FETCH_ASSOC))
         {
-            array_push($tests, Test::withID($this->getDBConnection(), $row["id"]));
+            array_push($tests, \Test::withID($this->_db, $row["id"]));
         }
         
         return $tests;
@@ -90,53 +88,28 @@ class TestController
      *
      * @throws
      * @author Marc-Olivier Bazin-Maurice
-     * @return Test array The array of Test objects requested
+     * @return \Test array The array of Test objects requested
      */ 
-    function getTestsBetweenTwoDates($startDate, $endDate, $ascending = true)
+    function getTestsBetweenTwoDates(string $startDate, string $endDate, bool $ascending = true)
     {
-        $stmt = $this->getDBConnection()->getConnection()->prepare("
+        $stmt = $this->_db->getConnection()->prepare("
             SELECT `t`.`id`
             FROM `test` AS `t`
             WHERE `t`.`estampille` >= :startDate AND `t`.`estampille` <= :endDate
             ORDER BY `t`.`estampille` " . ($ascending ? "ASC" : "DESC") . " " . 
             "FOR SHARE;"
         );
-        $stmt->bindValue(":startDate", $startDate, PDO::PARAM_STR);
-        $stmt->bindValue(":endDate", $endDate, PDO::PARAM_STR);
+        $stmt->bindValue(":startDate", $startDate, \PDO::PARAM_STR);
+        $stmt->bindValue(":endDate", $endDate, \PDO::PARAM_STR);
         $stmt->execute();
         
         $tests = array();
-        while($row = $stmt->fetch(PDO::FETCH_ASSOC))
+        while($row = $stmt->fetch(\PDO::FETCH_ASSOC))
         {
-            array_push($tests, Test::withID($this->getDBConnection(), $row["id"]));
+            array_push($tests, \Test::withID($this->_db, $row["id"]));
         }
         
         return $tests;
-    }
-    
-    /**
-     * Get the connection to the database
-     *
-     * @throws
-     * @author Marc-Olivier Bazin-Maurice
-     * @return FabplanConnection The connection to the database
-     */ 
-    function getDBConnection() : FabPlanConnection
-    {
-        return $this->_db;
-    }
-    
-    /**
-     * Set the connection to the database
-     *
-     * @throws
-     * @author Marc-Olivier Bazin-Maurice
-     * @return TestController This TestController
-     */ 
-    function connect()
-    {
-        $this->_db = new FabPlanConnection();
-        return $this;
     }
 }
 
