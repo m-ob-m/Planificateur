@@ -11,8 +11,7 @@
     else
     {
         // Include config file
-        require_once __DIR__ . "/../config.php";
-        require_once __DIR__ . "/../connect.php";
+        require_once $_SERVER["DOCUMENT_ROOT"] . "/Planificateur/lib/connect.php";
         
         // Define variables and initialize with empty values
         $username = $password = "";
@@ -47,100 +46,99 @@
             // Validate credentials
             if(empty($username_err) && empty($password_err))
             {
-                // Prepare a select statement
-                $sql = "SELECT id, username, password FROM users WHERE username = :username";
-                $pdo = (new \FabplanConnection())->getConnection();
-                if($stmt = $pdo->prepare($sql))
+                // Open a PDO connection to Fabplan with the authentication user
+                $pdo = null;
+                try{
+                    $pdo = (new \FabplanConnection(DATABASE_AUTHENTICATION_USER_NAME))->getConnection();
+                }
+                catch(\Exception $e)
                 {
-                    // Bind variables to the prepared statement as parameters
-                    $stmt->bindParam(":username", $param_username, PDO::PARAM_STR);
-                    
-                    // Set parameters
-                    $param_username = trim($_POST["username"]);
-                    
-                    // Attempt to execute the prepared statement
-                    if($stmt->execute())
+                    echo $e->getMessage();
+                }
+
+                if($pdo !== null)
+                {
+                    // Prepare a select statement
+                    $stmt = $pdo->prepare("
+                        SELECT `u`.`id` AS `id`, `u`.`password` AS `password`, `u`.`logInRedirect` AS `Redirection` 
+                        FROM `users` AS `u` 
+                        WHERE `u`.`username` = :username;
+                    ");
+                    if($stmt)
                     {
-                        // Check if username exists, if yes then verify password
-                        if($stmt->rowCount() == 1)
+                        // Bind variables to the prepared statement as parameters
+                        $stmt->bindParam(":username", $username, \PDO::PARAM_STR);
+                        
+                        // Attempt to execute the prepared statement
+                        if($stmt->execute())
                         {
-                            if($row = $stmt->fetch())
+    
+                            // Check if username exists, if yes then verify password
+                            if($stmt->rowCount() == 1)
                             {
-                                $id = $row["id"];
-                                $username = $row["username"];
-                                $hashed_password = $row["password"];
-                                if(password_verify($password, $hashed_password))
+                                if($row = $stmt->fetch())
                                 {
-                                    // Store data in session variables
-                                    $_SESSION["loggedin"] = true;
-                                    $_SESSION["id"] = $id;
-                                    $_SESSION["username"] = $username;                            
-                                    
-                                    // Redirect user to welcome page
-                                    header("location: /Planificateur/index.php");
-                                } 
-                                elseif($hashed_password === "" || $hashed_password === null)
-                                {
-                                    // Prepare an update statement
-                                    $sql = "UPDATE users SET password = :password WHERE id = :id";
-                                    if($stmt1 = $pdo->prepare($sql))
+                                    $id = $row["id"];
+    
+                                    if(password_verify($password, $row["password"]))
                                     {
-                                        // Bind variables to the prepared statement as parameters
-                                        $stmt1->bindParam(":password", $param_password, PDO::PARAM_STR);
-                                        $stmt1->bindParam(":id", $param_id, PDO::PARAM_INT);
+                                        // Store data in session variables
+                                        $_SESSION["loggedin"] = true;
+                                        $_SESSION["id"] = $id;
+                                        $_SESSION["username"] = $username;
                                         
-                                        // Set parameters
-                                        $param_password = password_hash($password, PASSWORD_DEFAULT);
-                                        $param_id = $id;
-                                        
-                                        // Attempt to execute the prepared statement
-                                        if($stmt1->execute())
+                                        // Redirect user to welcome page
+                                        header("location: {$row["Redirection"]}");
+                                    } 
+                                    elseif($row["password"] === "" || $row["password"] === null)
+                                    {
+                                        // Prepare an update statement
+                                        if($stmt1 = $pdo->prepare("UPDATE `users` AS `u` SET `u`.`password` = :password WHERE `u`.`id` = :id;"))
                                         {
-                                            // Store data in session variables
-                                            $_SESSION["loggedin"] = true;
-                                            $_SESSION["id"] = $id;
-                                            $_SESSION["username"] = $username;                            
+                                            // Bind variables to the prepared statement as parameters
+                                            $stmt1->bindParam(":password", password_hash($password, PASSWORD_DEFAULT), \PDO::PARAM_STR);
+                                            $stmt1->bindParam(":id", $id, \PDO::PARAM_INT);
                                             
-                                            // Redirect user to welcome page
-                                            header("location: /Planificateur/index.php");
-                                        } 
-                                        else
-                                        {
-                                            echo "Oops! Something went wrong. Please try again later.";
+                                            // Attempt to execute the prepared statement
+                                            if($stmt1->execute())
+                                            {
+                                                // Store data in session variables
+                                                $_SESSION["loggedin"] = true;
+                                                $_SESSION["id"] = $id;
+                                                $_SESSION["username"] = $username;
+                                                
+                                                // Redirect user to welcome page
+                                                header("location: {$row["Redirection"]}");
+                                            } 
+                                            else
+                                            {
+                                                echo "Oops! Something went wrong. Please try again later.";
+                                            }
                                         }
                                     }
-                                    
-                                    // Close statement
-                                    unset($stmt1);
+                                    else
+                                    {
+                                        // Display an error message if password is not valid
+                                        $password_err = "The password you entered was not valid.";
+                                    }
                                 }
-                                else
-                                {
-                                    // Display an error message if password is not valid
-                                    $password_err = "The password you entered was not valid.";
-                                }
+                            } 
+                            else
+                            {
+                                // Display an error message if username doesn't exist
+                                $username_err = "No account found with that username.";
                             }
                         } 
                         else
                         {
-                            // Display an error message if username doesn't exist
-                            $username_err = "No account found with that username.";
+                            echo "Oops! Something went wrong. Please try again later.";
                         }
-                    } 
+                    }
                     else
                     {
                         echo "Oops! Something went wrong. Please try again later.";
                     }
                 }
-                else
-                {
-                    echo "Oops! Something went wrong. Please try again later.";
-                }
-                
-                // Close statement
-                unset($stmt);
-
-                // Close connection
-                unset($pdo);
             }
         }
     }
@@ -154,7 +152,7 @@
 <head>
     <meta charset="UTF-8">
     <title>Login</title>
-    <link rel="stylesheet" href="css/bootstrap.css">
+    <link rel="stylesheet" href="/Planificateur/lib/account/css/bootstrap.css">
     <style type="text/css">
         body{ font: 14px sans-serif; }
         .wrapper{ width: 350px; padding: 20px; }
@@ -165,12 +163,12 @@
         <h2>Login</h2>
         <p>Please fill in your credentials to login.</p>
         <form action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]); ?>" method="post">
-            <div class="form-group <?php echo (!empty($username_err)) ? 'has-error' : ''; ?>">
+            <div class="form-group <?php echo (!empty($username_err)) ? "has-error" : ""; ?>">
                 <label>Username</label>
                 <input type="text" name="username" class="form-control" value="<?php echo $username; ?>">
                 <span class="help-block"><?php echo $username_err; ?></span>
             </div>    
-            <div class="form-group <?php echo (!empty($password_err)) ? 'has-error' : ''; ?>">
+            <div class="form-group <?php echo (!empty($password_err)) ? "has-error" : ""; ?>">
                 <label>Password</label>
                 <input type="password" name="password" class="form-control">
                 <span class="help-block"><?php echo $password_err; ?></span>

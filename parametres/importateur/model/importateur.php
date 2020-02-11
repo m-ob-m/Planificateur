@@ -75,7 +75,7 @@
                 UPDATE `importateur`
                 SET `derniere_date` = :lastUpdateTimestamp;
             ");
-            $stmt->bindValue(':lastUpdateTimestamp', $this->getLastUpdateTimestamp(), PDO::PARAM_INT);
+            $stmt->bindValue(":lastUpdateTimestamp", $this->getLastUpdateTimestamp(), PDO::PARAM_INT);
             $success = $stmt->execute();
             
             // Récupération de l'estampille à jour

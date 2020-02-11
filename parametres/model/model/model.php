@@ -1,5 +1,5 @@
 <?php
-require_once __DIR__ . "/../../varmodtype/model/modelTypeParameter.php";
+require_once $_SERVER["DOCUMENT_ROOT"] .  "/Planificateur/parametres/varmodtype/model/modelTypeParameter.php";
 
 /**
  * \name		model.php
@@ -11,7 +11,7 @@ require_once __DIR__ . "/../../varmodtype/model/modelTypeParameter.php";
 * \details 		Modèle de la table door_model
 */
 
-class Model implements JsonSerializable
+class Model implements \JsonSerializable
 {
 
 	private $_id;
@@ -39,7 +39,7 @@ class Model implements JsonSerializable
 	/**
 	 * Model constructor using ID of existing record
 	 *
-	 * @param FabPlanConnection $db The database in which the record exists
+	 * @param \FabPlanConnection $db The database in which the record exists
 	 * @param int $id The id of the record in the database
 	 * @param int $dbCLRT The database connection locking read type to use
 	 *
@@ -55,7 +55,7 @@ class Model implements JsonSerializable
             WHERE `dm`.`id_door_model` = :id " . 
 	        (new \MYSQLDatabaseLockingReadTypes($databaseConnectionLockingReadType))->toLockingReadString() . ";"
         );
-	    $stmt->bindValue(':id', $id, PDO::PARAM_INT);
+	    $stmt->bindValue(":id", $id, PDO::PARAM_INT);
 	    $stmt->execute();
 	    
 	    if ($row = $stmt->fetch())	// Récupération de l'instance de Model
@@ -90,7 +90,7 @@ class Model implements JsonSerializable
             WHERE `dm`.`description_model` = :description " . 
 	        (new \MYSQLDatabaseLockingReadTypes($dbCLRT))->toLockingReadString() . ";"
         );
-	    $stmt->bindValue(':description', $description, PDO::PARAM_STR);
+	    $stmt->bindValue(":description", $description, PDO::PARAM_STR);
 	    $stmt->execute();
 	    
 	    if ($row = $stmt->fetch())	// Récupération de l'instance de Model
@@ -109,11 +109,11 @@ class Model implements JsonSerializable
 	/**
 	 * Save the Model object in the database
 	 *
-	 * @param FabPlanConnection $db The database in which the record must be saved
+	 * @param \FabPlanConnection $db The database in which the record must be saved
 	 *
 	 * @throws
 	 * @author Marc-Olivier Bazin-Maurice
-	 * @return Model This Model (for method chaining)
+	 * @return \Model This Model (for method chaining)
 	 */
 	public function save(FabPlanConnection $db) : Model
 	{   
@@ -152,11 +152,11 @@ class Model implements JsonSerializable
 	/**
 	 * Insert the Model object in the database
 	 *
-	 * @param FabPlanConnection $db The database in which the record must be inserted
+	 * @param \FabPlanConnection $db The database in which the record must be inserted
 	 *
 	 * @throws
 	 * @author Marc-Olivier Bazin-Maurice
-	 * @return Model This Model (for method chaining)
+	 * @return \Model This Model (for method chaining)
 	 */
 	private function insert(FabPlanConnection $db) : Model
 	{
@@ -165,8 +165,8 @@ class Model implements JsonSerializable
             INSERT INTO `door_model`(`id_door_model`, `description_model`)
             VALUES (:id, :description);
         ");
-	    $stmt->bindValue(":id", $this->getId(), PDO::PARAM_INT);
-	    $stmt->bindValue(":description", $this->getDescription(), PDO::PARAM_STR);
+	    $stmt->bindValue(":id", $this->getId(), \PDO::PARAM_INT);
+	    $stmt->bindValue(":description", $this->getDescription(), \PDO::PARAM_STR);
 	    $stmt->execute();
 	    
 	    $this->setId(intval($db->getConnection()->lastInsertId()));
@@ -176,20 +176,20 @@ class Model implements JsonSerializable
 	/**
 	 * Update the Model object in the database
 	 *
-	 * @param FabPlanConnection $db The database in which the record must be updated
+	 * @param \FabPlanConnection $db The database in which the record must be updated
 	 *
 	 * @throws
 	 * @author Marc-Olivier Bazin-Maurice
-	 * @return Model This Model (for method chaining)
+	 * @return \Model This Model (for method chaining)
 	 */
-	private function update(FabPlanConnection $db) : Model
+	private function update(\FabPlanConnection $db) : Model
 	{
 	    // Mise à jour d'un Model
 	    $stmt = $db->getConnection()->prepare("
             UPDATE `door_model` SET `description_model` = :description WHERE `id_door_model` = :id;
         ");
-	    $stmt->bindValue(':id', $this->getId(), PDO::PARAM_INT);
-	    $stmt->bindValue(":description", $this->getDescription(), PDO::PARAM_STR);
+	    $stmt->bindValue(":id", $this->getId(), \PDO::PARAM_INT);
+	    $stmt->bindValue(":description", $this->getDescription(), \PDO::PARAM_STR);
 	    $stmt->execute();
 	    return $this;
 	}
@@ -197,13 +197,13 @@ class Model implements JsonSerializable
 	/**
 	 * Delete the Model object from the database
 	 *
-	 * @param FabPlanConnection $db The database from which the record must be deleted
+	 * @param \FabPlanConnection $db The database from which the record must be deleted
 	 *
 	 * @throws
 	 * @author Marc-Olivier Bazin-Maurice
-	 * @return Model This Model (for method chaining)
+	 * @return \Model This Model (for method chaining)
 	 */
-	public function delete(FabPlanConnection $db) : Model
+	public function delete(\FabPlanConnection $db) : Model
 	{
 	    if($this->getDatabaseConnectionLockingReadType() !== \MYSQLDatabaseLockingReadTypes::FOR_UPDATE)
 	    {
@@ -212,11 +212,11 @@ class Model implements JsonSerializable
 	    else
 	    {
     	    $stmt = $db->getConnection()->prepare("DELETE FROM `door_model_data` WHERE `fkDoorModel` = :modelId;");
-    	    $stmt->bindValue(':modelId', $this->getId(), PDO::PARAM_INT);
+    	    $stmt->bindValue(":modelId", $this->getId(), \PDO::PARAM_INT);
     	    $stmt->execute();
     	    
     	    $stmt = $db->getConnection()->prepare("DELETE FROM `door_model` WHERE `id_door_model` = :id;");
-    	    $stmt->bindValue(':id', $this->getId(), PDO::PARAM_INT);
+    	    $stmt->bindValue(":id", $this->getId(), \PDO::PARAM_INT);
     	    $stmt->execute();
 	    }
 	    
@@ -237,7 +237,7 @@ class Model implements JsonSerializable
 	    $stmt= $db->getConnection()->prepare("
             SELECT `dm`.`timestamp` FROM `door_model` AS `dm` WHERE `dm`.`id_door_model` = :id;
         ");
-	    $stmt->bindValue(':id', $this->getId(), PDO::PARAM_INT);
+	    $stmt->bindValue(":id", $this->getId(), \PDO::PARAM_INT);
 	    $stmt->execute();
 	    
 	    if($row = $stmt->fetch())
@@ -294,9 +294,9 @@ class Model implements JsonSerializable
 	 *
 	 * @throws
 	 * @author Marc-Olivier Bazin-Maurice
-	 * @return array[ModelTypeParameter] The array of ModelTypeParameter objects for this Model
+	 * @return \ModelTypeParameter[] The array of ModelTypeParameter objects for this Model
 	 */
-	public function getModelTypeParametersForAllTypes(FabplanConnection $db, $dbCLRT = 0) : ?array
+	public function getModelTypeParametersForAllTypes(\FabplanConnection $db, $dbCLRT = 0) : ?array
 	{
 	    $stmt = $db->getConnection()->prepare(
             "SELECT `dmd`.`fkDoorType` AS `typeNo`, `dmd`.`paramKey` AS `parameterKey`, `dmd`.`paramValue` AS `parameterValue`
@@ -304,7 +304,7 @@ class Model implements JsonSerializable
             WHERE `dmd`.`fkDoorModel` = :modelId " . 
 	        (new \MYSQLDatabaseLockingReadTypes($dbCLRT))->toLockingReadString() . ";"
         );
-	    $stmt->bindValue(":modelId", $this->getId(), PDO::PARAM_INT);
+	    $stmt->bindValue(":modelId", $this->getId(), \PDO::PARAM_INT);
 	    $stmt->execute();
 	    
 	    $modelTypeParameters = array();
@@ -312,7 +312,7 @@ class Model implements JsonSerializable
 	    {
 	        array_push(
 	           $modelTypeParameters, 
-	            new ModelTypeParameter($row["parameterKey"], $row["parameterValue"], $this->getId(), $row["typeNo"])
+	            new \ModelTypeParameter($row["parameterKey"], $row["parameterValue"], $this->getId(), $row["typeNo"])
 	        );
 	    }
 	    
@@ -326,7 +326,7 @@ class Model implements JsonSerializable
 	 *
 	 * @throws
 	 * @author Marc-Olivier Bazin-Maurice
-	 * @return Model This Model
+	 * @return \Model This Model
 	 */
 	public function setId(?int $id) :\Model
 	{
@@ -341,7 +341,7 @@ class Model implements JsonSerializable
 	 *
 	 * @throws
 	 * @author Marc-Olivier Bazin-Maurice
-	 * @return Model This Model
+	 * @return \Model This Model
 	 */
 	public function setDescription(?string $description) :\Model
 	{
@@ -356,7 +356,7 @@ class Model implements JsonSerializable
 	 *
 	 * @throws
 	 * @author Marc-Olivier Bazin-Maurice
-	 * @return Model This Model
+	 * @return \Model This Model
 	 */
 	public function setTimestamp(?string $timestamp) :\Model
 	{
@@ -369,7 +369,7 @@ class Model implements JsonSerializable
 	 *
 	 * @throws
 	 * @author Marc-Olivier Bazin-Maurice
-	 * @return array This object in a JSON compatible format
+	 * @return [] This object in a JSON compatible format
 	 */
 	public function jsonSerialize()
 	{

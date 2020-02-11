@@ -2,10 +2,11 @@
 
 /**
  * Redirects to the page of the specified batch
- * @param {int} batchId The id of the batch
+ * @param {int|string} [batchId = null] The id of the batch
  */
-async function goToBatch(batchId)
+async function goToBatch(batchId = null)
 {
+	batchId = (batchId === null) ? document.getElementById("batch_id").value : batchId;
 	if(hasChanged())
 	{
 		if(await askConfirmation("Quitter cette job?", "Les modifications non sauvegardés seront perdues."))

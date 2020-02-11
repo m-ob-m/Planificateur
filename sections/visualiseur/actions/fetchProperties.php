@@ -15,18 +15,18 @@
     try
     {
         // INCLUDE
-        require_once __DIR__ . "/../../../lib/numberFunctions/numberFunctions.php";
-        require_once __DIR__ . "/../../job/controller/jobController.php";
-        require_once __DIR__ . "/../../../parametres/type/controller/typeController.php";
-        require_once __DIR__ . "/../../../parametres/model/controller/modelController.php";
-        require_once __DIR__ . "/../../../parametres/generic/controller/genericController.php";
+        require_once $_SERVER["DOCUMENT_ROOT"] . "/Planificateur/lib/numberFunctions/numberFunctions.php";
+        require_once $_SERVER["DOCUMENT_ROOT"] . "/Planificateur/sections/job/controller/jobController.php";
+        require_once $_SERVER["DOCUMENT_ROOT"] . "/Planificateur/parametres/type/controller/typeController.php";
+        require_once $_SERVER["DOCUMENT_ROOT"] . "/Planificateur/parametres/model/controller/modelController.php";
+        require_once $_SERVER["DOCUMENT_ROOT"] . "/Planificateur/parametres/generic/controller/genericController.php";
 
         // Initialize the session
         session_start();
                                                                             
         // Check if the user is logged in, if not then redirect him to login page
         if(!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true){
-            if(!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest')
+            if(!empty($_SERVER["HTTP_X_REQUESTED_WITH"]) && strtolower($_SERVER["HTTP_X_REQUESTED_WITH"]) == "xmlhttprequest")
             {
                 throw new \Exception("You are not logged in.");
             }
@@ -37,13 +37,15 @@
             exit;
         }
 
+        // Getting a connection to the database.
+        $db = new \FabPlanConnection();
+
         // Closing the session to let other scripts use it.
         session_write_close();
 
         // Vérification des paramètres
         $jobTypePorteId = $_GET["jobTypePorteId"] ?? null;
         
-        $db = new \FabPlanConnection();
         try
         {
             $db->getConnection()->beginTransaction();

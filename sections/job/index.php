@@ -15,16 +15,16 @@
 	*/
 
 	/* INCLUDE */
-	require_once __DIR__ . "/controller/jobController.php";		// Classe contrôleur de la classe Job
-	require_once __DIR__ . "/../../parametres/model/controller/modelController.php";		// Classe contrôleur de la classe Modèle
-	require_once __DIR__ . "/../../parametres/type/controller/typeController.php";		// Classe contrôleur de la classe Type
+	require_once $_SERVER["DOCUMENT_ROOT"] . "/Planificateur/sections/job/controller/jobController.php";
+	require_once $_SERVER["DOCUMENT_ROOT"] . "/Planificateur/parametres/model/controller/modelController.php";
+	require_once $_SERVER["DOCUMENT_ROOT"] . "/Planificateur/parametres/type/controller/typeController.php";
 
     // Initialize the session
 	session_start();
                                                                         
 	// Check if the user is logged in, if not then redirect him to login page
 	if(!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true){
-		if(!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest')
+		if(!empty($_SERVER["HTTP_X_REQUESTED_WITH"]) && strtolower($_SERVER["HTTP_X_REQUESTED_WITH"]) == "xmlhttprequest")
 		{
 			throw new \Exception("You are not logged in.");
 		}
@@ -35,10 +35,12 @@
 		exit;
 	}
 
+	// Getting a connection to the database.
+	$db = new \FabPlanConnection();
+
 	// Closing the session to let other scripts use it.
 	session_write_close();
     
-	$db = new \FabPlanConnection();
 	$job = null;
 	try
 	{
@@ -46,8 +48,8 @@
 		if(isset($_GET["jobId"]))
 		{
 			$job = \Job::withID($db, $_GET["jobId"]);
-			$models = (new \ModelController())->getModels();
-			$types = (new TypeController())->getTypes();
+			$models = (new \ModelController($db))->getModels();
+			$types = (new \TypeController($db))->getTypes();
 		}
 		else
 		{
@@ -74,11 +76,11 @@
 		<title>Fabridor - Validation</title>
 		<meta charset="utf-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1" />
-		<link rel="stylesheet" href="../../assets/css/responsive.css" />
-		<link rel="stylesheet" href="../../assets/css/fabridor.css" />
-		<link rel="stylesheet" href="../../assets/css/parametersTable.css"/>
-		<link rel="stylesheet" href="../../assets/css/imageButton.css">
-		<link rel="stylesheet" href="../../assets/css/loader.css" />
+		<link rel="stylesheet" href="/Planificateur/assets/css/responsive.css" />
+		<link rel="stylesheet" href="/Planificateur/assets/css/fabridor.css" />
+		<link rel="stylesheet" href="/Planificateur/assets/css/parametersTable.css"/>
+		<link rel="stylesheet" href="/Planificateur/assets/css/imageButton.css">
+		<link rel="stylesheet" href="/Planificateur/assets/css/loader.css" />
 	</head>
 	<body class="homepage">
     	<div id="page-wrapper">
@@ -99,7 +101,7 @@
 						</div>
 					</div>
 					
-    				<div style="float:right;">
+    				<div style="float: right;">
     					<!-- Nav -->
 						<nav id="nav" style="display: block;">
 							<ul>
@@ -109,8 +111,8 @@
 									Sauvegarder</a>
 								</li>
 								<li>
-									<a href="javascript: void(0);" onclick="goToBatch(document.getElementById('batch_id').value);" 
-										class="imageButton">
+									<a href="javascript: void(0);" class="imageButton"
+										onclick="goToBatch();">
 										<img src="../../images/exit.png">
 									Sortir</a>
 								</li>
@@ -197,22 +199,12 @@
 		</div>
 		
 		<!--  Fenêtre modale pour changement de bloc -->
-		<div id="partOperationsModal" class="modal" onclick='this.style.display = "none";' >
-			<div class="modal-content" style='color:#FF0000;'>
+		<div id="partOperationsModal" class="modal">
+			<div class="modal-content" style="color:#FF0000;">
 				<h4>Déplacer vers un autre bloc</h4>
 				<div id="jobTypeBlocksList"></div>
 				<h1>Cliquer sur cette fenêtre pour la fermer</h1>
 			</div>
-		</div>
-		
-		<!--  Fenêtre modale pour messages d'erreur -->
-		<div id="errMsgModal" class="modal" onclick='this.style.display = "none";' >
-			<div id="errMsg" class="modal-content" style='color:#FF0000;'></div>
-		</div>
-		
-		<!--  Fenêtre modale pour messages de validation -->
-		<div id="validationMsgModal" class="modal" onclick='this.style.display = "none";' >
-			<div id="validationMsg" class="modal-content" style='color:#FF0000;'></div>
 		</div>
 		
 		<!--  Fenêtre modale pour chargement -->
@@ -221,18 +213,18 @@
 		</div>	
 	
 		<!-- Scripts -->
-		<script type="text/javascript" src="../../assets/js/ajax.js"></script>
-		<script type="text/javascript" src="../../assets/js/docReady.js"></script>
-		<script type="text/javascript" src="../../assets/js/moment.min.js"></script>
-		<script type="text/javascript" src="../../assets/js/moment-timezone.js"></script>
-		<script type="text/javascript" src="../../js/main.js"></script>
-		<script type="text/javascript" src="../../js/toolbox.js"></script>
-		<script type="text/javascript" src="js/index.js"></script>
-		<script type="text/javascript" src="js/job.js"></script>
-		<script type="text/javascript" src="js/jobTypeBlock.js"></script>
-		<script type="text/javascript" src="js/jobTypePartRow.js"></script>
-		<script type="text/javascript" src="js/jobTypeParameterRow.js"></script>
-		<script type="text/javascript" src="js/main.js"></script>
-		<script type="text/javascript" src="js/parameterEditor.js"></script>
+		<script type="text/javascript" src="/Planificateur/assets/js/ajax.js"></script>
+		<script type="text/javascript" src="/Planificateur/assets/js/docReady.js"></script>
+		<script type="text/javascript" src="/Planificateur/assets/js/moment.min.js"></script>
+		<script type="text/javascript" src="/Planificateur/assets/js/moment-timezone.js"></script>
+		<script type="text/javascript" src="/Planificateur/js/main.js"></script>
+		<script type="text/javascript" src="/Planificateur/js/toolbox.js"></script>
+		<script type="text/javascript" src="/Planificateur/sections/job/js/index.js"></script>
+		<script type="text/javascript" src="/Planificateur/sections/job/js/job.js"></script>
+		<script type="text/javascript" src="/Planificateur/sections/job/js/jobTypeBlock.js"></script>
+		<script type="text/javascript" src="/Planificateur/sections/job/js/jobTypePartRow.js"></script>
+		<script type="text/javascript" src="/Planificateur/sections/job/js/jobTypeParameterRow.js"></script>
+		<script type="text/javascript" src="/Planificateur/sections/job/js/main.js"></script>
+		<script type="text/javascript" src="/Planificateur/sections/job/js/parameterEditor.js"></script>
 	</body>
 </html>

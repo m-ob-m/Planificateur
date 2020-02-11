@@ -14,15 +14,15 @@
     
     try
     {
-        require_once __DIR__ . "/../../../lib/mpr/mprmerge/MprMerge.php";
-        require_once __DIR__ . "/../../../lib/fileFunctions/fileFunctions.php";
+        require_once $_SERVER["DOCUMENT_ROOT"] . "/Planificateur/lib/mpr/mprmerge/MprMerge.php";
+        require_once $_SERVER["DOCUMENT_ROOT"] . "/Planificateur/lib/fileFunctions/fileFunctions.php";
       
         // Initialize the session
         session_start();
                                                        
         // Check if the user is logged in, if not then redirect him to login page
         if(!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true){
-            if(!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest')
+            if(!empty($_SERVER["HTTP_X_REQUESTED_WITH"]) && strtolower($_SERVER["HTTP_X_REQUESTED_WITH"]) == "xmlhttprequest")
             {
                 throw new \Exception("You are not logged in.");
             }

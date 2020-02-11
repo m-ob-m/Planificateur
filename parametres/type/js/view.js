@@ -117,7 +117,7 @@ function saveType(id, importNo, description, genericId, copyParametersFrom)
 			"genericId": (genericId !== "") ? genericId : null, 
 			"copyParametersFrom": copyParametersFrom
 			},
-			"dataType": 'json',
+			"dataType": "json",
 			"async": true,
 			"cache": false,
 			"onSuccess": function(response){

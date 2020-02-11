@@ -15,14 +15,14 @@
     try
     {
         // INCLUDE
-        require_once __DIR__ . "/../../job/controller/jobController.php";
+        require_once $_SERVER["DOCUMENT_ROOT"] . "/Planificateur/sections/job/controller/jobController.php";
 
         // Initialize the session
         session_start();
                                                                             
         // Check if the user is logged in, if not then redirect him to login page
         if(!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true){
-            if(!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest')
+            if(!empty($_SERVER["HTTP_X_REQUESTED_WITH"]) && strtolower($_SERVER["HTTP_X_REQUESTED_WITH"]) == "xmlhttprequest")
             {
                 throw new \Exception("You are not logged in.");
             }
@@ -33,13 +33,15 @@
             exit;
         }
 
+        // Getting a connection to the database.
+        $db = new \FabPlanConnection();
+        
         // Closing the session to let other scripts use it.
         session_write_close();
 
         // Vérification des paramètres
         $jobTypePorteId = $_GET["jobTypePorteId"] ?? null;
         
-        $db = new \FabPlanConnection();
         try
         {
             $db->getConnection()->beginTransaction();
@@ -72,7 +74,7 @@
                 throw new \Exception("Impossible d'ouvrir le fichier source {$programName}.");
             }
             
-            $destinationFileHandle = fopen(__DIR__ . "/../temp/{$programName}", "wb");
+            $destinationFileHandle = fopen($_SERVER["DOCUMENT_ROOT"] . "/Planificateur/sections/visualiseur/temp/{$programName}", "wb");
             if(!$destinationFileHandle)
             {
                 throw new \Exception("Impossible de créer le fichier de destination {$programName}.");

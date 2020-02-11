@@ -18,34 +18,33 @@ docReady(async function(){
 		endDateInput.value = endDate.format(getExpectedMomentFormat());
 	});
 	
-	await initializeFields();
-	
 	document.getElementById("batchName").addEventListener("keyup", function(key){
-		if(key.keyCode === 13){
-			document.getElementById("jobNumber").focus();
-		}
+		(key.keyCode === 13) ? document.getElementById("jobNumber").focus() : null;
 	});
 
 	document.getElementById("jobNumber").addEventListener("keyup", function(key){
-		if(key.keyCode === 13){
-			document.getElementById("addJobButton").click();
-		}
+		(key.keyCode === 13) ? document.getElementById("addJobButton").click() : null;
 	});
 
 	document.getElementById("batchName").addEventListener("change", () => {hasChanged(true);});
 	document.getElementById("startDate").addEventListener("change", () => {hasChanged(true);});
 	document.getElementById("endDate").addEventListener("change", () => {hasChanged(true);});
 	document.getElementById("fullDay").addEventListener("change", () => {hasChanged(true);});
-	document.getElementById("material").addEventListener("change", () => {hasChanged(true);});
+	document.getElementById("material").addEventListener("change", () => {
+		updatePannelsList();
+		hasChanged(true);
+	});
 	document.getElementById("boardSize").addEventListener("change", () => {hasChanged(true);});
 	document.getElementById("status").addEventListener("change", () => {hasChanged(true);});
+	document.getElementById("mprStatus").addEventListener("change", () => {hasChanged(true);});
+	document.getElementById("comments").addEventListener("change", () => {hasChanged(true);});
 
 	// When the status of the Batch changes, the page must reload.
 	window.setInterval(
 		async function(){
-			let noError = ["", "none"].includes(document.getElementById("errMsgModal").style.display);
-			let noValidation = ["", "none"].includes(document.getElementById("validationMsgModal").style.display);
-			let noDownload = ["", "none"].includes(document.getElementById("downloadMsgModal").style.display);
+			let noError = [null, false].includes(document.getElementById("errMsgModal"));
+			let noValidation = [null, false].includes(document.getElementById("validationMsgModal"));
+			let noDownload = document.getElementById("downloadMsgModal").style.display !== "block";
 			if(!hasChanged() && noError && noValidation && noDownload)
 			{
 				let id = document.getElementById("batchId").value;
@@ -56,29 +55,28 @@ docReady(async function(){
 		}, 
 		10000
 	);
-	
-	document.getElementById("jobNumber").focus();
-	hasChanged(false);
-});
 
-/**
- * If status is a boolean, sets the status of hasChanged. Otherwise, returns the status of hasChanged.
- * @param {Boolean|null} [status=null] The new status of hasChanged when setting the status, null when getting the status of hasChanged.
- * @return {Boolean|null} Null when setting the status of hasChanged, the staus of hasChanged when getting the status
- */
-function hasChanged(status = null)
-{
-	if ([true, false].includes(status))
-	{
-		hasChanged.status = status;
-		return null;
-	}
-	else
-	{
-		hasChanged.status = typeof hasChanged.status === "undefined" ? false : hasChanged.status;
-		return hasChanged.status;
-	}
-}
+	document.getElementById("addJobButton").addEventListener("click", async function(){
+		let jobName = document.getElementById("jobNumber").value;
+		try{
+			await addJob(jobName, true)
+			initializeDates();
+			let batchName = document.getElementById("batchName").value;
+			document.getElementById("batchName").value = (batchName === null || batchName === "") ? jobName : batchName;
+			updateSessionStorage();
+			hasChanged(true);
+		}
+		catch(error){
+			showError("L'ajout de la job a échoué.", error);
+		};
+	});
+	
+	await initializeFields();
+	document.getElementById("jobNumber").focus();
+	document.getElementById("downloadMsgModal").addEventListener("click", function(){
+		this.style.display = "none";
+	});
+});
 
 /**
  * Initializes some fields on the page.
@@ -99,32 +97,32 @@ async function initializeFields()
 		si les données de session n'ont pas été écrasées par une autre batch entre temps, elles sont restaurées et on peut continuer à 
 		modifier la batch là où on était rendu.
 	*/
-
-	let sessionData = window.sessionStorage;
-	if(typeof sessionData.batch !== "undefined" && document.getElementById("batchId").value === JSON.parse(sessionData.batch).id)
-	{
-		try{
+	try{
+		let sessionData = window.sessionStorage;
+		if(typeof sessionData.batch !== "undefined" && document.getElementById("batchId").value === JSON.parse(sessionData.batch).id)
+		{
+			let mainStatus = document.getElementById("status").value;
 			let mprStatus = document.getElementById("mprStatus").value;
+			let comments = document.getElementById("comments").value;
 			await restoreSessionStorage();
+			document.getElementById("status").value = mainStatus;
 			document.getElementById("mprStatus").value = mprStatus;
-			initializeDates();
-			updateSessionStorage();
+			if(["T", "E"].includes(mprStatus) && mprStatus !== JSON.parse(window.sessionStorage.batch).mprStatus)
+			{
+				document.getElementById("comments").value = comments;
+			}
 		}
-		catch(error){
-			showError("La restauration des données de session a échouée", error);
-		};
-	}
-	else
-	{
-		try{
+		else
+		{
+			hasChanged(false);
 			await getJobs(document.getElementById("batchId").value);
 			await updatePannelsList();
-			initializeDates();
-			updateSessionStorage();
 		}
-		catch(error){
-			showError("La restauration des données pour cette batch a échouée", error);
-		}
+		initializeDates();
+		updateSessionStorage();
+	}
+	catch(error){
+		showError("La restauration des données pour cette batch a échouée", error);
 	}
 }
 
@@ -174,6 +172,7 @@ async function verifyMprStatus(id)
 		let sessionBatch = window.sessionStorage.batch;
 		if(typeof sessionBatch !== "undefined" && ![JSON.parse(sessionBatch).mprStatus, null, ""].includes(mprStatus))
 		{
+			window.sessionStorage.removeItem("batch");
 			window.location.reload();
 		}
 	}
@@ -220,7 +219,7 @@ function validateInformation(id, name, startDate, endDate, fullDay, material, bo
 		err += "L'identificateur unique doit être un entier positif.\n";
 	}
 	
-	if (!(typeof name === 'string' || name instanceof String) || (name === ""))
+	if (!(typeof name === "string" || name instanceof String) || (name === ""))
 	{
 		err += "Le nom de la batch ne peut pas être vide.\n";
 	}
@@ -246,12 +245,12 @@ function validateInformation(id, name, startDate, endDate, fullDay, material, bo
 				"Modifiez l'état de la boîte et réessayez.\n";
 	}
 	
-	if(!(typeof material === 'string' || material instanceof String) || material === "" || material === "0")
+	if(!(typeof material === "string" || material instanceof String) || material === "" || material === "0")
 	{
 		err += "Veuillez sélectionner un matériel.\n";
 	}
 	
-	if(!(typeof boardSize === 'string' || boardSize instanceof String) || (boardSize === ""))
+	if(!(typeof boardSize === "string" || boardSize instanceof String) || (boardSize === ""))
 	{
 		err += "Veuillez entrer une taille de panneau.\n";
 	}
@@ -261,7 +260,7 @@ function validateInformation(id, name, startDate, endDate, fullDay, material, bo
 		err += "Le statut choisi est invalide.\n";
 	}
 	
-	if(!(typeof comments === 'string' || comments instanceof String))
+	if(!(typeof comments === "string" || comments instanceof String))
 	{
 		err += "Les commentaires doivent être une donnée de type \"chaîne de caractère\".\n";
 	}
@@ -322,8 +321,10 @@ async function saveConfirm()
 		{
 			document.getElementById("loadingModal").style.display = "block";
 			try{
-				goToBatch(await saveBatch.apply(null, args));
+				let id = await saveBatch.apply(null, args);
 				hasChanged(false);
+				updateSessionStorage();
+				goToBatch(id);
 			}
 			catch(error){
 				showError("La sauvegarde de la batch a échouée", error);
@@ -351,7 +352,7 @@ async function generateConfirm(action = 1)
  */
 async function generatePrograms(id, action = 1)
 {
-	if(compareWithSessionStorage())
+	if(hasChanged() === false && compareWithSessionStorage())
 	{
 		document.getElementById("loadingModal").style.display = "block";
 		try{
@@ -470,8 +471,8 @@ function viewPrograms(batchId)
  * @param {int} jobId The unique identifier of the job to reach.
  * @param {int} batchId The unique identifier of the current batch.
  */
-async function openJob(jobId, batchId)
+function openJob(jobId, batchId)
 {
-	await updateSessionStorage();
+	updateSessionStorage();
 	window.location.assign(ROOT_URL + "/sections/job/index.php?jobId=" + jobId + "&batchId=" + batchId);
 }

@@ -21,7 +21,7 @@
         
 	// Check if the user is logged in, if not then redirect him to login page
 	if(!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true){
-		if(!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest')
+		if(!empty($_SERVER["HTTP_X_REQUESTED_WITH"]) && strtolower($_SERVER["HTTP_X_REQUESTED_WITH"]) == "xmlhttprequest")
 		{
 			throw new \Exception("You are not logged in.");
 		}
@@ -41,10 +41,10 @@
 	<head>
 		<title>Fabridor - Liste des tests</title>
 		<meta name="viewport" content="width=device-width, initial-scale=1" />
-		<link rel="stylesheet" href="../../assets/css/responsive.css" />
-		<link rel="stylesheet" href="../../assets/css/fabridor.css" />
-		<link rel="stylesheet" href="../../assets/css/parametersTable.css"/>
-		<link rel="stylesheet" href="../../assets/css/imageButton.css">
+		<link rel="stylesheet" href="/Planificateur/assets/css/responsive.css" />
+		<link rel="stylesheet" href="/Planificateur/assets/css/fabridor.css" />
+		<link rel="stylesheet" href="/Planificateur/assets/css/parametersTable.css"/>
+		<link rel="stylesheet" href="/Planificateur/assets/css/imageButton.css">
 	</head>
 	<body class="homepage">
 		<div id="page-wrapper">
@@ -83,23 +83,18 @@
 			
 			<div id="features-wrapper">
 				<div class="container">
-					<form id="testsSelectionForm" class="parametersForm" action="javascript: void(0);" 
-        				onSubmit="refreshTests();">
-    					<div class="formContainer" style="margin-bottom: 10px;">
-							<div class="hFormElement" style="display: inline-block;">
-            					<label for="startDate">Du :
-                					<input id="startDate" name="startDate" type="datetime-local" step="1" 
-                						onblur="$('#testsSelectionForm').submit();">
-                        		</label>
-                    		</div>
-                    		<div class="hFormElement" style="display: inline-block;">
-            					<label for="endDate">Au :
-                					<input id="endDate" name="endDate" type="datetime-local" step="1" 
-                						onblur="$('#testsSelectionForm').submit();">
-                        		</label>
-                    		</div>
-                    	</div>
-            		</form>
+					<div class="formContainer" style="margin-bottom: 10px;">
+						<div class="hFormElement" style="display: inline-block;">
+							<label for="startDate">Du :
+								<input id="startDate" name="startDate" type="datetime-local" step="1">
+							</label>
+						</div>
+						<div class="hFormElement" style="display: inline-block;">
+							<label for="endDate">Au :
+								<input id="endDate" name="endDate" type="datetime-local" step="1">
+							</label>
+						</div>
+					</div>
 					<table id="parametersTable" class="parametersTable" style="width:100%">
 						<thead>
 							<tr>
@@ -118,30 +113,20 @@
 			</div>
 		</div>
 		
-		<!--  Fenêtre Modal pour message d'erreurs -->
-		<div id="errMsgModal" class="modal" onclick='this.style.display = "none";'>
-			<div id="errMsg" class="modal-content" style='color:#FF0000;'></div>
-		</div>
-		
-		<!--  Fenêtre Modal pour message de validation -->
-		<div id="validationMsgModal" class="modal" onclick='this.style.display = "none";'>
-			<div id="validationMsg" class="modal-content" style='color:#FF0000;'></div>
-		</div>
-		
 		<!--  Fenêtre Modal pour chargement -->
 		<div id="loadingModal" class="modal loader-modal">
 			<div id="loader" class="loader modal-content"></div>
 		</div>
 			
 	    <!-- Scripts -->
-	    <script type="text/javascript" src="../../assets/js/moment.min.js"></script>
-		<script type="text/javascript" src="../../assets/js/moment-timezone.js"></script>
-		<script type="text/javascript" src="../../assets/js/ajax.js"></script>
-		<script type="text/javascript" src="../../assets/js/docReady.js"></script>
-		<script type="text/javascript" src="../../js/main.js"></script>
-		<script type="text/javascript" src="../../js/toolbox.js"></script>
-		<script type="text/javascript" src="js/index.js"></script>
-		<script type="text/javascript" src="js/test.js"></script>
-		<script type="text/javascript" src="js/main.js"></script>
+	    <script type="text/javascript" src="/Planificateur/assets/js/moment.min.js"></script>
+		<script type="text/javascript" src="/Planificateur/assets/js/moment-timezone.js"></script>
+		<script type="text/javascript" src="/Planificateur/assets/js/ajax.js"></script>
+		<script type="text/javascript" src="/Planificateur/assets/js/docReady.js"></script>
+		<script type="text/javascript" src="/Planificateur/js/main.js"></script>
+		<script type="text/javascript" src="/Planificateur/js/toolbox.js"></script>
+		<script type="text/javascript" src="/Planificateur/parametres/test/js/index.js"></script>
+		<script type="text/javascript" src="/Planificateur/parametres/test/js/test.js"></script>
+		<script type="text/javascript" src="/Planificateur/parametres/test/js/main.js"></script>
 	</body>
 </html>

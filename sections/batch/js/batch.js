@@ -48,7 +48,7 @@ function retrievePannels(materialId)
 		ajax.send({
 			"type": "GET",
 			"contentType": "application/json;charset=utf-8",
-			"url": ROOT_URL + "/parametres/materiel/actions/getPannels.php",
+			"url": ROOT_URL + "/parametres/material/actions/getPannels.php",
 			"data": {"materialId": materialId},
 			"dataType": "json",
 			"async": true,

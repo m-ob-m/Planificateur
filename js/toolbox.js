@@ -22,7 +22,7 @@ function isPositiveInteger(value, allowStrings = false, strictlyPositive = false
  */
 function isNumber(value, allowStrings = false)
 {
-	if(typeof value == 'number')
+	if(typeof value == "number")
 	{
 		return true;
 	}
@@ -45,7 +45,7 @@ function isNumber(value, allowStrings = false)
  */
 function isInteger(value, allowStrings = false)
 {
-	if(typeof value == 'number' && Number.isInteger(value))
+	if(typeof value == "number" && Number.isInteger(value))
 	{
 		return true;
 	}
@@ -68,7 +68,7 @@ function isInteger(value, allowStrings = false)
  */
 function isString(value, allowNumericalTypes = false)
 {
-	return typeof value === 'string' || value instanceof String || (allowNumericalTypes && isNumber(value, false));
+	return typeof value === "string" || value instanceof String || (allowNumericalTypes && isNumber(value, false));
 }
 
 /**
@@ -88,7 +88,7 @@ function isFunction(value) {
  * @return {boolean} True if value is an object.
  */
 function isObject(value) {
-	return typeof value === 'object' && value !== null;
+	return typeof value === "object" && value !== null;
 }
 
 /**

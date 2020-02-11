@@ -5,11 +5,11 @@
  * \version		1.0
  * \date       	2017-03-21
  *
- * \brief 		Modele de générique
- * \details 	Modele de générique
+ * \brief 		Modèle de générique
+ * \details 	Modèle de générique
  */
-require_once __DIR__ . '/genericparameter.php';
-require_once __DIR__ . '/../../type/controller/typeController.php';
+require_once $_SERVER["DOCUMENT_ROOT"] . "/Planificateur/parametres/generic/model/genericparameter.php";
+require_once $_SERVER["DOCUMENT_ROOT"] . "/Planificateur/parametres/type/controller/typeController.php";
 
 class Generic implements \JsonSerializable
 {
@@ -63,7 +63,7 @@ class Generic implements \JsonSerializable
             "SELECT `g`.* FROM `generics` AS `g` WHERE `g`.`id` = :id " . 
             (new \MYSQLDatabaseLockingReadTypes($databaseConnectionLockingReadType))->toLockingReadString() . ";"
         );
-        $stmt->bindValue(':id', $id, PDO::PARAM_INT);
+        $stmt->bindValue(":id", $id, PDO::PARAM_INT);
         $stmt->execute();
         
         if ($row = $stmt->fetch())	// Récupération de l'instance de matériel
@@ -82,7 +82,7 @@ class Generic implements \JsonSerializable
             ORDER BY `gp`.`id` ASC " . 
             (new \MYSQLDatabaseLockingReadTypes($databaseConnectionLockingReadType))->toLockingReadString() . ";"
         );
-        $stmt->bindValue(':genericId', $id, PDO::PARAM_INT);
+        $stmt->bindValue(":genericId", $id, PDO::PARAM_INT);
         $stmt->execute();
         
         $instance->setParameters(array());
@@ -164,8 +164,8 @@ class Generic implements \JsonSerializable
             INSERT INTO `generics` (`filename`, `description`, `heightParameter`) 
             VALUES (:filename, :description, :heightParameter);
         ");
-        $stmt->bindValue(':filename', $this->_filename, PDO::PARAM_STR);
-        $stmt->bindValue(':description', $this->_description, PDO::PARAM_STR);
+        $stmt->bindValue(":filename", $this->_filename, PDO::PARAM_STR);
+        $stmt->bindValue(":description", $this->_description, PDO::PARAM_STR);
         $stmt->bindValue(":heightParameter", $this->_heightParameter, PDO::PARAM_STR);
         $stmt->execute();
         $this->_id = intval($db->getConnection()->lastInsertId());
@@ -203,10 +203,10 @@ class Generic implements \JsonSerializable
                 `generics`.`heightParameter` = :heightParameter
             WHERE `generics`.`id` = :id;
         ");
-        $stmt->bindValue(':filename', $this->_filename, PDO::PARAM_STR);
-        $stmt->bindValue(':description', $this->_description, PDO::PARAM_STR);
+        $stmt->bindValue(":filename", $this->_filename, PDO::PARAM_STR);
+        $stmt->bindValue(":description", $this->_description, PDO::PARAM_STR);
         $stmt->bindValue(":heightParameter", $this->_heightParameter, PDO::PARAM_STR);
-        $stmt->bindValue(':id', $this->_id, PDO::PARAM_INT);
+        $stmt->bindValue(":id", $this->_id, PDO::PARAM_INT);
         $stmt->execute();
         
         if($overwriteParameters)
@@ -237,7 +237,7 @@ class Generic implements \JsonSerializable
         {
             throw new \Exception("The provided " . get_class($this) . " is not locked for update.");
         }
-        elseif(!empty($this->getAssociatedTypes()))
+        elseif(!empty($this->getAssociatedTypes($db)))
         {
             throw new \Exception("This Generic still has associated Types.");
         }
@@ -246,7 +246,7 @@ class Generic implements \JsonSerializable
             $stmt = $db->getConnection()->prepare("
                 DELETE FROM `generics` WHERE `generics`.`id` = :id;
             ");
-            $stmt->bindValue(':id', $this->_id, PDO::PARAM_INT);
+            $stmt->bindValue(":id", $this->_id, PDO::PARAM_INT);
             $stmt->execute();
         }
         
@@ -267,7 +267,7 @@ class Generic implements \JsonSerializable
         $stmt= $db->getConnection()->prepare("
             SELECT `g`.`timestamp` FROM `generics` AS `g` WHERE `g`.`id` = :id;
         ");
-        $stmt->bindValue(':id', $this->getId(), PDO::PARAM_INT);
+        $stmt->bindValue(":id", $this->getId(), PDO::PARAM_INT);
         $stmt->execute();
         
         if($row = $stmt->fetch())
@@ -282,15 +282,16 @@ class Generic implements \JsonSerializable
     
     /**
      * Get the types associated to this Generic
+     * @param \FabplanConnection $db The database in which the Generic exists 
      *
      * @throws
      * @author Marc-Olivier Bazin-Maurice
-     * @return array An array of Type associated to this Generic
+     * @return Type[] An array of Type associated to this Generic
      */
-    function getAssociatedTypes() : array
+    function getAssociatedTypes(\FabplanConnection $db) : array
     {
         $associatedTypes = array();
-        foreach((new TypeController())->getTypes() as $type)
+        foreach((new TypeController($db))->getTypes() as $type)
         {
             if($type->getGeneric()->getId() === $this->getId())
             {
@@ -526,7 +527,7 @@ class Generic implements \JsonSerializable
             DELETE FROM `generic_parameters`
             WHERE `generic_parameters`.`generic_id` = :genericId;
         ");
-        $stmt->bindValue(':genericId', $this->_id, PDO::PARAM_INT);
+        $stmt->bindValue(":genericId", $this->_id, PDO::PARAM_INT);
         $stmt->execute();
         
         return $this;

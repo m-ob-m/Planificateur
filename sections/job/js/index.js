@@ -7,9 +7,12 @@ docReady(async function(){
 	})
 	await layoutJob(job)
 	.catch(function(error){
-		showError("L'affichage' des données de la job a échoué.", error);
+		showError("L'affichage des données de la job a échoué.", error);
 	});
 	hasChanged(false);
+	document.getElementById("partOperationsModal").addEventListener("click", function(){
+		this.style.display = "none";
+	});
 });
 
 /**

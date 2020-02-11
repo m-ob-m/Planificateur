@@ -10,7 +10,7 @@
 
     // Structure de retour vers javascript
     
-    require_once __DIR__ . "/../../../lib/PhpSpreadsheet/autoload.php"; // PHPSpreadsheet
+    require_once $_SERVER["DOCUMENT_ROOT"] . "/Planificateur/lib/PhpSpreadsheet/autoload.php";
     
     use \PhpOffice\PhpSpreadsheet\Cell\Coordinate as PHPSpreadSheetCoordinate;
     use \PhpOffice\PhpSpreadsheet\Reader\Xlsx as PHPSpreadSheetXlsxReader;
@@ -23,17 +23,17 @@
     
     try
     {  
-        require_once __DIR__ . "/../../varmodtypegen/controller/modelTypeGenericController.php"; /* Modèle-type-générique */
-        require_once __DIR__ . "/../../generic/controller/genericController.php"; // Contrôleur de générique
-        require_once __DIR__ . "/../../model/controller/modelController.php"; // Contrôleur de modèle
-        require_once __DIR__ . "/../../../lib/fileFunctions/fileFunctions.php"; // Fonctions sur les fichiers
+        require_once $_SERVER["DOCUMENT_ROOT"] . "/Planificateur/parametres/varmodtypegen/controller/modelTypeGenericController.php";
+        require_once $_SERVER["DOCUMENT_ROOT"] . "/Planificateur/parametres/generic/controller/genericController.php";
+        require_once $_SERVER["DOCUMENT_ROOT"] . "/Planificateur/parametres/model/controller/modelController.php";
+        require_once $_SERVER["DOCUMENT_ROOT"] . "/Planificateur/lib/fileFunctions/fileFunctions.php";
         
         // Initialize the session
         session_start();
                             
         // Check if the user is logged in, if not then redirect him to login page
         if(!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true){
-            if(!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest')
+            if(!empty($_SERVER["HTTP_X_REQUESTED_WITH"]) && strtolower($_SERVER["HTTP_X_REQUESTED_WITH"]) == "xmlhttprequest")
             {
                 throw new \Exception("You are not logged in.");
             }
@@ -43,12 +43,15 @@
             }
             exit;
         }
-    
+        
+        // Getting a connection to the database.
+        $db = new \FabPlanConnection();
+
         // Closing the session to let other scripts use it.
         session_write_close();
 
         // Clean or create the temporary directory and copy the uploaded file into it.
-        $temporaryFolderPath = __DIR__ . "\\temp";
+        $temporaryFolderPath = $_SERVER["DOCUMENT_ROOT"] . "/Planificateur/parametres/varmodtype/temp";
         (new \FileFunctions\TemporaryFolder($temporaryFolderPath))->clean(KEEP_FILES_FOR_X_DAYS * 24 * 60 * 60, true);
 
         foreach($_FILES["files"]["error"] as $key => $error)
@@ -68,7 +71,7 @@
                     if(move_uploaded_file($sourceFilePath, $destinationFilePath))
                     {
                         $extractedData = extractDataFromExcelFile($destinationFilePath);
-                        saveExtractedData($extractedData);
+                        saveExtractedData($db, $extractedData);
                     }
                     else
                     {
@@ -184,14 +187,14 @@
     /**
      * Saves extracted data into the database.
      *
+     * @param \FabplanConnection $db The database to save the data in.
      * @param \StdClass $data The data extracted from the parameters file to verify and save into the database.
      *
      * @author Marc-Olivier Bazin-Maurice
      * @return 
      */
-    function saveExtractedData(\StdClass $data)
+    function saveExtractedData(\FabplanConnection $db, \StdClass $data)
     {
-        $db = new \FabPlanConnection();
         try
         {
             $db->getConnection()->beginTransaction();
