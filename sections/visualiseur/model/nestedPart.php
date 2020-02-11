@@ -1,5 +1,4 @@
 <?php
-require_once $_SERVER["DOCUMENT_ROOT"] . "/Planificateur/lib/config.php";
 require_once $_SERVER["DOCUMENT_ROOT"] . "/Planificateur/lib/connect.php";
 require_once $_SERVER["DOCUMENT_ROOT"] . "/Planificateur/lib/numberFunctions/numberFunctions.php";
 
@@ -96,9 +95,9 @@ class NestedPart
 				    // Si PNL3 contient P#, c'est la bonne section
 					$matches = array();
 					preg_match("/(?<=,IdJobTypePorte=)(?P<idJobTypePorte>\d+)(?=,|\\z)/", $PNL4, $matches);
-					$idJobTypePorte = intval($matches["idJobTypePorte"]);
+					$idJobTypePorte = isset($matches["idJobTypePorte"]) ? intval($matches["idJobTypePorte"]) : null;
 					preg_match("/(?<=\\APNL1,)(?P<mprName>.*?)(?=,)/", $PNL1, $matches);
-					$mprName = $matches["mprName"];
+					$mprName = $matches["mprName"] ?? null;
 				
 					break;	// Sortir de la boucle
 				}

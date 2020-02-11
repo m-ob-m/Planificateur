@@ -1,7 +1,7 @@
 <?php
     namespace MprGlobalParameters
     {
-        require_once __DIR__ . "/../config.php";
+        $_SERVER["DOCUMENT_ROOT"] . "/Planificateur/lib/config.php";
         
         /**
          * \MprGlobalParameters\MprGlobalParametersFile
@@ -90,7 +90,7 @@
             private function obtainWorkingCopy() : \MprGlobalParameters\MprGlobalParametersFile
             {
                 /* Acquire a working copy of the global variables file */
-                $this->destinationPath = tempnam(__DIR__ . "/temp/", null);
+                $this->destinationPath = tempnam($_SERVER["DOCUMENT_ROOT"] . "/Planificateur/lib/mpr/temp/", null);
                 if(!copy(self::SOURCE_PATH, $this->destinationPath))
                 {
                     throw new \Exception("The system failed to obtain a copy of the global variables file.");

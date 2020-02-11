@@ -15,14 +15,15 @@
     */
     
     /* INCLUDE */
-	require_once __DIR__ . '/controller/genericController.php';		// Classe contrôleur de cette vue
+	require_once $_SERVER["DOCUMENT_ROOT"] . "/Planificateur/parametres/generic/controller/genericController.php";
+	require_once $_SERVER["DOCUMENT_ROOT"] . "/Planificateur/lib/connect.php";
 	
 	// Initialize the session
 	session_start();
         
 	// Check if the user is logged in, if not then redirect him to login page
 	if(!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true){
-		if(!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest')
+		if(!empty($_SERVER["HTTP_X_REQUESTED_WITH"]) && strtolower($_SERVER["HTTP_X_REQUESTED_WITH"]) == "xmlhttprequest")
 		{
 			throw new \Exception("You are not logged in.");
 		}
@@ -33,15 +34,17 @@
 		exit;
 	}
 
+	// Getting a connection to the database.
+	$db = new \FabPlanConnection();
+
 	// Closing the session to let other scripts use it.
 	session_write_close();
     
     $generics = array();
-    $db = new \FabPlanConnection();
     try
     {
         $db->getConnection()->beginTransaction();
-        $generics = (new \GenericController())->getGenerics();
+        $generics = (new \GenericController($db))->getGenerics();
         $db->getConnection()->commit();
     }
     catch(\Exception $e)
@@ -78,7 +81,7 @@
 						<span>Liste des génériques</span>
 					</div>
 					
-					<div style="display:inline-block;float:right;">
+					<div style="float:right;">
     					<!-- Nav -->
     					<nav id="nav" style="display: block;">
     						<ul>
@@ -130,18 +133,6 @@
 					  	</tbody>
 					</table>
 				</div>
-			</div>
-			
-			<!--  Fenêtre modale pour message de validation -->
-    		<div id="validationMsgModal" class="modal" onclick='this.style.display = "none";' >
-                <!-- Modal content -->
-				<div id="validationMsg" class="modal-content" style='color:#FF0000;'></div>
-			</div>
-			
-    		<!--  Fenêtre modale pour message d'erreurs -->
-    		<div id="errMsgModal" class="modal" onclick='this.style.display = "none";' >
-                <!-- Modal content -->
-				<div id="errMsg" class="modal-content" style='color:#FF0000;'></div>
 			</div>
 		</div>
 

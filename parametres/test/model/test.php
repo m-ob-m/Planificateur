@@ -9,11 +9,11 @@
  * \details 	Modele de testType
  */
 
-require_once __DIR__ . '/testParameter.php';
-require_once __DIR__ . '/../../type/controller/typeController.php';
-require_once __DIR__ . '/../../model/controller/modelController.php';
-require_once __DIR__ . '/../../varmodtype/model/modeltype.php';
-require_once __DIR__ . '/../../varmodtypegen/model/modelTypeGeneric.php';
+require_once $_SERVER["DOCUMENT_ROOT"] . "/Planificateur/parametres/test/model/testParameter.php";
+require_once $_SERVER["DOCUMENT_ROOT"] . "/Planificateur/parametres/type/controller/typeController.php";
+require_once $_SERVER["DOCUMENT_ROOT"] . "/Planificateur/parametres/model/controller/modelController.php";
+require_once $_SERVER["DOCUMENT_ROOT"] . "/Planificateur/parametres/varmodtype/model/modeltype.php";
+require_once $_SERVER["DOCUMENT_ROOT"] . "/Planificateur/parametres/varmodtypegen/model/modelTypeGeneric.php";
 
 class Test extends ModelTypeGeneric implements JsonSerializable
 {
@@ -66,7 +66,7 @@ class Test extends ModelTypeGeneric implements JsonSerializable
             "SELECT `t`.* FROM `test` AS `t` WHERE `t`.`id` = :id " . 
 	        (new \MYSQLDatabaseLockingReadTypes($databaseConnectionLockingReadType))->toLockingReadString() . ";"
         );
-	    $stmt->bindValue(':id', $id, PDO::PARAM_INT);
+	    $stmt->bindValue(":id", $id, PDO::PARAM_INT);
 	    $stmt->execute();
 	    
 	    if ($row = $stmt->fetch())	// Récupération de l'instance de test
@@ -105,7 +105,7 @@ class Test extends ModelTypeGeneric implements JsonSerializable
 			ORDER BY `gp`.`id` ASC " . 
 	        (new \MYSQLDatabaseLockingReadTypes($databaseConnectionLockingReadType))->toLockingReadString() . ";"
         );
-	    $stmt->bindValue(':id', $id, PDO::PARAM_INT);
+	    $stmt->bindValue(":id", $id, PDO::PARAM_INT);
 	    $stmt->execute();
 	    
 	    while($row = $stmt->fetch())	// Récupération de l'instance TestParameter
@@ -203,11 +203,11 @@ class Test extends ModelTypeGeneric implements JsonSerializable
             INSERT INTO `test` (`id`, `name`, `door_model_id`, `type_no`, `fichier_mpr`)
             VALUES (:id, :name, :door_model_id, :type_no, :fichier_mpr)
         ");
-	    $stmt->bindValue(':id', $this->getId(), PDO::PARAM_INT);
-	    $stmt->bindValue(':name', $this->getName(), PDO::PARAM_STR);
-	    $stmt->bindValue(':door_model_id', $this->getModel()->getId(), PDO::PARAM_INT);
-	    $stmt->bindValue(':type_no', $this->getType()->getImportNo(), PDO::PARAM_INT);
-	    $stmt->bindValue(':fichier_mpr', $this->getFichierMpr(), PDO::PARAM_STR);
+	    $stmt->bindValue(":id", $this->getId(), PDO::PARAM_INT);
+	    $stmt->bindValue(":name", $this->getName(), PDO::PARAM_STR);
+	    $stmt->bindValue(":door_model_id", $this->getModel()->getId(), PDO::PARAM_INT);
+	    $stmt->bindValue(":type_no", $this->getType()->getImportNo(), PDO::PARAM_INT);
+	    $stmt->bindValue(":fichier_mpr", $this->getFichierMpr(), PDO::PARAM_STR);
 	    $stmt->execute();
 	    $this->setId(intval($db->getConnection()->lastInsertId()));
         
@@ -238,11 +238,11 @@ class Test extends ModelTypeGeneric implements JsonSerializable
             SET `name` = :name, `door_model_id` = :door_model_id, `type_no` = :type_no, `fichier_mpr` = :fichier_mpr
             WHERE `id` = :id;
         ");
-        $stmt->bindValue(':id', $this->getId(), PDO::PARAM_INT);
+        $stmt->bindValue(":id", $this->getId(), PDO::PARAM_INT);
         $stmt->bindValue(":name", $this->getName(), PDO::PARAM_STR);
-        $stmt->bindValue(':door_model_id', $this->getModel()->getId(), PDO::PARAM_INT);
-        $stmt->bindValue(':type_no', $this->getType()->getImportNo(), PDO::PARAM_INT);
-        $stmt->bindValue(':fichier_mpr', $this->getFichierMpr(), PDO::PARAM_STR);
+        $stmt->bindValue(":door_model_id", $this->getModel()->getId(), PDO::PARAM_INT);
+        $stmt->bindValue(":type_no", $this->getType()->getImportNo(), PDO::PARAM_INT);
+        $stmt->bindValue(":fichier_mpr", $this->getFichierMpr(), PDO::PARAM_STR);
         $stmt->execute();
         
         $this->deleteParametersFromDatabase($db);
@@ -273,7 +273,7 @@ class Test extends ModelTypeGeneric implements JsonSerializable
 	    else
 	    {
     	    $stmt = $db->getConnection()->prepare("DELETE FROM `test` WHERE `test`.`id` = :id;");
-    	    $stmt->bindValue(':id', $this->getId(), PDO::PARAM_INT);
+    	    $stmt->bindValue(":id", $this->getId(), PDO::PARAM_INT);
     	    $stmt->execute();
 	    }
 	    
@@ -294,7 +294,7 @@ class Test extends ModelTypeGeneric implements JsonSerializable
 	    $stmt= $db->getConnection()->prepare("
             SELECT `t`.`estampille` FROM `test` AS `t` WHERE `t`.`id` = :id;
         ");
-	    $stmt->bindValue(':id', $this->getId(), PDO::PARAM_INT);
+	    $stmt->bindValue(":id", $this->getId(), PDO::PARAM_INT);
 	    $stmt->execute();
 	    
 	    if($row = $stmt->fetch())
@@ -332,15 +332,15 @@ class Test extends ModelTypeGeneric implements JsonSerializable
             ORDER BY `gp`.`id` ASC " . 
 	        (new \MYSQLDatabaseLockingReadTypes($this->getDatabaseConnectionLockingReadType()))->toLockingReadString() . ";"
         );
-	    $stmt->bindValue(':modelId', $this->getModel()->getId(), PDO::PARAM_INT);
-	    $stmt->bindValue(':typeNo', $this->getType()->getImportNo(), PDO::PARAM_INT);
+	    $stmt->bindValue(":modelId", $this->getModel()->getId(), PDO::PARAM_INT);
+	    $stmt->bindValue(":typeNo", $this->getType()->getImportNo(), PDO::PARAM_INT);
 	    $stmt->execute();
 	    
 	    $this->setParameters(array());
 	    foreach($stmt->fetchAll() as $row)
 	    {
-	        $value = ($row['specificvalue'] !== null) ? $row['specificValue'] : $row['genericValue'];
-	        $this->addParameter(new \TestParameter($this->getId(), $row['key'], $value));
+	        $value = ($row["specificvalue"] !== null) ? $row["specificValue"] : $row["genericValue"];
+	        $this->addParameter(new \TestParameter($this->getId(), $row["key"], $value));
 	    }
 	    
 	    return $this;
@@ -363,7 +363,7 @@ class Test extends ModelTypeGeneric implements JsonSerializable
             DELETE FROM `test_parameters`
             WHERE `test_parameters`.`test_id` = :testId;
         ");
-	    $stmt->bindValue(':testId', $this->getId(), PDO::PARAM_INT);
+	    $stmt->bindValue(":testId", $this->getId(), PDO::PARAM_INT);
 	    $stmt->execute();
 	    
 	    return $this;

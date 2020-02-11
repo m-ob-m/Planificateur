@@ -9,7 +9,7 @@
      *              réimportation.
      */
     
-     require_once __DIR__ . "/../../../lib/PhpSpreadsheet/autoload.php"; // PHPSpreadsheet
+     require_once $_SERVER["DOCUMENT_ROOT"] . "/Planificateur/lib/PhpSpreadsheet/autoload.php";
         
     use \PhpOffice\PhpSpreadsheet\Spreadsheet as PHPSpreadSheetWorkBook;
     use \PhpOffice\PhpSpreadsheet\Worksheet\Worksheet as PHPSpreadSheetWorkSheet;
@@ -33,17 +33,17 @@
     
     try
     {  
-        require_once __DIR__ . "/../../varmodtypegen/controller/modelTypeGenericController.php"; /* Modèle-type-générique */
-        require_once __DIR__ . "/../../generic/controller/genericController.php"; // Contrôleur de générique
-        require_once __DIR__ . "/../../model/controller/modelController.php"; // Contrôleur de modèle
-        require_once __DIR__ . "/../../../lib/fileFunctions/fileFunctions.php"; // Fonctions sur les fichiers
+        require_once $_SERVER["DOCUMENT_ROOT"] . "/Planificateur/parametres/varmodtypegen/controller/modelTypeGenericController.php";
+        require_once $_SERVER["DOCUMENT_ROOT"] . "/Planificateur/parametres/generic/controller/genericController.php";
+        require_once $_SERVER["DOCUMENT_ROOT"] . "/Planificateur/parametres/model/controller/modelController.php";
+        require_once $_SERVER["DOCUMENT_ROOT"] . "/Planificateur/lib/fileFunctions/fileFunctions.php";
 
         // Initialize the session
         session_start();
                     
         // Check if the user is logged in, if not then redirect him to login page
         if(!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true){
-            if(!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest')
+            if(!empty($_SERVER["HTTP_X_REQUESTED_WITH"]) && strtolower($_SERVER["HTTP_X_REQUESTED_WITH"]) == "xmlhttprequest")
             {
                 throw new \Exception("You are not logged in.");
             }
@@ -53,6 +53,9 @@
             }
             exit;
         }
+
+        // Getting a connection to the database.
+        $db = new \FabPlanConnection();
 
         // Closing the session to let other scripts use it.
         session_write_close();
@@ -68,7 +71,6 @@
         $modelTypeGenericCombinations = array();
         $model = null;
         $generic = null;
-        $db = new \FabPlanConnection();
         try
         {
             $db->getConnection()->beginTransaction();
@@ -127,7 +129,7 @@
         exportModelTypeGenericsToExcel($workbook, $modelTypeGenericCombinations);
         
         /* Clean the temporary folder. */
-        $TemporaryFolderPath = __DIR__ . "/temp";
+        $TemporaryFolderPath = $_SERVER["DOCUMENT_ROOT"] . "/Planificateur/parametres/varmodtype/temp";
         (new \FileFunctions\TemporaryFolder($TemporaryFolderPath))->clean(KEEP_FILES_FOR_X_DAYS * 24 * 60 * 60, true);
         
         $filename = $generic !== null ? 
@@ -175,11 +177,11 @@
         $typesToExport = null;
         if($generic === null)
         {
-            $typesToExport = (new \TypeController())->getTypes();
+            $typesToExport = (new \TypeController($db))->getTypes();
         }
         else
         {
-            $typesToExport = $generic->getAssociatedTypes();
+            $typesToExport = $generic->getAssociatedTypes($db);
         }
         
         /* Build the list of model-type combinations to export */

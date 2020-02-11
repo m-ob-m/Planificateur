@@ -69,7 +69,7 @@ async function openBatchByName()
 	let name = document.getElementById("batchName").value;
 	try{
 		let id = await getBatchIdFromBatchName(name);
-		window.location.href = [window.location.protocol, '//', window.location.host, window.location.pathname].join('') + "?id=" + id;
+		window.location.href = [window.location.protocol, "//", window.location.host, window.location.pathname].join("") + "?id=" + id;
 	}
 	catch(error){
 		showError("Le projet n'a pas été trouvé.", error);

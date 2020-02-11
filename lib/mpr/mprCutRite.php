@@ -132,7 +132,7 @@ class mprCutrite
 	        preg_match("/\[001\r\n(.*?)\r\n\r\n/s", $this->_header, $matches1);
 	        $matches2 = array();
 	        preg_match_all("/^(.*=\".*\")\r$/m", $matches1[1] ?? null, $matches2);
-	        
+			
 	        if(isset($matches2[1]))
 	        {
     	        foreach($matches2[1] as $parameterString)
@@ -276,7 +276,7 @@ class mprCutrite
 	            $child_count = 0;
 	            
 	            //Identify the external profile section in order to skip condition evaluation.
-				$filter = '/^MNM=".*profil.*extérieur.*"\r$/im';
+				$filter = "/^MNM=\".*profil.*extérieur.*\"\r$/im";
 				$isExternalProfile = preg_match($filter, $bloc->getText());
 				
 	            foreach($bloc->getChilds() as $child)

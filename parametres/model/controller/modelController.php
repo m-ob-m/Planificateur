@@ -13,17 +13,15 @@
 /*
  * Includes
 */
-require_once __DIR__ .  '/../../../lib/config.php';	// Fichier de configuration
-require_once __DIR__ .  '/../../../lib/connect.php';	// Classe de connection à la base de données
-require_once __DIR__ .  '/../model/model.php';	// Classe de modèle
+require_once $_SERVER["DOCUMENT_ROOT"] .  "/Planificateur/parametres/model/model/model.php";
 
 class ModelController {
 
 	private $_db;
     
-	function __construct()
+	function __construct(\FabplanConnection $db)
 	{
-		$this->connect();	
+		$this->_db = $db;	
 	}
 	
 	/**
@@ -33,11 +31,11 @@ class ModelController {
 	 *
 	 * @throws
 	 * @author Marc-Olivier Bazin-Maurice
-	 * @return Model The Model that has this id (null if none)
+	 * @return \Model The Model that has this id (null if none)
 	 */
 	function getModel(?int $id) : ?Model
 	{
-	    return Model::withID($this->getDBConnection(), $id);
+	    return \Model::withID($this->_db, $id);
 	}
     
 	/**
@@ -49,52 +47,27 @@ class ModelController {
 	 *
 	 * @throws
 	 * @author Marc-Olivier Bazin-Maurice
-	 * @return Model array The array of Model objects requested
+	 * @return \Model[] The array of Model objects requested
 	 */
 	function getModels(int $offset = 0, int $quantity = 0, bool $ascending = true) : array
 	{
-	    $stmt = $this->getDBConnection()->getConnection()->prepare("
+	    $stmt = $this->_db->getConnection()->prepare("
             SELECT `dm`.`id_door_model` AS `id`
             FROM `door_model` AS `dm`
             ORDER BY `dm`.`description_model` " . (($ascending === true) ? "ASC" : "DESC") . " " . 
-	        (($quantity === 0) ? "" : " LIMIT :quantity OFFSET :offset") . " " . 
-	        "FOR SHARE;"
-	        );
-	    $stmt->bindValue(":quantity", $quantity, PDO::PARAM_INT);
-	    $stmt->bindValue(":offset", $offset, PDO::PARAM_INT);
+			(($quantity === 0) ? "" : " LIMIT :quantity OFFSET :offset") . 
+			";"
+	    );
+	    $stmt->bindValue(":quantity", $quantity, \PDO::PARAM_INT);
+	    $stmt->bindValue(":offset", $offset, \PDO::PARAM_INT);
 	    $stmt->execute();
 	    
 	    $models = array();
-	    while($row = $stmt->fetch(PDO::FETCH_ASSOC))
+	    while($row = $stmt->fetch(\PDO::FETCH_ASSOC))
 	    {
-	        array_push($models, Model::withID($this->getDBConnection(), $row["id"]));
+	        array_push($models, \Model::withID($this->_db, $row["id"]));
 	    }
 	    return $models;
 	}
-	
-	/**
-	 * Connect to the database
-	 *
-	 * @throws
-	 * @author Marc-Olivier Bazin-Maurice
-	 * @return TestController This TestController
-	 */ 
-	private function connect()
-	{
-	    $this->_db = new FabPlanConnection();
-	    return $this;
-	}
-
-	/**
-	 * Get the connection to the database
-	 *
-	 * @throws
-	 * @author Marc-Olivier Bazin-Maurice
-	 * @return FabplanConnection The connection to the database
-	 */ 
-    public function getDBConnection() :FabPlanConnection
-    {
-        return $this->_db;
-    }
 }
 ?>

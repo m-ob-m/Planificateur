@@ -14,14 +14,14 @@
 
     try
     {
-        require_once __DIR__ . '/../controller/batchController.php'; // Contrôleur d'un Batch
+        require_once $_SERVER["DOCUMENT_ROOT"] . "/Planificateur/sections/batch/controller/batchController.php";
 
         // Initialize the session
         session_start();
                                                         
         // Check if the user is logged in, if not then redirect him to login page
         if(!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true){
-            if(!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest')
+            if(!empty($_SERVER["HTTP_X_REQUESTED_WITH"]) && strtolower($_SERVER["HTTP_X_REQUESTED_WITH"]) == "xmlhttprequest")
             {
                 throw new \Exception("You are not logged in.");
             }
@@ -32,6 +32,9 @@
             exit;
         }
     
+        // Getting a connection to the database.
+        $db = new \FabPlanConnection();
+
         // Closing the session to let other scripts use it.
         session_write_close();
 
@@ -39,7 +42,6 @@
         
         // Get the information
         $batch = null;
-        $db = new \FabPlanConnection();
         try
         {
             $db->getConnection()->beginTransaction();

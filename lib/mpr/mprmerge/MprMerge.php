@@ -1,6 +1,6 @@
 <?php 
-    require_once __DIR__ . "/MprMergeInputFile.php";
-    require_once __DIR__ . "/MprVariable.php";
+    require_once $_SERVER["DOCUMENT_ROOT"] . "/Planificateur/lib/mpr/mprmerge/MprMergeInputFile.php";
+    require_once $_SERVER["DOCUMENT_ROOT"] . "/Planificateur/lib/mpr/mprmerge/MprVariable.php";
     
     /**
      * \MprMerge
@@ -204,7 +204,7 @@
                         "NewCoordWithOffset" => "1",
                         "Optimize" => "1",
                         "Wegopti" => "1",
-                        "UseInternalVar" => "1",
+                        "UseInternalVar" => "0",
                         "CountPart" => "1",
                         "KeepOrder" => "0"
                     ),

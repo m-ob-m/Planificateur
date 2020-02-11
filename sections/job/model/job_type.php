@@ -10,10 +10,10 @@
  * \details 	Modele de la table job_type
  */
 
-require_once __DIR__ . "/../../../parametres/varmodtypegen/model/modelTypeGeneric.php";
-require_once __DIR__ . "/../../../parametres/model/model/model.php";
-require_once __DIR__ . "/../../../parametres/type/model/type.php";
-require_once __DIR__ . "/jobTypeParameter.php";
+require_once $_SERVER["DOCUMENT_ROOT"] . "/Planificateur/parametres/varmodtypegen/model/modelTypeGeneric.php";
+require_once $_SERVER["DOCUMENT_ROOT"] . "/Planificateur/parametres/model/model/model.php";
+require_once $_SERVER["DOCUMENT_ROOT"] . "/Planificateur/parametres/type/model/type.php";
+require_once $_SERVER["DOCUMENT_ROOT"] . "/Planificateur/sections/job/model/jobTypeParameter.php";
 
 class JobType extends \ModelTypeGeneric implements \JsonSerializable
 {
@@ -73,7 +73,7 @@ class JobType extends \ModelTypeGeneric implements \JsonSerializable
             FROM `job_type` AS `jt` WHERE `jt`.`id_job_type` = :id " . 
             (new \MYSQLDatabaseLockingReadTypes($databaseConnectionLockingReadType))->toLockingReadString() . ";"
         );
-        $stmt->bindValue(':id', $id, PDO::PARAM_INT);
+        $stmt->bindValue(":id", $id, PDO::PARAM_INT);
         $stmt->execute();
         
 		$model = null;
@@ -118,7 +118,7 @@ class JobType extends \ModelTypeGeneric implements \JsonSerializable
 				ORDER BY `gp`.`id` ASC " . 
 				(new \MYSQLDatabaseLockingReadTypes($databaseConnectionLockingReadType))->toLockingReadString() . ";"
 			);
-			$stmt->bindValue(':id', $id, PDO::PARAM_INT);
+			$stmt->bindValue(":id", $id, PDO::PARAM_INT);
 			$stmt->execute();
 			
 			while($row = $stmt->fetch())	// Récupération des paramètres
@@ -133,7 +133,7 @@ class JobType extends \ModelTypeGeneric implements \JsonSerializable
             "SELECT `jtp`.* FROM `job_type_porte` AS `jtp` WHERE `jtp`.`job_type_id` = :id " . 
             (new \MYSQLDatabaseLockingReadTypes($databaseConnectionLockingReadType))->toLockingReadString() . ";"
         );
-        $stmt->bindValue(':id', $id, PDO::PARAM_INT);
+        $stmt->bindValue(":id", $id, PDO::PARAM_INT);
         $stmt->execute();
         
         //Récupération des pièces à produire
@@ -208,14 +208,14 @@ class JobType extends \ModelTypeGeneric implements \JsonSerializable
                     DELETE FROM `job_type_params`
                     WHERE `job_type_id` = :id;
                 ");
-            $stmt->bindValue(':id', $this->getId(), \PDO::PARAM_INT);
+            $stmt->bindValue(":id", $this->getId(), \PDO::PARAM_INT);
             $stmt->execute();
             
             $stmt = $db->getConnection()->prepare("
                     DELETE FROM `job_type_porte`
                     WHERE `job_type_id` = :id;
                 ");
-            $stmt->bindValue(':id', $this->getId(), PDO::PARAM_INT);
+            $stmt->bindValue(":id", $this->getId(), PDO::PARAM_INT);
             $stmt->execute();
         }
         
@@ -237,11 +237,11 @@ class JobType extends \ModelTypeGeneric implements \JsonSerializable
             INSERT INTO `job_type` (`id_job_type`, `job_id`, `door_model_id`, `type_no`, `fichier_mpr`)
             VALUES (:jobTypeId, :jobId, :modelId, :typeNo, :mprFile);
         ");
-        $stmt->bindValue(':jobTypeId', $this->getId(), PDO::PARAM_INT);
-        $stmt->bindValue(':jobId', $this->getJobId(), PDO::PARAM_INT);
-        $stmt->bindValue(':modelId', $this->getModel()->getId(), PDO::PARAM_INT);
-        $stmt->bindValue(':typeNo', $this->getType()->getImportNo(), PDO::PARAM_INT);
-        $stmt->bindValue(':mprFile', $this->getMprFile(), PDO::PARAM_STR);
+        $stmt->bindValue(":jobTypeId", $this->getId(), PDO::PARAM_INT);
+        $stmt->bindValue(":jobId", $this->getJobId(), PDO::PARAM_INT);
+        $stmt->bindValue(":modelId", $this->getModel()->getId(), PDO::PARAM_INT);
+        $stmt->bindValue(":typeNo", $this->getType()->getImportNo(), PDO::PARAM_INT);
+        $stmt->bindValue(":mprFile", $this->getMprFile(), PDO::PARAM_STR);
         $success = $stmt->execute();
         $this->setId(intval($db->getConnection()->lastInsertId()));
         
@@ -275,11 +275,11 @@ class JobType extends \ModelTypeGeneric implements \JsonSerializable
             SET `job_id` = :jobId, `door_model_id` = :modelId, `type_no` = :typeNo, `fichier_mpr` = :mprFile
             WHERE `id_job_type` = :id;
         ");
-        $stmt->bindValue(':id', $this->getId(), PDO::PARAM_INT);
-        $stmt->bindValue(':jobId', $this->getJobId(), PDO::PARAM_INT);
-        $stmt->bindValue(':modelId', $this->getModel()->getId(), PDO::PARAM_INT);
-        $stmt->bindValue(':typeNo', $this->getType()->getImportNo(), PDO::PARAM_INT);
-        $stmt->bindValue(':mprFile', $this->getMprFile(), PDO::PARAM_STR);
+        $stmt->bindValue(":id", $this->getId(), PDO::PARAM_INT);
+        $stmt->bindValue(":jobId", $this->getJobId(), PDO::PARAM_INT);
+        $stmt->bindValue(":modelId", $this->getModel()->getId(), PDO::PARAM_INT);
+        $stmt->bindValue(":typeNo", $this->getType()->getImportNo(), PDO::PARAM_INT);
+        $stmt->bindValue(":mprFile", $this->getMprFile(), PDO::PARAM_STR);
         $success = $stmt->execute();
         
         foreach($this->_parameters as $parameter)
@@ -315,7 +315,7 @@ class JobType extends \ModelTypeGeneric implements \JsonSerializable
             $this->emptyInDatabase($db);
             
             $stmt = $db->getConnection()->prepare("DELETE FROM `job_type` WHERE `id_job_type` = :id;");
-            $stmt->bindValue(':id', $this->getId(), PDO::PARAM_INT);
+            $stmt->bindValue(":id", $this->getId(), PDO::PARAM_INT);
             $stmt->execute();
         }
         
@@ -336,7 +336,7 @@ class JobType extends \ModelTypeGeneric implements \JsonSerializable
         $stmt= $db->getConnection()->prepare("
             SELECT `jt`.`estampille` FROM `job_type` AS `jt` WHERE `jt`.`id_job_type` = :id;
         ");
-        $stmt->bindValue(':id', $this->getId(), PDO::PARAM_INT);
+        $stmt->bindValue(":id", $this->getId(), PDO::PARAM_INT);
         $stmt->execute();
         
         if($row = $stmt->fetch())

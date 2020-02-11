@@ -15,15 +15,16 @@
     */
     
     /* INCLUDE */
-    require_once __DIR__ . '/../type/controller/typeController.php';		// Classe contrôleur de cette vue
-    require_once __DIR__ . '/../generic/controller/genericController.php'; //Contrôleur de générique
+	require_once $_SERVER["DOCUMENT_ROOT"] . "/Planificateur/parametres/type/controller/typeController.php";
+	require_once $_SERVER["DOCUMENT_ROOT"] . "/Planificateur/parametres/generic/controller/genericController.php";
+	require_once $_SERVER["DOCUMENT_ROOT"] . "/Planificateur/lib/connect.php";
 	
     // Initialize the session
 	session_start();
         
 	// Check if the user is logged in, if not then redirect him to login page
 	if(!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true){
-		if(!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest')
+		if(!empty($_SERVER["HTTP_X_REQUESTED_WITH"]) && strtolower($_SERVER["HTTP_X_REQUESTED_WITH"]) == "xmlhttprequest")
 		{
 			throw new \Exception("You are not logged in.");
 		}
@@ -34,16 +35,18 @@
 		exit;
 	}
 
+	// Getting a connection to the database.
+	$db = new \FabPlanConnection();
+
 	// Closing the session to let other scripts use it.
 	session_write_close();
     
     $generics = array();
     $type = null;
-    $db = new \FabPlanConnection();
     try
     {
         $db->getConnection()->beginTransaction();
-        $generics = (new \GenericController())->getGenerics();
+        $generics = (new \GenericController($db))->getGenerics();
         $type = isset($_GET["id"]) ? \Type::withID($db, intval($_GET["id"])) : new \Type();
         $db->getConnection()->commit();
     }
@@ -179,16 +182,6 @@
 					</tbody>
 				</table>
 			</div>
-		</div>
-
-		<!--  Fenetre Modal pour message d'erreurs -->
-		<div id="errMsgModal" class="modal" onclick='this.style.display = "none";'>
-			<div id="errMsg" class="modal-content" style='color:#FF0000;'></div>
-		</div>
-		
-		<!--  Fenetre Modal pour message de validation -->
-		<div id="validationMsgModal" class="modal" onclick='this.style.display = "none";'>
-			<div id="validationMsg" class="modal-content" style='color:#FF0000;'></div>
 		</div>
 		
 		<!--  Fenetre Modal pour chargement -->

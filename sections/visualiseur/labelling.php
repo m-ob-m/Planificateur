@@ -9,32 +9,52 @@
     * \details 		Menu pour imprimer des étiquettes
     */
     
-    require_once __DIR__ . "/../batch/controller/batchController.php";
-    require_once __DIR__ . "/model/nestedPanelCollection.php";
-    require_once __DIR__ . "/../../lib/clientInformation/clientInformation.php";
+    require_once $_SERVER["DOCUMENT_ROOT"] . "/Planificateur/sections/batch/controller/batchController.php";
+    require_once $_SERVER["DOCUMENT_ROOT"] . "/Planificateur/sections/visualiseur/model/nestedPanelCollection.php";
+    require_once $_SERVER["DOCUMENT_ROOT"] . "/Planificateur/lib/clientInformation/clientInformation.php";
+    require_once $_SERVER["DOCUMENT_ROOT"] . "/Planificateur/lib/numberFunctions/numberFunctions.php";
 
-    /* 
-     * No session required to open this page! Be careful concerning what you put here. 
-     * Advanced user account control might become available in a later release.
-     */
+    // Initialize the session
+    session_start();
+                                                                            
+    // Check if the user is logged in, if not then redirect him to login page
+    if(!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true){
+        if(!empty($_SERVER["HTTP_X_REQUESTED_WITH"]) && strtolower($_SERVER["HTTP_X_REQUESTED_WITH"]) == "xmlhttprequest")
+        {
+            throw new \Exception("You are not logged in.");
+        }
+        else
+        {
+            header("location: /Planificateur/lib/account/logIn.php");
+        }
+        exit;
+    }
+
+    
+    // Getting a connection to the database.
+    $db = new \FabPlanConnection();
+
+    // Closing the session to let other scripts use it.
+    session_write_close();
 
     $error = null;
     $batch = null;
-
-    $db = new \FabPlanConnection();
-    try
+    if(is_positive_integer_or_equivalent_string($_GET["id"] ?? null))
     {
-        $db->getConnection()->beginTransaction();
-        $batch =  \Batch::withID($db, $_GET["id"]) ?? new \Batch();
-        $db->getConnection()->commit();
+        try
+        {
+            $db->getConnection()->beginTransaction();
+            $batch = \Batch::withID($db, intval($_GET["id"])) ?? new \Batch();
+            $db->getConnection()->commit();
+        }
+        catch(\Exception $e)
+        {
+            $db->getConnection()->rollback();
+        }
     }
-    catch(\Exception $e)
+    else 
     {
-        $db->getConnection()->rollback();
-    }
-    finally
-    {
-        $db = null;
+        $batch = new \Batch();
     }
     
     $pc2Path = CR_FABRIDOR . "\\SYSTEM_DATA\\DATA\\{$batch->getName()}.pc2";
@@ -67,7 +87,7 @@
     
     $now = time();
     
-    $tempDirectory = __DIR__ . "/temp/";
+    $tempDirectory = $_SERVER["DOCUMENT_ROOT"] . "/Planificateur/sections/visualiseur/temp/";
     if (!file_exists($tempDirectory)) {
         mkdir($tempDirectory, 0777, true);
     }
@@ -159,7 +179,8 @@
                         	<div style="flex: 0 1 auto;">
                         		<?php $sourceFileName = $batch->getName() . fillZero($index + 1, 4) . ".jpg";?>
                         		<?php $sourceFilePath = CR_FABRIDOR . "SYSTEM_DATA\\DATA\\" . $sourceFileName; ?>
-                        		<?php $destinationFilePath = __DIR__ . "/temp/panel_{$sourceFileName}"; ?>
+                        		<?php $destinationFilePathFromRoot = "/Planificateur/sections/visualiseur/temp/panel_{$sourceFileName}"; ?>
+                                <?php $destinationFilePath = $_SERVER["DOCUMENT_ROOT"] . $destinationFilePathFromRoot; ?>
                                 <?php copy($sourceFilePath, $destinationFilePath); ?>
                         		<div class="pannel">
                         			<img src="temp/panel_<?= $sourceFileName; ?>">
@@ -192,11 +213,6 @@
                 <?php endif;?>
             </div>
     	</div>
-    	
-    	<!--  Fenêtre modale pour messages d'erreur -->
-		<div id="errMsgModal" class="modal" onclick='this.style.display = "none";'>
-			<div id="errMsg" class="modal-content" style='color:#FF0000;'></div>
-		</div>
     	
     	<script type="text/javascript" src="../../assets/js/ajax.js"></script>
 		<script type="text/javascript" src="../../assets/js/docReady.js"></script>

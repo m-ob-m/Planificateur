@@ -9,9 +9,9 @@
  * \details 	Modele de la table job
  */
 
-require_once __DIR__ . '/job_type.php';	// Classe d'un type de job
-require_once __DIR__ . '/job_type_porte.php';	// Classe d'une porte de type
-require_once __DIR__ . "/../../batch/model/batch.php"; // Classe d'une batch
+require_once $_SERVER["DOCUMENT_ROOT"] . "/Planificateur/sections/job/model/job_type.php";
+require_once $_SERVER["DOCUMENT_ROOT"] . "/Planificateur/sections/job/model/job_type_porte.php";
+require_once $_SERVER["DOCUMENT_ROOT"] . "/Planificateur/sections/batch/model/batch.php";
 
 class Job implements \JsonSerializable
 {	
@@ -72,7 +72,7 @@ class Job implements \JsonSerializable
             FROM `job` AS `j` WHERE `j`.`id_job` = :id " . 
 	        (new \MYSQLDatabaseLockingReadTypes($databaseConnectionLockingReadType))->toLockingReadString() . ";"
         );
-	    $stmt->bindValue(':id', $id, PDO::PARAM_INT);
+	    $stmt->bindValue(":id", $id, PDO::PARAM_INT);
 	    $stmt->execute();
 	    
 	    if ($row = $stmt->fetch())
@@ -92,7 +92,7 @@ class Job implements \JsonSerializable
             ORDER BY `jt`.`id_job_type` ASC " . 
 	        (new \MYSQLDatabaseLockingReadTypes($databaseConnectionLockingReadType))->toLockingReadString() . ";"
         );
-	    $stmt->bindValue(':id', $id, PDO::PARAM_INT);
+	    $stmt->bindValue(":id", $id, PDO::PARAM_INT);
 	    $stmt->execute();
 	    
 	    while($row = $stmt->fetch())	// Récupération des paramètres
@@ -123,7 +123,7 @@ class Job implements \JsonSerializable
             FROM `job` AS `j` WHERE `j`.`numero` = :name " . 
             (new \MYSQLDatabaseLockingReadTypes($databaseConnectionLockingReadType))->toLockingReadString() . ";"
         );
-	    $stmt->bindValue(':name', $name, PDO::PARAM_INT);
+	    $stmt->bindValue(":name", $name, PDO::PARAM_INT);
 	    $stmt->execute();
 	    
 	    if ($row = $stmt->fetch())
@@ -143,7 +143,7 @@ class Job implements \JsonSerializable
             ORDER BY `jt`.`type_no` ASC, `jt`.`door_model_id` ASC " . 
 	        (new \MYSQLDatabaseLockingReadTypes($databaseConnectionLockingReadType))->toLockingReadString() . ";"
         );
-	    $stmt->bindValue(':id', $instance->getId(), PDO::PARAM_INT);
+	    $stmt->bindValue(":id", $instance->getId(), PDO::PARAM_INT);
 	    $stmt->execute();
 	    
 	    while($row = $stmt->fetch())	// Récupération des paramètres
@@ -169,7 +169,7 @@ class Job implements \JsonSerializable
 	    $stmt = $db->getConnection()->prepare("
             SELECT `j`.* FROM `job` AS `j` WHERE `j`.`id_job` = :id LIMIT 1;
         ");
-	    $stmt->bindValue(':id', $this->getId(), PDO::PARAM_INT);
+	    $stmt->bindValue(":id", $this->getId(), PDO::PARAM_INT);
 	    $stmt->execute();
 	    
 	    if($stmt->fetch(PDO::FETCH_ASSOC) == null)
@@ -219,10 +219,10 @@ class Job implements \JsonSerializable
             INSERT INTO `job` (`numero`, `date_livraison`, `customerPO`, `etat`)
             VALUES (:name, :deliveryDate, :customerPO, :status);
         ");
-	    $stmt->bindValue(':name', $this->getName(), PDO::PARAM_STR);
-		$stmt->bindValue(':deliveryDate', $this->getDeliveryDate(), PDO::PARAM_STR);
-		$stmt->bindValue(':customerPO', $this->getCustomerPurchaseOrderNumber(), \PDO::PARAM_STR);
-	    $stmt->bindValue(':status', $this->getStatus(), PDO::PARAM_STR);
+	    $stmt->bindValue(":name", $this->getName(), PDO::PARAM_STR);
+		$stmt->bindValue(":deliveryDate", $this->getDeliveryDate(), PDO::PARAM_STR);
+		$stmt->bindValue(":customerPO", $this->getCustomerPurchaseOrderNumber(), \PDO::PARAM_STR);
+	    $stmt->bindValue(":status", $this->getStatus(), PDO::PARAM_STR);
 	    $stmt->execute();
 	    $this->setId(intval($db->getConnection()->lastInsertId()));
 		
@@ -251,11 +251,11 @@ class Job implements \JsonSerializable
             SET `numero` = :name, `date_livraison` = :deliveryDate, `customerPO` = :customerPO, `etat` = :status
             WHERE `id_job` = :id;
         ");
-	    $stmt->bindValue(':id', $this->getId(), \PDO::PARAM_INT);
-	    $stmt->bindValue(':name', $this->getName(), \PDO::PARAM_STR);
-		$stmt->bindValue(':deliveryDate', $this->getDeliveryDate(), \PDO::PARAM_STR);
-		$stmt->bindValue(':customerPO', $this->getCustomerPurchaseOrderNumber(), \PDO::PARAM_STR);
-	    $stmt->bindValue(':status', $this->getStatus(), \PDO::PARAM_STR);
+	    $stmt->bindValue(":id", $this->getId(), \PDO::PARAM_INT);
+	    $stmt->bindValue(":name", $this->getName(), \PDO::PARAM_STR);
+		$stmt->bindValue(":deliveryDate", $this->getDeliveryDate(), \PDO::PARAM_STR);
+		$stmt->bindValue(":customerPO", $this->getCustomerPurchaseOrderNumber(), \PDO::PARAM_STR);
+	    $stmt->bindValue(":status", $this->getStatus(), \PDO::PARAM_STR);
 	    $stmt->execute();
 	    
 	    /* @var \JobType $jobType */
@@ -286,7 +286,7 @@ class Job implements \JsonSerializable
 	    else
 	    {
     	    $stmt = $db->getConnection()->prepare("DELETE FROM `job` WHERE `id_job` = :id;");
-    	    $stmt->bindValue(':id', $this->getId(), PDO::PARAM_INT);
+    	    $stmt->bindValue(":id", $this->getId(), PDO::PARAM_INT);
     	    $stmt->execute();
 	    }
 	    
@@ -307,7 +307,7 @@ class Job implements \JsonSerializable
 	    $stmt= $db->getConnection()->prepare("
             SELECT `j`.`estampille` FROM `job` AS `j` WHERE `j`.`id_job` = :id;
         ");
-	    $stmt->bindValue(':id', $this->getId(), PDO::PARAM_INT);
+	    $stmt->bindValue(":id", $this->getId(), PDO::PARAM_INT);
 	    $stmt->execute();
 	    
 	    if($row = $stmt->fetch())
@@ -335,7 +335,7 @@ class Job implements \JsonSerializable
             SELECT `jt`.`id_job_type` AS `jobTypeId` FROM `job_type` AS `jt` 
             WHERE `jt`.`job_id` = :id;
 	    ");
-	    $stmt->bindValue(':id', $this->getId(), PDO::PARAM_INT);
+	    $stmt->bindValue(":id", $this->getId(), PDO::PARAM_INT);
 	    $stmt->execute();
 	    
 	    while($row = $stmt->fetch())
@@ -367,7 +367,7 @@ class Job implements \JsonSerializable
             WHERE `j`.`id_job` = :id " . 
 	        (new \MYSQLDatabaseLockingReadTypes($this->getDatabaseConnectionLockingReadType()))->toLockingReadString() . ";"
         );
-	    $stmt->bindValue(':id', $this->getId(), PDO::PARAM_INT);
+	    $stmt->bindValue(":id", $this->getId(), PDO::PARAM_INT);
 	    $stmt->execute();
 	    
 	    if($row = $stmt->fetch())

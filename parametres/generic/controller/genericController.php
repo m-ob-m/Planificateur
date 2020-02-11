@@ -13,17 +13,15 @@
 /*
  * Includes
 */
-require_once __DIR__ .  '/../../../lib/config.php';	// Fichier de configuration
-require_once __DIR__ .  '/../../../lib/connect.php';	// Classe de connection à la base de données
-require_once __DIR__ .  '/../model/generic.php';	// Classe de matériel
+require_once $_SERVER["DOCUMENT_ROOT"] . "/Planificateur/parametres/generic/model/generic.php";	
 
 class GenericController
 {
 	private $_db;
 
-	function __construct()
+	function __construct(\FabplanConnection $db)
 	{
-		$this->connect();	
+		$this->_db = $db;	
 	}
 	
 	/**
@@ -37,7 +35,7 @@ class GenericController
 	 */
 	function getGeneric(?int $id) : ?Generic
 	{
-	    return \Generic::withID($this->getDBConnection(), $id);
+	    return \Generic::withID($this->_db, $id);
 	}
     
 	/**
@@ -53,7 +51,7 @@ class GenericController
 	 */
 	function getGenerics(int $offset = 0, int $quantity = 0, bool $ascending = true) : array
 	{
-	    $stmt = $this->getDBConnection()->getConnection()->prepare("
+	    $stmt = $this->_db->getConnection()->prepare("
             SELECT `g`.`id`
             FROM `generics` AS `g`
             ORDER BY `g`.`id` " . (($ascending === true) ? "ASC" : "DESC") . " " . 
@@ -67,36 +65,11 @@ class GenericController
 	    $generics = array();
 	    while($row = $stmt->fetch(PDO::FETCH_ASSOC))
 	    {
-	        array_push($generics, \Generic::withID($this->getDBConnection(), $row["id"]));
+	        array_push($generics, \Generic::withID($this->_db, $row["id"]));
 	    }
 	    
 	    return $generics;
 	}
-	
-	/**
-	 * Connect to the database
-	 *
-	 * @throws
-	 * @author Marc-Olivier Bazin-Maurice
-	 * @return TestController This TestController
-	 */ 
-	private function connect()
-	{
-	    $this->_db = new FabPlanConnection();
-	    return $this;
-	}
-
-	/**
-	 * Get the connection to the database
-	 *
-	 * @throws
-	 * @author Marc-Olivier Bazin-Maurice
-	 * @return FabplanConnection The connection to the database
-	 */ 
-    public function getDBConnection() :FabPlanConnection
-    {
-        return $this->_db;
-    }
 }
 
 ?>

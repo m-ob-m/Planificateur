@@ -205,12 +205,12 @@ namespace FileFunctions{
         {
             for($i = 0; $i < count($this->directory); $i++)
             {
-                $this->directory[$i] = \Transliterator::create('Any-Latin; Latin-ASCII', \Transliterator::FORWARD)
+                $this->directory[$i] = \Transliterator::create("Any-Latin; Latin-ASCII", \Transliterator::FORWARD)
                     ->transliterate($this->directory[$i]);
             }
-            $this->filename = \Transliterator::create('Any-Latin; Latin-ASCII', \Transliterator::FORWARD)
+            $this->filename = \Transliterator::create("Any-Latin; Latin-ASCII", \Transliterator::FORWARD)
                 ->transliterate($this->filename);
-            $this->extension = \Transliterator::create('Any-Latin; Latin-ASCII', \Transliterator::FORWARD)
+            $this->extension = \Transliterator::create("Any-Latin; Latin-ASCII", \Transliterator::FORWARD)
                 ->transliterate($this->extension);
             
             return $this;

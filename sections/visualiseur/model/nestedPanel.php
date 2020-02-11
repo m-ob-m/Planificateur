@@ -1,5 +1,4 @@
 <?php
-require_once $_SERVER["DOCUMENT_ROOT"] . "/Planificateur/lib/config.php";
 require_once $_SERVER["DOCUMENT_ROOT"] . "/Planificateur/lib/connect.php";
 require_once $_SERVER["DOCUMENT_ROOT"] . "/Planificateur/parametres/material/model/material.php";
 

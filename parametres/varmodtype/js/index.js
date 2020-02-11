@@ -304,7 +304,7 @@ async function exportParameters()
 
 	try{
 		let downloadLink = await exportParametersToExcelFile(selectedModel);
-		downloadFile(downloadLink, downloadLink.substring(downloadLink.lastIndexOf('/') + 1));
+		downloadFile(downloadLink, downloadLink.substring(downloadLink.lastIndexOf("/") + 1));
 	}
 	catch(error){
 		showError("L'exportation des paramètres du modèle sélectionné a échouée", error);

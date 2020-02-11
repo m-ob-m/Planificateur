@@ -13,9 +13,7 @@
 /*
  * Includes
  */
-require_once __DIR__ . '/../../../lib/config.php';	// Fichier de configuration
-require_once __DIR__ . '/../../../lib/connect.php';	// Classe de connection à la base de données
-require_once __DIR__ . '/../model/modelTypeGeneric.php';	// Classe de modèle-type-générique
+require_once $_SERVER["DOCUMENT_ROOT"] . "/Planificateur/parametres/varmodtypegen/model/modelTypeGeneric.php";
 
 class ModelTypeGenericController
 {
@@ -23,18 +21,19 @@ class ModelTypeGenericController
     
     /**
      * ModelTypeGenericController
-     *
+     * @param \FabplanConnection $db A database
+     * 
      * @throws
      * @author Marc-Olivier Bazin-Maurice
-     * @return ModelTypeGenericController
+     * @return \ModelTypeGenericController
      */ 
-    function __construct()
+    function __construct(\FabplanConnection $db)
     {
-        $this->_db = new FabPlanConnection();
+        $this->_db = $db;
     }
     
     /**
-	 * get a ModelTypeGeneric by import_no and by model_id
+	 * get a ModelTypeGeneric by Type import no and by Model id
 	 *
 	 * @param int $modelId The id of a Model
 	 * @param int $typeNo The importNo of a type
@@ -48,11 +47,6 @@ class ModelTypeGenericController
         $model = \Model::withID($this->_db, $modelId);
         $type = \Type::withImportNo($this->_db, $typeNo);
         return (new \ModelTypeGeneric($model, $type))->loadParameters($this->_db);
-    }
-    
-    public function connexion()
-    {
-        return $this->_db;
     }
 }
 

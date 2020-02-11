@@ -9,7 +9,7 @@
  * \details 	Modele de testTypeParameter
  */
 
-require_once __DIR__ . "/../../varmodtypegen/model/modelTypeGenericParameter.php";
+require_once $_SERVER["DOCUMENT_ROOT"] . "/Planificateur/parametres/varmodtypegen/model/modelTypeGenericParameter.php";
 
 class TestParameter  extends Parameter implements JsonSerializable
 {
@@ -53,8 +53,8 @@ class TestParameter  extends Parameter implements JsonSerializable
             SELECT `tp`.* FROM `test_parameters` AS `tp`
             WHERE `tp`.`test_id` = :test_id AND `tp`.`parameter_key` = :key;
         ");
-	    $stmt->bindValue(':test_id', $testId, PDO::PARAM_INT);
-	    $stmt->bindValue(':key', $key, PDO::PARAM_STR);
+	    $stmt->bindValue(":test_id", $testId, PDO::PARAM_INT);
+	    $stmt->bindValue(":key", $key, PDO::PARAM_STR);
 	    $stmt->execute();
 	    
 	    $instance = null;
@@ -105,10 +105,10 @@ class TestParameter  extends Parameter implements JsonSerializable
             INSERT INTO `test_parameters` (`test_id`, `parameter_key`, `parameter_value`, `parameter_description`)
             VALUES (:test_id, :key, :value, :description);
         ");
-	    $stmt->bindValue(':test_id', $this->getTestId(), PDO::PARAM_INT);
-	    $stmt->bindValue(':key', $this->getKey(), PDO::PARAM_STR);
-	    $stmt->bindValue(':value', $this->getValue(), PDO::PARAM_STR);
-	    $stmt->bindValue(':description', $this->getDescription(), PDO::PARAM_STR);
+	    $stmt->bindValue(":test_id", $this->getTestId(), PDO::PARAM_INT);
+	    $stmt->bindValue(":key", $this->getKey(), PDO::PARAM_STR);
+	    $stmt->bindValue(":value", $this->getValue(), PDO::PARAM_STR);
+	    $stmt->bindValue(":description", $this->getDescription(), PDO::PARAM_STR);
 	    $success = $stmt->execute();
         
         return $this;
@@ -131,10 +131,10 @@ class TestParameter  extends Parameter implements JsonSerializable
             SET `parameter_value` = :value, `parameter_description` = :description
             WHERE `test_id` = :test_id AND `parameter_key` = :key;
         ");
-	    $stmt->bindValue(':test_id', $this->getTestId(), PDO::PARAM_INT);
-	    $stmt->bindValue(':key', $this->getKey(), PDO::PARAM_STR);
-	    $stmt->bindValue(':value', $this->getValue(), PDO::PARAM_STR);
-	    $stmt->bindValue(':description', $this->getDescription(), PDO::PARAM_STR);
+	    $stmt->bindValue(":test_id", $this->getTestId(), PDO::PARAM_INT);
+	    $stmt->bindValue(":key", $this->getKey(), PDO::PARAM_STR);
+	    $stmt->bindValue(":value", $this->getValue(), PDO::PARAM_STR);
+	    $stmt->bindValue(":description", $this->getDescription(), PDO::PARAM_STR);
 	    $success = $stmt->execute();
 	    
 	    return $this;
@@ -155,8 +155,8 @@ class TestParameter  extends Parameter implements JsonSerializable
             DELETE FROM `test_parameters` 
             WHERE `test_id` = :test_id AND `parameter_key` = :key;
         ");
-	    $stmt->bindValue(':test_id', $this->getTestId(), PDO::PARAM_INT);
-	    $stmt->bindValue(':key', $this->getKey(), PDO::PARAM_STR);
+	    $stmt->bindValue(":test_id", $this->getTestId(), PDO::PARAM_INT);
+	    $stmt->bindValue(":key", $this->getKey(), PDO::PARAM_STR);
 	    $stmt->execute();
 	    
 	    return $this;

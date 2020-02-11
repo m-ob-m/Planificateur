@@ -10,9 +10,8 @@
 * \details 		Représente toutes les valeurs d'un modèle/type
 */
 
-require_once __DIR__ . '/../../../lib/config.php';	// Fichier de configuration
-require_once __DIR__ . '/../../../lib/connect.php';	// Classe de connection à la base de données
-require_once __DIR__ . '/modelTypeParameter.php'; // Classe de paramètres pour cet objet
+require_once $_SERVER["DOCUMENT_ROOT"] . "/Planificateur/lib/connect.php";
+require_once $_SERVER["DOCUMENT_ROOT"] . "/Planificateur/parametres/varmodtype/model/modelTypeParameter.php";
 
 class ModelType implements \JsonSerializable
 {
@@ -113,8 +112,8 @@ class ModelType implements \JsonSerializable
             ON `dmd`.`fkDoorType` = :typeNo AND `dmd`.`fkDoorModel` = `dm`.`id_door_model` 
                 AND `dm`.`id_door_model` = :modelId;"
         );
-	    $stmt->bindValue(':modelId', $this->getModel()->getId(), \PDO::PARAM_INT);
-	    $stmt->bindValue(':typeNo', $this->getType()->getImportNo(), \PDO::PARAM_INT);
+	    $stmt->bindValue(":modelId", $this->getModel()->getId(), \PDO::PARAM_INT);
+	    $stmt->bindValue(":typeNo", $this->getType()->getImportNo(), \PDO::PARAM_INT);
 	    $stmt->execute();
 	    
 	    $this->setParameters(array());
@@ -124,7 +123,7 @@ class ModelType implements \JsonSerializable
 	        $typeNo = $this->getType()->getImportNo();
 	        array_push(
 	            $this->_parameters, 
-	            new \ModelTypeParameter($row['key'], $row['value'], $modelId, $typeNo)
+	            new \ModelTypeParameter($row["key"], $row["value"], $modelId, $typeNo)
 	        );
 	    }
 	    
@@ -146,8 +145,8 @@ class ModelType implements \JsonSerializable
             "DELETE `door_model_data` FROM `door_model_data` 
 			WHERE `door_model_data`.`fkDoorModel` = :modelId AND `door_model_data`.`fkDoorType` = :typeNo;"
         );
-	    $stmt->bindValue(':modelId', $this->getModel()->getId(), \PDO::PARAM_INT);
-	    $stmt->bindValue(':typeNo', $this->getType()->getImportNo(), \PDO::PARAM_INT);
+	    $stmt->bindValue(":modelId", $this->getModel()->getId(), \PDO::PARAM_INT);
+	    $stmt->bindValue(":typeNo", $this->getType()->getImportNo(), \PDO::PARAM_INT);
 	    $stmt->execute();
 	    
 	    return $this;

@@ -15,14 +15,15 @@
 	*/
 
 	/* INCLUDE */
-	require_once __DIR__ . '/controller/materialCtrl.php';		// Classe contrôleur de cette vue
+	require_once $_SERVER["DOCUMENT_ROOT"] . "/Planificateur/parametres/material/controller/materialCtrl.php";
+	require_once $_SERVER["DOCUMENT_ROOT"] . "/Planificateur/lib/connect.php";
 
 	// Initialize the session
 	session_start();
         
 	// Check if the user is logged in, if not then redirect him to login page
 	if(!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true){
-		if(!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest')
+		if(!empty($_SERVER["HTTP_X_REQUESTED_WITH"]) && strtolower($_SERVER["HTTP_X_REQUESTED_WITH"]) == "xmlhttprequest")
 		{
 			throw new \Exception("You are not logged in.");
 		}
@@ -33,17 +34,19 @@
 		exit;
 	}
 
+	// Getting a connection to the database.
+	$db = new \FabPlanConnection();
+
 	// Closing the session to let other scripts use it.
 	session_write_close();
     
 	$material = null;
-	$db = new \FabPlanConnection();
 	try
 	{
 		$db->getConnection()->beginTransaction();
 		if(isset($_GET["id"]))
 		{
-			$material = (new \MaterialController())->getMaterial($_GET["id"]);
+			$material = (new \MaterialController($db))->getMaterial($_GET["id"]);
 		}
 		else
 		{
@@ -194,16 +197,6 @@
 						</table>
 					</div>
 				</div>
-			</div>
-			
-			<!--  Fenetre Modal pour message d'erreurs -->
-			<div id="errMsgModal" class="modal" onclick='this.style.display = "none";'>
-				<div id="errMsg" class="modal-content" style='color:#FF0000;'></div>
-			</div>
-			
-			<!--  Fenetre Modal pour message de validation -->
-			<div id="validationMsgModal" class="modal" onclick='this.style.display = "none";'>
-				<div id="validationMsg" class="modal-content" style='color:#FF0000;'></div>
 			</div>
 			
 			<!--  Fenetre Modal pour chargement -->

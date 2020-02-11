@@ -21,7 +21,7 @@
         
 	// Check if the user is logged in, if not then redirect him to login page
 	if(!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true){
-		if(!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest')
+		if(!empty($_SERVER["HTTP_X_REQUESTED_WITH"]) && strtolower($_SERVER["HTTP_X_REQUESTED_WITH"]) == "xmlhttprequest")
 		{
 			throw new \Exception("You are not logged in.");
 		}
@@ -83,23 +83,18 @@
 			
 			<div id="features-wrapper">
 				<div class="container">
-					<form id="testsSelectionForm" class="parametersForm" action="javascript: void(0);" 
-        				onSubmit="refreshTests();">
-    					<div class="formContainer" style="margin-bottom: 10px;">
-							<div class="hFormElement" style="display: inline-block;">
-            					<label for="startDate">Du :
-                					<input id="startDate" name="startDate" type="datetime-local" step="1" 
-                						onblur="$('#testsSelectionForm').submit();">
-                        		</label>
-                    		</div>
-                    		<div class="hFormElement" style="display: inline-block;">
-            					<label for="endDate">Au :
-                					<input id="endDate" name="endDate" type="datetime-local" step="1" 
-                						onblur="$('#testsSelectionForm').submit();">
-                        		</label>
-                    		</div>
-                    	</div>
-            		</form>
+					<div class="formContainer" style="margin-bottom: 10px;">
+						<div class="hFormElement" style="display: inline-block;">
+							<label for="startDate">Du :
+								<input id="startDate" name="startDate" type="datetime-local" step="1">
+							</label>
+						</div>
+						<div class="hFormElement" style="display: inline-block;">
+							<label for="endDate">Au :
+								<input id="endDate" name="endDate" type="datetime-local" step="1">
+							</label>
+						</div>
+					</div>
 					<table id="parametersTable" class="parametersTable" style="width:100%">
 						<thead>
 							<tr>
@@ -116,16 +111,6 @@
 					</table>
 				</div>
 			</div>
-		</div>
-		
-		<!--  Fenêtre Modal pour message d'erreurs -->
-		<div id="errMsgModal" class="modal" onclick='this.style.display = "none";'>
-			<div id="errMsg" class="modal-content" style='color:#FF0000;'></div>
-		</div>
-		
-		<!--  Fenêtre Modal pour message de validation -->
-		<div id="validationMsgModal" class="modal" onclick='this.style.display = "none";'>
-			<div id="validationMsg" class="modal-content" style='color:#FF0000;'></div>
 		</div>
 		
 		<!--  Fenêtre Modal pour chargement -->

@@ -14,8 +14,8 @@
     
     try
     {
-        require_once __DIR__ . "/../../../lib/mpr/mprmerge/MprMerge.php";
-        require_once __DIR__ . "/../../../lib/fileFunctions/fileFunctions.php";
+        require_once $_SERVER["DOCUMENT_ROOT"] . "/Planificateur/lib/mpr/mprmerge/MprMerge.php";
+        require_once $_SERVER["DOCUMENT_ROOT"] . "/Planificateur/lib/fileFunctions/fileFunctions.php";
         
         // Initialize the session
         session_start();

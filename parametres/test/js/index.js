@@ -4,7 +4,13 @@ docReady(async function(){
 	let startDate = moment().tz("America/Montreal").subtract(1, "month").format("YYYY-MM-DDTHH:mm:ss");
 	let endDate = moment().tz("America/Montreal").format("YYYY-MM-DDTHH:mm:ss");
 	document.getElementById("startDate").value = startDate;
+	document.getElementById("startDate").addEventListener("blur", async function(){
+		await refreshTests();
+	});
 	document.getElementById("endDate").value = endDate;
+	document.getElementById("endDate").addEventListener("blur", async function(){
+		await refreshTests();
+	});
 	await refreshTests();
 });
 

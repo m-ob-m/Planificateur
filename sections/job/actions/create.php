@@ -19,16 +19,15 @@
     try
     {
         // INCLUDE
-        require_once __DIR__ . '/../../../lib/config.php';	// Fichier de configuration
-        require_once __DIR__ . '/../../../lib/connect.php';	// Classe de connection à la base de données
-        require_once __DIR__ . '/../controller/jobController.php';
+        require_once $_SERVER["DOCUMENT_ROOT"] . "/Planificateur/lib/connect.php";
+        require_once $_SERVER["DOCUMENT_ROOT"] . "/Planificateur/sections/job/controller/jobController.php";
 
         // Initialize the session
         session_start();
                                                                             
         // Check if the user is logged in, if not then redirect him to login page
         if(!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true){
-            if(!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest')
+            if(!empty($_SERVER["HTTP_X_REQUESTED_WITH"]) && strtolower($_SERVER["HTTP_X_REQUESTED_WITH"]) == "xmlhttprequest")
             {
                 throw new \Exception("You are not logged in.");
             }
@@ -39,13 +38,15 @@
             exit;
         }
 
+        // Getting a connection to the database.
+        $db = new \FabPlanConnection();
+
         // Closing the session to let other scripts use it.
         session_write_close();
 
         $inputJob =  json_decode(file_get_contents("php://input"));
         
         $id = null;
-        $db = new \FabPlanConnection();
         try
         {
             $db->getConnection()->beginTransaction();
@@ -136,27 +137,26 @@
 
                 /* Set parameters. */
                 $parameters = $jobType->loadParameters($db)->getSpecificParametersAsKeyValuePairs();
-                if(!in_array($type->getImportNo(), array(10, 11, 12, 13), true))
-                {
-                    $externalProfile = $inputJobType->externalProfile;
-                    if($externalProfile === "" || $externalProfile === null)
-                    {
-                        $parameters["T_Ext"] = $parameters["T_Ext"] ?? "0";
-                    }
-                    elseif(preg_match("/\A[A-Z]\*\z/", $externalProfile))
-                    {
-                        /* External profiles consisting of an alphabetic character followed by an asterisk are replaced by  */
-                        $parameters["T_Ext"] = preg_replace("/\A([A-Z])\*\z/", "_PROF_\\1\\1", $externalProfile);
-                    }
-                    elseif(preg_match("/\A[A-Z]\z/", $externalProfile))
-                    {
-                        $parameters["T_Ext"] = preg_replace("/\A([A-Z])\z/", "_PROF_\\1", $externalProfile);
-                    }
-                    else
-                    {
-                        $parameters["T_Ext"] = $externalProfile;
-                    }
-                }
+				
+				$externalProfile = $inputJobType->externalProfile;
+				if($externalProfile === "" || $externalProfile === null)
+				{
+					$parameters["T_Ext"] = $parameters["T_Ext"] ?? "0";
+				}
+				elseif(preg_match("/\A[A-Z]\*\z/", $externalProfile))
+				{
+					/* External profiles consisting of an alphabetic character followed by an asterisk are replaced by  */
+					$parameters["T_Ext"] = preg_replace("/\A([A-Z])\*\z/", "_PROF_\\1\\1", $externalProfile);
+				}
+				elseif(preg_match("/\A[A-Z]\z/", $externalProfile))
+				{
+					$parameters["T_Ext"] = preg_replace("/\A([A-Z])\z/", "_PROF_\\1", $externalProfile);
+				}
+				else
+				{
+					$parameters["T_Ext"] = $externalProfile;
+				}
+				
                 if(in_array($type->getImportNo(), array(1, 2), true) && preg_match("/\ATHERMO\z/i", $inputJobType->material))
                 {
                     $parameters["thermo"] = 1;

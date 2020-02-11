@@ -13,17 +13,15 @@
 /*
  * Includes
 */
-require_once __DIR__ .  '/../../../lib/config.php';	// Fichier de configuration
-require_once __DIR__ .  '/../../../lib/connect.php';	// Classe de connection à la base de données
-require_once __DIR__ .  '/../model/material.php';	// Classe de matériel
+require_once $_SERVER["DOCUMENT_ROOT"] . "/Planificateur//parametres/material/model/material.php";
 
 class MaterialController
 {
 	private $_db;
 
-	function __construct()
+	function __construct(\FabplanConnection $db)
 	{
-		$this->connect();	
+		$this->_db = $db;	
 	}
 	
 	/**
@@ -37,7 +35,7 @@ class MaterialController
 	 */
 	function getMaterial(?int $id) : ?Material
 	{
-	    return Material::withID($this->getDBConnection(), $id);
+	    return Material::withID($this->_db, $id);
 	}
     
 	/**
@@ -53,7 +51,7 @@ class MaterialController
 	 */
 	function getMaterials(int $offset = 0, int $quantity = 0, bool $ascending = true) : array
 	{
-	    $stmt = $this->getDBConnection()->getConnection()->prepare("
+	    $stmt = $this->_db->getConnection()->prepare("
             SELECT `m`.`id`
             FROM `material` AS `m`
             ORDER BY `m`.`id` " . (($ascending === true) ? "ASC" : "DESC") . " " . 
@@ -67,36 +65,11 @@ class MaterialController
 	    $materials = array();
 	    while($row = $stmt->fetch(PDO::FETCH_ASSOC))
 	    {
-	        array_push($materials, Material::withID($this->getDBConnection(), $row["id"]));
+	        array_push($materials, Material::withID($this->_db, $row["id"]));
 	    }
 	    
 	    return $materials;
 	}
-	
-	/**
-	 * Connect to the database
-	 *
-	 * @throws
-	 * @author Marc-Olivier Bazin-Maurice
-	 * @return TestController This TestController
-	 */ 
-	private function connect()
-	{
-	    $this->_db = new FabPlanConnection();
-	    return $this;
-	}
-
-	/**
-	 * Get the connection to the database
-	 *
-	 * @throws
-	 * @author Marc-Olivier Bazin-Maurice
-	 * @return FabplanConnection The connection to the database
-	 */ 
-    public function getDBConnection() :FabPlanConnection
-    {
-        return $this->_db;
-    }
 }
 
 ?>

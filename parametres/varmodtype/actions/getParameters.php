@@ -15,20 +15,18 @@
     try
     {
         // INCLUDE
-        require_once __DIR__ . '/../../generic/controller/genericController.php'; //Contrôleur de générique
-        require_once __DIR__ . '/../../type/controller/typeController.php'; //Contrôleur de type
-        require_once __DIR__ . '/../controller/modelTypeController.php'; // Contrôleur de Modèle-Type
-        require_once __DIR__ . '/../../../lib/config.php';	// Fichier de configuration
-        require_once __DIR__ . '/../../../lib/connect.php';	// Classe de connection à la base de données
-        require_once __DIR__ . '/../../../lib/numberFunctions\numberFunctions.php';	/* Classe de fonctions sur les nombres et 
-                                                            les chaînes de caractères représentant des nombres */
+        require_once $_SERVER["DOCUMENT_ROOT"] . "/Planificateur/parametres/generic/controller/genericController.php";
+        require_once $_SERVER["DOCUMENT_ROOT"] . "/Planificateur/parametres/type/controller/typeController.php";
+        require_once $_SERVER["DOCUMENT_ROOT"] . "/Planificateur/parametres/varmodtype/controller/modelTypeController.php";
+        require_once $_SERVER["DOCUMENT_ROOT"] . "/Planificateur/lib/connect.php";
+        require_once $_SERVER["DOCUMENT_ROOT"] . "/Planificateur/lib/numberFunctions/numberFunctions.php";
 
         // Initialize the session
         session_start();
                         
         // Check if the user is logged in, if not then redirect him to login page
         if(!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true){
-            if(!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest')
+            if(!empty($_SERVER["HTTP_X_REQUESTED_WITH"]) && strtolower($_SERVER["HTTP_X_REQUESTED_WITH"]) == "xmlhttprequest")
             {
                 throw new \Exception("You are not logged in.");
             }
@@ -38,6 +36,9 @@
             }
             exit;
         }
+
+        // Getting a connection to the database.
+        $db = new \FabPlanConnection();
 
         // Closing the session to let other scripts use it.
         session_write_close();
@@ -65,7 +66,7 @@
         }
         
         // Get the information
-        $parameters = createModelTypeParametersView($modelId, $typeNo);
+        $parameters = createModelTypeParametersView($db, $modelId, $typeNo);
         
         // Retour au javascript
         $responseArray["status"] = "success";
@@ -84,6 +85,7 @@
     /**
      * Generate a view for the ModelType interface
      *
+     * @param \FabplanConnection $db The database in which the model exists.
      * @param int $modelId The unique numerical identifier of the model to create the view for.
      * @param int $typeNo The import number of the type to create the view for.
      *
@@ -91,13 +93,12 @@
      * @author Marc-Olivier Bazin-Maurice
      * @return array The array containing the fields of the view.
      */ 
-    function createModelTypeParametersView(int $modelId, int $typeNo) : array
+    function createModelTypeParametersView(\FabplanConnection $db, int $modelId, int $typeNo) : array
     {
-        $db = new \FabPlanConnection();
         try
         {
             $db->getConnection()->beginTransaction();
-            $modelType = (new \ModelTypeController())->getModelType($modelId, $typeNo);
+            $modelType = (new \ModelTypeController($db))->getModelType($modelId, $typeNo);
             $db->getConnection()->commit();
         }
         catch(\Exception $e)

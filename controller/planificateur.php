@@ -1,9 +1,6 @@
 <?php
-
-require_once __DIR__ . '/../lib/config.php';		// Fichier de configuration
-require_once __DIR__ . '/../lib/connect.php';	// Classe de connection à la base de données
-require_once __DIR__ . '/../sections/batch/model/batch.php'; //Classe modèle de batch
-require_once __DIR__ . '/../sections/job/model/job.php';
+require_once $_SERVER["DOCUMENT_ROOT"] . "/Planificateur/sections/batch/model/batch.php";
+require_once $_SERVER["DOCUMENT_ROOT"] . "/Planificateur/sections/job/model/job.php";
 
 /**
  * \name		PlanificateurController
@@ -20,18 +17,9 @@ class PlanificateurController
 	private $_db;	//Connection à la base de données
 	private $_batches;	// 
 	
-	function __construct(){
-		$this->_db = new FabPlanConnection();
+	function __construct(\FabplanConnection $db){
+		$this->_db = $db;
 		$this->fetchBatch();
-	}
-	
-	function __destruct(){
-		$this->_db = NULL;
-	}
-	
-	
-	function connexion(){
-		return $this->_db;
 	}
 	
 	
@@ -58,7 +46,7 @@ class PlanificateurController
 		}
 		else
 		{
-		    $end = date_create_from_format('Y/m/d', $end);
+		    $end = date_create_from_format("Y/m/d", $end);
 		}
 		
 		if($start === null)
@@ -67,13 +55,13 @@ class PlanificateurController
 		}
 		else
 		{
-		    $start = date_create_from_format('Y/m/d', $start);
+		    $start = date_create_from_format("Y/m/d", $start);
 		}
 		
 		
 		//  Retrieve batches between specified boundaries.
 		$this->_db->getConnection()->beginTransaction();
-		$stmt = $this->_db->getConnection()->prepare('
+		$stmt = $this->_db->getConnection()->prepare("
             SELECT `b`.`id_batch` AS `batchId`, `b`.`nom_batch` AS `batchName`, `b`.`date_debut` AS `batchStartDate`, 
                 `b`.`date_fin` AS `batchEndDate`, `b`.`jour_complet` AS `batchFullDay`, 
                 `b`.`commentaire` AS `batchComments`, `b`.`etat` AS `batchStatus`, `b`.`etat_mpr` AS `batchMprStatus`, 
@@ -83,9 +71,9 @@ class PlanificateurController
             INNER JOIN `job` AS `j` ON `bj`.`job_id` = `j`.`id_job`
             WHERE `b`.`date_debut` BETWEEN :start AND :end 
             ORDER BY `b`.`id_batch` DESC;
-        ');
-		$stmt->bindValue(':start', $start->format('Y/m/d'), PDO::PARAM_STR);
-		$stmt->bindValue(':end', $end->format('Y/m/d'), PDO::PARAM_STR);
+        ");
+		$stmt->bindValue(":start", $start->format("Y/m/d"), PDO::PARAM_STR);
+		$stmt->bindValue(":end", $end->format("Y/m/d"), PDO::PARAM_STR);
 		$stmt->execute();
 		
         // Add batches to object
@@ -141,7 +129,7 @@ class PlanificateurController
 			
 			$event->title = "{$batch->name}\n{$jobList}";
 				
-			if($batch->fullDay == 'Y')
+			if($batch->fullDay == "Y")
 			{
 				$event->allDay = true;
 			}
@@ -171,31 +159,31 @@ class PlanificateurController
 	{
 		switch ($etat)
 		{
-			case 'T':	// Terminée
-				return '#3B3131';
+			case "T":	// Terminée
+				return "#3B3131";
                 break;
-			case 'X':	// En exécution
-				return  '#127031';
+			case "X":	// En exécution
+				return  "#127031";
 				break;
 			default:				
 				if($date_fin <= new DateTime()) // Si en retard
 				{
-					return  '#990012';
+					return  "#990012";
 				}
 				
 				switch ($etat)
 				{
-					case 'E':	// Entrée
-						return  '#0b5788';
+					case "E":	// Entrée
+						return  "#0b5788";
 						break;
-					case 'A':	// Attente
-						return  '#848482';
+					case "A":	// Attente
+						return  "#848482";
 						break;
-					case 'N':	// Non-livrée
-						return  '#DAA520';
+					case "N":	// Non-livrée
+						return  "#DAA520";
 						break;
-					case 'P':	// Pressant
-						return  '#CC6600';
+					case "P":	// Pressant
+						return  "#CC6600";
 						break;
 				}
 		}

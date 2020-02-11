@@ -36,13 +36,15 @@ docReady(async function(){
 	});
 	document.getElementById("boardSize").addEventListener("change", () => {hasChanged(true);});
 	document.getElementById("status").addEventListener("change", () => {hasChanged(true);});
+	document.getElementById("mprStatus").addEventListener("change", () => {hasChanged(true);});
+	document.getElementById("comments").addEventListener("change", () => {hasChanged(true);});
 
 	// When the status of the Batch changes, the page must reload.
 	window.setInterval(
 		async function(){
-			let noError = ["", "none"].includes(document.getElementById("errMsgModal").style.display);
-			let noValidation = ["", "none"].includes(document.getElementById("validationMsgModal").style.display);
-			let noDownload = ["", "none"].includes(document.getElementById("downloadMsgModal").style.display);
+			let noError = [null, false].includes(document.getElementById("errMsgModal"));
+			let noValidation = [null, false].includes(document.getElementById("validationMsgModal"));
+			let noDownload = document.getElementById("downloadMsgModal").style.display !== "block";
 			if(!hasChanged() && noError && noValidation && noDownload)
 			{
 				let id = document.getElementById("batchId").value;
@@ -71,6 +73,9 @@ docReady(async function(){
 	
 	await initializeFields();
 	document.getElementById("jobNumber").focus();
+	document.getElementById("downloadMsgModal").addEventListener("click", function(){
+		this.style.display = "none";
+	});
 });
 
 /**
@@ -98,11 +103,14 @@ async function initializeFields()
 		{
 			let mainStatus = document.getElementById("status").value;
 			let mprStatus = document.getElementById("mprStatus").value;
+			let comments = document.getElementById("comments").value;
 			await restoreSessionStorage();
-			if(isPositiveInteger(document.getElementById("batchId").value, true, true)){
-				document.getElementById("status").value = mainStatus;
-			}
+			document.getElementById("status").value = mainStatus;
 			document.getElementById("mprStatus").value = mprStatus;
+			if(["T", "E"].includes(mprStatus) && mprStatus !== JSON.parse(window.sessionStorage.batch).mprStatus)
+			{
+				document.getElementById("comments").value = comments;
+			}
 		}
 		else
 		{
@@ -211,7 +219,7 @@ function validateInformation(id, name, startDate, endDate, fullDay, material, bo
 		err += "L'identificateur unique doit être un entier positif.\n";
 	}
 	
-	if (!(typeof name === 'string' || name instanceof String) || (name === ""))
+	if (!(typeof name === "string" || name instanceof String) || (name === ""))
 	{
 		err += "Le nom de la batch ne peut pas être vide.\n";
 	}
@@ -237,12 +245,12 @@ function validateInformation(id, name, startDate, endDate, fullDay, material, bo
 				"Modifiez l'état de la boîte et réessayez.\n";
 	}
 	
-	if(!(typeof material === 'string' || material instanceof String) || material === "" || material === "0")
+	if(!(typeof material === "string" || material instanceof String) || material === "" || material === "0")
 	{
 		err += "Veuillez sélectionner un matériel.\n";
 	}
 	
-	if(!(typeof boardSize === 'string' || boardSize instanceof String) || (boardSize === ""))
+	if(!(typeof boardSize === "string" || boardSize instanceof String) || (boardSize === ""))
 	{
 		err += "Veuillez entrer une taille de panneau.\n";
 	}
@@ -252,7 +260,7 @@ function validateInformation(id, name, startDate, endDate, fullDay, material, bo
 		err += "Le statut choisi est invalide.\n";
 	}
 	
-	if(!(typeof comments === 'string' || comments instanceof String))
+	if(!(typeof comments === "string" || comments instanceof String))
 	{
 		err += "Les commentaires doivent être une donnée de type \"chaîne de caractère\".\n";
 	}
