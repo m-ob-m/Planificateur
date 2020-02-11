@@ -13,19 +13,19 @@
      */
     define("DATABASE_CONNECTION_PASSWORDS", array(
 		"dbadmin@localhost" => "",
-		"Programmer@localhost" => "1a5MkNtcL9xX9Av6",
-		"BatchEntryTechnician@localhost" => "xwn0DS3LFVcu4Qhu",
-        "LabelPC@localhost" => "agsdjKFk9itkTTUj",
-        "CutQueue@localhost" => "dwIKRcHnczAUVd80",
-        "Backup@localhost" => "1vl9QFrxwoEMnE9R", 
-        "Authenticator@localhost" => "OuNufLqebFoBx4Fb",
+		"Programmer@localhost" => "Programmer",
+		"BatchEntryTechnician@localhost" => "BatchEntryTechnician",
+        "LabelPC@localhost" => "LabelPC",
+        "CutQueue@localhost" => "CutQueue",
+        "Backup@localhost" => "Backup", 
+        "Authenticator@localhost" => "Authenticator",
         "dbadmin@127.0.0.1" => "",
-		"Programmer@127.0.0.1" => "1a5MkNtcL9xX9Av6",
-		"BatchEntryTechnician@127.0.0.1" => "xwn0DS3LFVcu4Qhu",
-        "LabelPC@127.0.0.1" => "agsdjKFk9itkTTUj",
-        "CutQueue@127.0.0.1" => "dwIKRcHnczAUVd80",
-        "Backup@127.0.0.1" => "1vl9QFrxwoEMnE9R", 
-        "Authenticator@127.0.0.1" => "OuNufLqebFoBx4Fb"
+		"Programmer@127.0.0.1" => "Programmer",
+		"BatchEntryTechnician@127.0.0.1" => "BatchEntryTechnician",
+        "LabelPC@127.0.0.1" => "LabelPC",
+        "CutQueue@127.0.0.1" => "CutQueue",
+        "Backup@127.0.0.1" => "Backup", 
+        "Authenticator@127.0.0.1" => "Authenticator"
 	));
     define("DATABASE_HOST_NAME", "127.0.0.1");
     define("DATABASE_NAME", "fabplan");
