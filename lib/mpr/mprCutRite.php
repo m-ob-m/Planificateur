@@ -214,7 +214,6 @@ class mprCutrite
 	 */
 	public function makeMprFromTest(Test $test)
 	{
-	    $var_token = "";
 	    $parameters = [];
 	    
         if($test->getModel()->getId() === 2)
