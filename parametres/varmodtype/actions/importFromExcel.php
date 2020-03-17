@@ -20,7 +20,7 @@
     const FIRST_TYPE_COLUMN = 2;
     
     $responseArray = array("status" => null, "success" => array("data" => null), "failure" => array("message" => null));
-    
+
     try
     {  
         require_once $_SERVER["DOCUMENT_ROOT"] . "/Planificateur/parametres/varmodtypegen/controller/modelTypeGenericController.php";
@@ -114,47 +114,18 @@
         $reader = new PHPSpreadSheetXlsxReader();
         $workbook = $reader->load("{$filePath}");
 
-        $data = new \stdClass();
+        $data = (object) array("modelGenerics" => array());
         foreach($workbook->getAllSheets() as $workSheet)
         {
-            $modelId = $workSheet->getCellByColumnAndRow(FIRST_TYPE_COLUMN - 1, FIRST_PARAMETER_ROW - 3)->getValue();
-            $modelTimestamp = $workSheet->getCellByColumnAndRow(FIRST_TYPE_COLUMN, FIRST_PARAMETER_ROW - 3)->getValue();
-            $genericId = $workSheet->getCellByColumnAndRow(FIRST_TYPE_COLUMN + 1, FIRST_PARAMETER_ROW - 3)->getValue();
-            $genericTimestamp = $workSheet->getCellByColumnAndRow(FIRST_TYPE_COLUMN + 2, FIRST_PARAMETER_ROW - 3)->getValue();
-            $data->model = (object) array("id" => $modelId, "timestamp" => $modelTimestamp);
-            $data->generic = (object) array("id" => $genericId, "timestamp" => $genericTimestamp);
-
-            $startColumnForIterator = PHPSpreadSheetCoordinate::stringFromColumnIndex(FIRST_TYPE_COLUMN);
-            $data->types = array();
-            foreach($workSheet->getRowIterator(FIRST_PARAMETER_ROW - 2, FIRST_PARAMETER_ROW - 2) as $typeImportNoRow)
-            {
-                foreach($typeImportNoRow->getCellIterator($startColumnForIterator) as $cell)
-                {
-                    $typeImportNo = $cell->getValue();
-                    if(preg_match("/\A\d+\z/", $typeImportNo))
-                    {
-                        $lastColumn = $cell->getColumn();
-                        $data->types[$lastColumn] = (object) array("importNo" => $typeImportNo);
-                    }
-                    else
-                    {
-                        break;
-                    }
-                }
-            }
-
-            $lastRow = null;
             $column = PHPSpreadSheetCoordinate::stringFromColumnIndex(FIRST_TYPE_COLUMN - 1);
             $parameterKeyArray = array();
             foreach($workSheet->getColumnIterator($column, $column) as $parameterKeyColumn)
             {
                 foreach($parameterKeyColumn->getCellIterator(FIRST_PARAMETER_ROW) as $cell)
                 {
-                    $parameterKey = $cell->getValue();
-                    if(preg_match("/\A[A-Za-z_][A-Za-z0-9_]{0,7}\z/", $parameterKey))
+                    if(preg_match("/\A[A-Za-z_][A-Za-z0-9_]{0,7}\z/", $cell->getValue()))
                     {
-                        $lastRow = $cell->getRow();
-                        $parameterKeyArray[$lastRow] = $parameterKey;
+                        $parameterKeyArray[$cell->getRow()] = $cell->getValue();
                     }
                     else
                     {
@@ -163,22 +134,45 @@
                 }
             }
 
-            foreach($data->types as $column => &$type)
+            $types = array();
+            foreach($workSheet->getRowIterator(FIRST_PARAMETER_ROW - 2, FIRST_PARAMETER_ROW - 2) as $typeImportNoRow)
             {
-                $type->parameters = array();
-                foreach($workSheet->getColumnIterator($column, $column) as $typeColumn)
+                foreach($typeImportNoRow->getCellIterator(PHPSpreadSheetCoordinate::stringFromColumnIndex(FIRST_TYPE_COLUMN)) as $cell)
                 {
-                    foreach($typeColumn->getCellIterator(FIRST_PARAMETER_ROW, $lastRow) as $cell)
+                    $column = PHPSpreadSheetCoordinate::columnIndexFromString($cell->getColumn());
+                    if(preg_match("/\A\d+\z/", $cell->getValue()))
                     {
-                        $key = $parameterKeyArray[$cell->getRow()];
-                        $value = $cell->getValue();
-                        if(!preg_match("/\A\s*\z/", $value))
+                        $parameters = array();
+                        foreach($parameterKeyArray as $row => $key)
                         {
-                            array_push($type->parameters, (object) array("key" => $key, "value" => $value));
+                            if(!preg_match("/\A\s*\z/", $workSheet->getCellByColumnAndRow($column, $row)->getValue()))
+                            {
+                                $parameters[] = (object) array(
+                                    "key" => $key, 
+                                    "value" => $workSheet->getCellByColumnAndRow($column, $row)->getValue()
+                                );
+                            }
                         }
+                        $types[] = (object) array("importNo" => $cell->getValue(), "parameters" => $parameters);
+                    }
+                    else
+                    {
+                        break;
                     }
                 }
             }
+
+            $data->modelGenerics[] = (object) array(
+                "model" => (object) array(
+                    "id" => $workSheet->getCellByColumnAndRow(FIRST_TYPE_COLUMN - 1, FIRST_PARAMETER_ROW - 3)->getValue(), 
+                    "timestamp" => $workSheet->getCellByColumnAndRow(FIRST_TYPE_COLUMN, FIRST_PARAMETER_ROW - 3)->getValue()
+                ),
+                "generic" => (object) array(
+                    "id" => $workSheet->getCellByColumnAndRow(FIRST_TYPE_COLUMN + 1, FIRST_PARAMETER_ROW - 3)->getValue(), 
+                    "timestamp" => $workSheet->getCellByColumnAndRow(FIRST_TYPE_COLUMN + 2, FIRST_PARAMETER_ROW - 3)->getValue()
+                ),
+                "types" => $types
+            );
         }
         
         return $data;
@@ -199,54 +193,66 @@
         {
             $db->getConnection()->beginTransaction();
 
-            $modelId = $data->model->id;
-            $model = \Model::withID($db, $modelId, \MYSQLDatabaseLockingReadTypes::FOR_UPDATE);
-            if($model === null)
+            foreach($data->modelGenerics as $modelGeneric)
             {
-                throw new \Exception("There is no model with the unique identifier {$modelId}.");
-            }
-            
-            $genericId = $data->generic->id;
-            $generic = \Generic::withID($db, $genericId, \MYSQLDatabaseLockingReadTypes::FOR_UPDATE);
-            if($generic === null)
-            {
-                throw new \Exception("There is no generic with the unique identifier {$genericId}.");
-            }
-
-            //echo json_encode(\DateTime::createFromFormat("Y-m-d h:i:s", $model->getTimestamp()));
-            $databaseModelTimestamp = \DateTime::createFromFormat("Y-m-d H:i:s", $model->getTimestamp());
-            $extractedModelTimestamp = \DateTime::createFromFormat("Y-m-d H:i:s", $data->model->timestamp);
-            if($databaseModelTimestamp->diff($extractedModelTimestamp)->format("%s") < 0)
-            {
-                throw new \Exception("The model described by the data being imported is outdated.");
-            }
-
-            $databaseGenericTimestamp = \DateTime::createFromFormat("Y-m-d H:i:s", $generic->getTimestamp());
-            $extractedGenericTimestamp = \DateTime::createFromFormat("Y-m-d H:i:s", $data->generic->timestamp);
-            if($databaseGenericTimestamp->diff($extractedGenericTimestamp)->format("%s") < 0)
-            {
-                throw new \Exception("The generic described by the data being imported is outdated.");
-            }
-
-            /* @var $extractedType \StdClass */
-            foreach($data->types as $extractedType)
-            {
-                $typeImportNo = $extractedType->importNo;
-                $type = \Type::withImportNo($db, $typeImportNo, \MYSQLDatabaseLockingReadTypes::FOR_UPDATE);
-                if($type === null)
+                $model = \Model::withID($db, $modelGeneric->model->id, \MYSQLDatabaseLockingReadTypes::FOR_UPDATE);
+                if($model === null)
                 {
-                    throw new \Exception("There is no type with the import number {$typeImportNo}.");
+                    throw new \Exception("There is no model with the unique identifier {$modelGeneric->model->id}.");
                 }
-
-                $modelTypeParameters = array();
-                foreach($extractedType->parameters as $extractedParameter)
+                
+                $generic = \Generic::withID($db, $modelGeneric->generic->id, \MYSQLDatabaseLockingReadTypes::FOR_UPDATE);
+                if($generic === null)
                 {
-                    $key = $extractedParameter->key;
-                    $value = $extractedParameter->value;
-                    $modelTypeParameter = new \ModelTypeParameter($key, $value, $modelId, $typeImportNo);
-                    array_push($modelTypeParameters, $modelTypeParameter);
+                    throw new \Exception("There is no generic with the unique identifier {$modelGeneric->generic->id}.");
                 }
-                (new \ModelType($model, $type, $modelTypeParameters))->save($db);
+    
+                //echo json_encode(\DateTime::createFromFormat("Y-m-d h:i:s", $model->getTimestamp()));
+                $databaseModelTimestamp = \DateTime::createFromFormat("Y-m-d H:i:s", $model->getTimestamp());
+                $extractedModelTimestamp = \DateTime::createFromFormat("Y-m-d H:i:s", $modelGeneric->model->timestamp);
+                if($databaseModelTimestamp->diff($extractedModelTimestamp)->format("%s") < 0)
+                {
+                    throw new \Exception("The model described by the data being imported is outdated.");
+                }
+    
+                $databaseGenericTimestamp = \DateTime::createFromFormat("Y-m-d H:i:s", $generic->getTimestamp());
+                $extractedGenericTimestamp = \DateTime::createFromFormat("Y-m-d H:i:s", $modelGeneric->generic->timestamp);
+                if($databaseGenericTimestamp->diff($extractedGenericTimestamp)->format("%s") < 0)
+                {
+                    throw new \Exception("The generic described by the data being imported is outdated.");
+                }
+    
+                /* @var $extractedType \StdClass */
+                foreach($modelGeneric->types as $extractedType)
+                {
+                    $type = \Type::withImportNo($db, $extractedType->importNo, \MYSQLDatabaseLockingReadTypes::FOR_UPDATE);
+                    if($type === null)
+                    {
+                        throw new \Exception("There is no type with the import number {$extractedType->importNo}.");
+                    }
+                    elseif($type->getGeneric()->getId() !== $generic->getId())
+                    {
+                        throw new \Exception(
+                            "The type with import number {$type->getImportNo()}, 
+                            belonging to the generic with the unique identifier {$type->getGeneric()->getId()}, 
+                            cannot be assigned parameters from the generic with unique identifier {$generic->getId()}."
+                        );
+                    }
+    
+                    $modelTypeParameters = array_map(
+                        function ($extractedParameter) use ($modelGeneric, $type) {
+                            return new \ModelTypeParameter(
+                                $extractedParameter->key, 
+                                $extractedParameter->value, 
+                                $modelGeneric->model->id, 
+                                $type->getImportNo()
+                            );
+                        },
+                        $extractedType->parameters
+                    );
+
+                    (new \ModelType($model, $type, $modelTypeParameters))->save($db);
+                }
             }
 
             $db->getConnection()->commit();
