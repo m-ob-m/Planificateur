@@ -197,7 +197,32 @@
         try 
         {
             $mpr->makeMprFromTest($test, $generic->getParametersAsKeyDescriptionPairs());
-            $mpr->makeMprFile(getUnitaryProgramLocation($model, $type) . $test->getName());
+
+            $i = 0;
+            while($i < 5)
+            {
+                try
+                {
+                    // Créer le mpr dans le système de fichiers.
+                    $mpr->makeMprFile(getUnitaryProgramLocation($model, $type) . $test->getName());
+                    break;
+                }
+                catch (\Exception $e)
+                {
+                    if($i < 5)
+                    {
+                        // Réessayer
+                        sleep(500);
+                        $i++;
+                        continue;
+                    }
+                    else
+                    {
+                        // Après 5 tentatives ratées, le programme échoue.
+                        throw $e;
+                    }
+                }
+            }
         }
         catch(\MprExpression\UndefinedVariableException $e)
         {
