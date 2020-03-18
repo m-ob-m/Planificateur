@@ -84,7 +84,7 @@ function getModifiedParametersArray()
 	{
 		[...parametersTable.getElementsByTagName("tbody")[0].getElementsByTagName("tr")].forEach(function(element) {
 			let newValue = element.getElementsByTagName("td")[1].getElementsByTagName("textarea")[0].value;
-			let previousValue = element.getElementsByTagName("td")[3].getElementsByTagName("textarea")[0].value;
+			let previousValue = element.getElementsByTagName("td")[4].getElementsByTagName("input")[0].value;
 			if(previousValue !== newValue)
 			{
 				parameters.push({
@@ -173,6 +173,7 @@ function validateInformation(id, name, modelId, typeNo, mpr, parameters)
 function newParameter(parameter, isNew)
 {
 	let key = (parameter !== null && parameter.hasOwnProperty("key")) ? parameter.key : null;
+	let specificValue = (parameter !== null && parameter.hasOwnProperty("specificValue")) ? parameter.specificValue : null;
 	let description = (parameter !== null && parameter.hasOwnProperty("description")) ? parameter.description :null;
 	let defaultValue = (parameter !== null && parameter.hasOwnProperty("defaultValue")) ? parameter.defaultValue : null;
 	
@@ -180,17 +181,14 @@ function newParameter(parameter, isNew)
 	let oldValue = null;
 	if(parameter !== null)
 	{
-		if(parameter.specificValue !== null)
+		if(specificValue !== null)
 		{
-			value = parameter.specificValue;
-			if(parameter.specificValue !== null && !isNew)
-			{
-				oldValue = parameter.specificValue
-			}
+			value = specificValue;
+			oldValue = isNew ? null : specificValue;
 		}
 		else if(parameter.hasOwnProperty("defaultValue"))
 		{
-			value = parameter.defaultValue;
+			value = defaultValue;
 		}
 	}
 	
@@ -207,7 +205,7 @@ function newParameter(parameter, isNew)
 	valueInput.classList.add("spaceEfficientText");
 	valueInput.style.overflowX = "hidden";
 	valueInput.style.resize = "none";
-	valueInput.value = (value === null) ? defaultValue : value;
+	valueInput.value = value;
 	
 	let valueCell = document.createElement("td");
 	valueCell.appendChild(valueInput);
