@@ -163,7 +163,11 @@ class mprCutrite
 	        }
 	        
 	        $this->extractMprBlocks();
-			$this->_mpr = preg_replace("/(?<=\[001\r\n).{0}(?=\r\n\r\n)/s", $variables, $this->_header);
+			$this->_mpr = preg_replace(
+				"/(?<=\r\n\[001\r\n)(?:[A-Za-z_][A-Za-z0-9_]{0,7}=\".*?\"\r\nKM=\".*?\"\r\n)+?(?=\r\n)/s", 
+				$variables, 
+				$this->_header
+			);
 		}
 		
 	    $parameters = array_merge($parameters, (new Carrousel())->getSymbolicToolNamesArray());
@@ -259,7 +263,11 @@ class mprCutrite
 	        }
 	        
 	        $this->extractMprBlocks();
-			$this->_mpr = preg_replace("/(?<=\[001\r\n).{0}(?=\r\n\r\n)/s", $variables, $this->_header);
+			$this->_mpr = preg_replace(
+				"/(?<=\r\n\[001\r\n)(?:[A-Za-z_][A-Za-z0-9_]{0,7}=\".*?\"\r\nKM=\".*?\"\r\n)+?(?=\r\n)/s", 
+				$variables, 
+				$this->_header
+			);
 	    }
 	    $parameters = array_merge($parameters, (new Carrousel())->getSymbolicToolNamesArray());
 	    

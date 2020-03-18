@@ -32,7 +32,8 @@ _RX=1542.825000
 _RY=857.025000
 
 [001
-
+bidon="0"
+KM="Variable bidon"
 
 ]1
 $E0
