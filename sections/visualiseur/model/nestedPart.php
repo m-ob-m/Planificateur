@@ -23,8 +23,8 @@ class NestedPart
 	private $_idJobTypePorte;
 	
 	private const SCALE = 0.492;
-	private const OFFSET_X = 10;
-	private const OFFSET_Y = 35;
+	private const OFFSET_X = 0;
+	private const OFFSET_Y = 30;
     
 	/**
 	 * Porte NestedPart
@@ -125,8 +125,8 @@ class NestedPart
 		    $numero = intval($parts[1]);
 		    $x = floatval($parts[2]);
 		    $y = floatval($parts[3]);
-		    $h = $part->getLength();
-		    $w = $part->getWidth();
+		    $h = $jtype->getType()->getGeneric()->getHeightParameter() == "LPX" ? $part->getLength() : $part->getWidth();
+		    $w = $jtype->getType()->getGeneric()->getHeightParameter() == "LPX" ? $part->getWidth() : $part->getLength();
 		    $rotation = floatval($parts[6]);
 		    return new self($numero, $x, $y, $h, $w, $rotation, $idJobTypePorte, $mprName);
 		}

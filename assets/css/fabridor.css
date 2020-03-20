@@ -22,8 +22,7 @@ textarea.notResizable
 }
 
 div.porte{
-	position: absolute; 
-	display: flex;
+	position: absolute;
 	justify-content: center;
 	text-align: center;
 	flex-direction:column;
@@ -178,6 +177,12 @@ div.pannel{
 	line-height: 1.5;
 }
 
+@media screen {
+	div.porte{
+		display: flex;
+	}
+}
+
 @media print {
 	#header-wrapper, .fc-left, .fc-right {
 		display:none;
@@ -193,5 +198,9 @@ div.pannel{
 	
 	.no-print{
 		display:none;
+	}
+	
+	div.pannel >img{
+		width: 10in;
 	}
 }

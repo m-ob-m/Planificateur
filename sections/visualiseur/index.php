@@ -176,7 +176,7 @@
                         		<?php $destinationFilePath = $_SERVER["DOCUMENT_ROOT"] . $destinationRootPath; ?>
                                 <?php copy($sourceFilePath, $destinationFilePath); ?>
                         		<div class="pannel">
-                        			<img src="temp/panel_<?= $sourceFileName; ?>">
+                        			<img src="temp/panel_<?= $sourceFileName; ?>" style="display: block;">
                         			<?php foreach($panel->getParts() as $part): ?>
                         				<?php $idjtp = $part->getJobTypePorteId(); ?>
 										<?php $jobTypePorte = \JobTypePorte::withID(new \FabplanConnection(), $idjtp); ?>
