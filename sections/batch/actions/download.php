@@ -254,7 +254,7 @@
         );
         $mprPath = $_SERVER["DOCUMENT_ROOT"] . "/Planificateur/sections/batch/temp/{$mprName}";
         
-        $mpr = new \mprCutrite(realpath($_SERVER["DOCUMENT_ROOT"] . "/Planificateur/lib/generique.mpr"));
+        $mpr = new \mprCutrite(realpath($_SERVER["DOCUMENT_ROOT"] . "/Planificateur/lib/" . $jobType->getType()->getGeneric()->getFilename()));
         $mpr->makeMprFromJobType($jobType);
         $mpr->makeMprFile($mprPath);
         return $mprPath;

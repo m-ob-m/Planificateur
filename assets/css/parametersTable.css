@@ -165,7 +165,7 @@ table.parametersTable >tbody >tr >td {
 }
 
 table.parametersTable td >* { 
-	padding:2px; 
+	margin:2px; 
 }
 
 table.parametersTable >tbody >tr >td >select >option { 
