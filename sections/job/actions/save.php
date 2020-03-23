@@ -102,13 +102,13 @@
                 $model = \Model::withID($db, $inputJobType->model->id);
                 if($model === null)
                 {
-                    throw \Exception("Il n'y a pas de modèle avec l'identifiant unique \"{$inputJobType->model->id}\".");
+                    throw new \Exception("Il n'y a pas de modèle avec l'identifiant unique \"{$inputJobType->model->id}\".");
                 }
                 
                 $type = \Type::withImportNo($db, $inputJobType->type->importNo);
                 if($type === null)
                 {
-                    throw \Exception("Il n'y a pas de type avec le numéro d'importation \"{$inputJobType->type->importNo}\".");
+                    throw new \Exception("Il n'y a pas de type avec le numéro d'importation \"{$inputJobType->type->importNo}\".");
                 }
                 
                 $generic = $type->getGeneric();
@@ -126,7 +126,8 @@
                 }
                 
                 $parameters = array();
-                $mprFile = null;
+                $mprFileName= null;
+                $mprFileContents = null;
                 if($model->getId() !== 2)
                 {
                     foreach($generic->getParameters() as $genericParameter)
@@ -144,11 +145,12 @@
                 }
                 else
                 {
-                    $mprFile = $inputJobType->mprFile;
+                    $mprFileName = $inputJobType->mprFileName;
+                    $mprFileContents = $inputJobType->mprFileContents;
                 }
                 
                 $jobType = new \JobType(is_string($inputJobType->id) ? intval($inputJobType->id) : $inputJobType->id, $inputJob->id, 
-                    $model, $type, $mprFile, null, $parameters, $parts);
+                    $model, $type, $mprFileName, $mprFileContents, null, $parameters, $parts);
                 array_push($jobTypes, $jobType);
             }
         }

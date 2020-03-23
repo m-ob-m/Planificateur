@@ -44,14 +44,16 @@ class JobTypeBlock{
 		else
 		{
 			/* Object was provided by fabplan so most fields need to be remapped */
-			let mprFile = jobType._mprFile;
+			let mprFileName = jobType._mprFileName;
+			let mprFileContents = jobType._mprFileContents;
 			instance = new JobTypeBlock(null, onChange);
 			instance._block.dataset.id = jobType._id;
 			instance._block.dataset.modelId = jobType._model._id;
 			instance._block.dataset.modelDescription = jobType._model._description;
 			instance._block.dataset.typeNo = jobType._type._importNo;
 			instance._block.dataset.typeDescription = jobType._type._description;
-			instance._block.dataset.mprFile = typeof mprFile === "undefined" || mprFile === null ? "" : mprFile;
+			instance._block.dataset.mprFileName = mprFileName === null ? "" : mprFileName;
+			instance._block.dataset.mprFileContents = mprFileContents === null ? "" : mprFileContents;
 
 			await Promise.all(jobType._parameters.map(async function(parameter){
 				let genericParameter = jobType._type._generic._parameters.find((genericParameter) => {
@@ -428,7 +430,6 @@ class JobTypeBlock{
 	 * @return {JobTypeBlock} This JobTypeBlock
 	 */
 	toSessionStorage(){
-		let mprFile = this._block.dataset.mprFile;
 		window.sessionStorage.jobType = JSON.stringify({
 			"id": this._block.dataset.id,
 			"model": {"id": this._block.dataset.modelId, "description": this._block.dataset.modelDescription},
@@ -451,7 +452,8 @@ class JobTypeBlock{
 					"grain": partRow.getElementsByTagName("td")[5].getElementsByTagName("select")[0].value
 				};
 			}),
-			"mprFile": mprFile
+			"mprFileName": this._block.dataset.mprFileName,
+			"mprFileContents": this._block.dataset.mprFileContents
 		});
 	}
 
@@ -465,7 +467,8 @@ class JobTypeBlock{
 			"type": {"importNo": null, "description": null},
 			"parameters": [],
 			"parts": [],
-			"mprFile": null
+			"mprFileName": null,
+			"mprFileContents": null
 		};
 	}
 
@@ -483,7 +486,8 @@ class JobTypeBlock{
 		await (await this.emptyParametersTable()).emptyPartsTable();
 		jobType.parameters.map((parameter) => {this.addParameter(parameter);});
 		jobType.parts.map((part) => {this.addPart(part);});
-		this._block.dataset.mprFile = isString(jobType.mprFile) ? jobType.mprFile : "";
+		this._block.dataset.mprFileName = isString(jobType.mprFileName) ? jobType.mprFileName : "";
+		this._block.dataset.mprFileContents = isString(jobType.mprFileContents) ? jobType.mprFileContents : "";
 		return await (this.resetTitle()).onChange();
 	}
 	

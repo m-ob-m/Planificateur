@@ -169,7 +169,8 @@
 						<tr id="parametersEditorMprFileSelectionRow" style="display: none;">
 							<td class="firstVisibleColumn" style="width: 10%;">Fichier mpr</td>
 							<td class="lastVisibleColumn">
-								<input id="mprFileSelectionInputBox" type="file" value="">
+								<input id="mprFileSelectionInputBox" type="file" value="" style="display: none;">
+								<input id="mprFileName" style="text-align: left;">
 							</td>
 						</tr>
 						<tr>

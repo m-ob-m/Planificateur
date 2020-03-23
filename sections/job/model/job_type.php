@@ -19,7 +19,8 @@ class JobType extends \ModelTypeGeneric implements \JsonSerializable
 {
     private $_id;
     private $_jobId;
-    private $_mprFile;
+    private $_mprFileName;
+    private $_mprFileContents;
     private $_timestamp;
     private $_parts;
     private $__database_connection_locking_read_type = \MYSQLDatabaseLockingReadTypes::NONE;
@@ -31,7 +32,7 @@ class JobType extends \ModelTypeGeneric implements \JsonSerializable
      * @param int $jobId The id of the Job to which this JobType belongs
      * @param \Model $model The Model associated with this JobType (the one that was modified)
      * @param \Type $type The Type associated with this JobType (the one that was modified)
-     * @param string $mprFile The contents of the .mpr file associated to this JobType if not using a generic file
+     * @param string $mprFileContents The contents of the .mpr file associated to this JobType if not using a generic file
      * @param int $genericId The id of the Generic associated to this JobType
      * @param string $timestamp A timestamp of the last modification applied to this JobType (leave null)
      * @param \JobTypeParameter[] $parameters An array containing the JobTypeParameters objects associated with this JobType.
@@ -42,13 +43,14 @@ class JobType extends \ModelTypeGeneric implements \JsonSerializable
      * @return \JobType
      */
     public function __construct(?int $id = null, ?int $jobId = null, ?\Model $model = null, ?\Type $type = null,
-        ?string $mprFile = null, ?string $timestamp = null, array $parameters = array(), 
+        ?string $mprFilename = null, ?string $mprFileContents = null, ?string $timestamp = null, array $parameters = array(), 
         array $parts = array())
     {
         parent::__construct($model, $type, $parameters);
         $this->setId($id);
         $this->setJobId($jobId);
-        $this->setMprFile($mprFile);
+        $this->setMprFileName($mprFilename);
+        $this->setMprFileContents($mprFileContents);
         $this->setTimestamp($timestamp);
         $this->setParts($parts);
     }
@@ -56,24 +58,24 @@ class JobType extends \ModelTypeGeneric implements \JsonSerializable
     /**
      * JobType constructor using ID of existing record
      *
-     * @param FabPlanConnection $db The database in which the record exists
+     * @param \FabPlanConnection $db The database in which the record exists
      * @param int $id The id of the record in the database
      * @param int $databaseConnectionLockingReadType
      *
      * @throws
      * @author Marc-Olivier Bazin-Maurice
-     * @return JobType The JobType associated to the specified ID in the specified database
+     * @return \JobType The JobType associated to the specified ID in the specified database
      */
     static function withID(\FabPlanConnection $db, int $id, int $databaseConnectionLockingReadType = 0) : ?\JobType
     {
         // Récupérer le test
         $stmt = $db->getConnection()->prepare(
             "SELECT `jt`.`job_id` AS `jobId`, `jt`.`door_model_id` AS `modelId`, `jt`.`type_no` AS `typeNo`, 
-                `jt`.`fichier_mpr` AS `mprFile`, `jt`.`estampille` AS `timestamp`
+                `jt`.`nom_fichier_mpr` AS `mprFileName`, `jt`.`contenu_fichier_mpr` AS `mprFileContents`, `jt`.`estampille` AS `timestamp`
             FROM `job_type` AS `jt` WHERE `jt`.`id_job_type` = :id " . 
             (new \MYSQLDatabaseLockingReadTypes($databaseConnectionLockingReadType))->toLockingReadString() . ";"
         );
-        $stmt->bindValue(":id", $id, PDO::PARAM_INT);
+        $stmt->bindValue(":id", $id, \PDO::PARAM_INT);
         $stmt->execute();
         
 		$model = null;
@@ -83,7 +85,7 @@ class JobType extends \ModelTypeGeneric implements \JsonSerializable
             $type = \Type::withImportNo($db, $row["typeNo"]);
             
             $instance = new self(
-                $id, $row["jobId"], $model, $type, $row["mprFile"], $row["timestamp"]
+                $id, $row["jobId"], $model, $type, $row["mprFileName"], $row["mprFileContents"], $row["timestamp"]
             );
         }
         else
@@ -139,7 +141,7 @@ class JobType extends \ModelTypeGeneric implements \JsonSerializable
         //Récupération des pièces à produire
         while($row = $stmt->fetch())
         {
-            $part = new JobTypePorte($row["id_job_type_porte"], $id, $row["quantite"], $row["qte_produite"], $row["longueur"], 
+            $part = new \JobTypePorte($row["id_job_type_porte"], $id, $row["quantite"], $row["qte_produite"], $row["longueur"], 
                 $row["largeur"], $row["grain"], $row["terminer"], $row["estampille"]);
             array_push($instance->_parts, $part);
         }
@@ -215,7 +217,7 @@ class JobType extends \ModelTypeGeneric implements \JsonSerializable
                     DELETE FROM `job_type_porte`
                     WHERE `job_type_id` = :id;
                 ");
-            $stmt->bindValue(":id", $this->getId(), PDO::PARAM_INT);
+            $stmt->bindValue(":id", $this->getId(), \PDO::PARAM_INT);
             $stmt->execute();
         }
         
@@ -225,23 +227,24 @@ class JobType extends \ModelTypeGeneric implements \JsonSerializable
     /**
      * Insert the JobType object in the database
      *
-     * @param FabPlanConnection $db The database in which the record must be inserted
+     * @param \FabPlanConnection $db The database in which the record must be inserted
      *
      * @throws
      * @author Marc-Olivier Bazin-Maurice
-     * @return JobType This JobType (for method chaining)
+     * @return \JobType This JobType (for method chaining)
      */
-    private function insert(FabPlanConnection $db) : JobType
+    private function insert(\FabPlanConnection $db) : \JobType
     {
         $stmt = $db->getConnection()->prepare("
-            INSERT INTO `job_type` (`id_job_type`, `job_id`, `door_model_id`, `type_no`, `fichier_mpr`)
-            VALUES (:jobTypeId, :jobId, :modelId, :typeNo, :mprFile);
+            INSERT INTO `job_type` (`id_job_type`, `job_id`, `door_model_id`, `type_no`, `nom_fichier_mpr`, `contenu_fichier_mpr`)
+            VALUES (:jobTypeId, :jobId, :modelId, :typeNo, :mprFileName, :mprFileContents);
         ");
-        $stmt->bindValue(":jobTypeId", $this->getId(), PDO::PARAM_INT);
-        $stmt->bindValue(":jobId", $this->getJobId(), PDO::PARAM_INT);
-        $stmt->bindValue(":modelId", $this->getModel()->getId(), PDO::PARAM_INT);
-        $stmt->bindValue(":typeNo", $this->getType()->getImportNo(), PDO::PARAM_INT);
-        $stmt->bindValue(":mprFile", $this->getMprFile(), PDO::PARAM_STR);
+        $stmt->bindValue(":jobTypeId", $this->getId(), \PDO::PARAM_INT);
+        $stmt->bindValue(":jobId", $this->getJobId(), \PDO::PARAM_INT);
+        $stmt->bindValue(":modelId", $this->getModel()->getId(), \PDO::PARAM_INT);
+        $stmt->bindValue(":typeNo", $this->getType()->getImportNo(), \PDO::PARAM_INT);
+        $stmt->bindValue(":mprFileName", $this->getMprFileName(), \PDO::PARAM_STR);
+        $stmt->bindValue(":mprFileContents", $this->getMprFileContents(), \PDO::PARAM_STR);
         $success = $stmt->execute();
         $this->setId(intval($db->getConnection()->lastInsertId()));
         
@@ -262,24 +265,26 @@ class JobType extends \ModelTypeGeneric implements \JsonSerializable
     /**
      * Update the JobType object in the database
      *
-     * @param FabPlanConnection $db The database in which the record must be updated
+     * @param \FabPlanConnection $db The database in which the record must be updated
      *
      * @throws
      * @author Marc-Olivier Bazin-Maurice
-     * @return JobType This JobType (for method chaining)
+     * @return \JobType This JobType (for method chaining)
      */
-    private function update(FabPlanConnection $db) : JobType
+    private function update(\FabPlanConnection $db) : \JobType
     {
         $stmt = $db->getConnection()->prepare("
             UPDATE `job_type`
-            SET `job_id` = :jobId, `door_model_id` = :modelId, `type_no` = :typeNo, `fichier_mpr` = :mprFile
+            SET `job_id` = :jobId, `door_model_id` = :modelId, `type_no` = :typeNo, `nom_fichier_mpr` = :mprFileName, 
+                `contenu_fichier_mpr` = :mprFileContents
             WHERE `id_job_type` = :id;
         ");
-        $stmt->bindValue(":id", $this->getId(), PDO::PARAM_INT);
-        $stmt->bindValue(":jobId", $this->getJobId(), PDO::PARAM_INT);
-        $stmt->bindValue(":modelId", $this->getModel()->getId(), PDO::PARAM_INT);
-        $stmt->bindValue(":typeNo", $this->getType()->getImportNo(), PDO::PARAM_INT);
-        $stmt->bindValue(":mprFile", $this->getMprFile(), PDO::PARAM_STR);
+        $stmt->bindValue(":id", $this->getId(), \PDO::PARAM_INT);
+        $stmt->bindValue(":jobId", $this->getJobId(), \PDO::PARAM_INT);
+        $stmt->bindValue(":modelId", $this->getModel()->getId(), \PDO::PARAM_INT);
+        $stmt->bindValue(":typeNo", $this->getType()->getImportNo(), \PDO::PARAM_INT);
+        $stmt->bindValue(":mprFileName", $this->getMprFileName(), \PDO::PARAM_STR);
+        $stmt->bindValue(":mprFileContents", $this->getMprFileContents(), \PDO::PARAM_STR);
         $success = $stmt->execute();
         
         foreach($this->_parameters as $parameter)
@@ -360,11 +365,10 @@ class JobType extends \ModelTypeGeneric implements \JsonSerializable
             $key = null;
             $value = null;
             $description = null;
-            $params = array();
             $this->setParameters(array());
             
             $matches1 = array();
-            preg_match("/\[001\r\n(.*?)\r\n\r\n/s", $this->getMprFile(), $matches1);
+            preg_match("/\[001\r\n(.*?)\r\n\r\n/s", $this->getMprFileContents(), $matches1);
             $matches2 = array();
             preg_match_all("/^(.*=\".*\")\r$/m", $matches1[1], $matches2);
             
@@ -382,9 +386,9 @@ class JobType extends \ModelTypeGeneric implements \JsonSerializable
                     $matches3 = array();
                     preg_match("/^KM=\"(.*)\"$/", $parameterString, $matches3);
                     $description = $matches3[1];
-                    $modelId = $this->getModelId();
-                    $typeNo = $this->getTypeNo();
-                    $parameter = new ModelTypeGenericParameter($key, $value, $modelId, $typeNo, $description, $value);
+                    $modelId = $this->getModel()->getId();
+                    $typeNo = $this->getType()->getImportNo();
+                    $parameter = new \ModelTypeGenericParameter($key, $value, $modelId, $typeNo, $description, $value);
                     array_push($this->_parameters, $parameter);
                 }
             }
@@ -400,9 +404,9 @@ class JobType extends \ModelTypeGeneric implements \JsonSerializable
      *
      * @throws
      * @author Marc-Olivier Bazin-Maurice
-     * @return JobType This JobType (for method chaining)
+     * @return \JobType This JobType (for method chaining)
      */
-    public function setId(?int $id = null) : JobType
+    public function setId(?int $id = null) : \JobType
     {
         $this->_id = $id;
         return $this;
@@ -415,26 +419,41 @@ class JobType extends \ModelTypeGeneric implements \JsonSerializable
      *
      * @throws
      * @author Marc-Olivier Bazin-Maurice
-     * @return JobType This JobType (for method chaining)
+     * @return \JobType This JobType (for method chaining)
      */
-    public function setJobId(?int $id = null) : JobType
+    public function setJobId(?int $id = null) : \JobType
     {
         $this->_jobId = $id;
         return $this;
     }
     
     /**
-     * Set the mpr file contents of this JobType.
+     * Set the mpr file name of this JobType.
      *
-     * @param string $mprFile The mpr file contents of the Type associated to this jobType.
+     * @param string $mprFile The mpr file name of this jobType.
      *
      * @throws
      * @author Marc-Olivier Bazin-Maurice
-     * @return JobType This JobType (for method chaining)
+     * @return \JobType This JobType (for method chaining)
      */
-    public function setMprFile(?string $mprFile = null) : JobType
+    public function setMprFileName(?string $mprFileName = null) : \JobType
     {
-        $this->_mprFile = $mprFile;
+        $this->_mprFileName = $mprFileName;
+        return $this;
+    }
+
+    /**
+     * Set the mpr file contents of this JobType.
+     *
+     * @param string $mprFileContents The mpr file contents of this jobType.
+     *
+     * @throws
+     * @author Marc-Olivier Bazin-Maurice
+     * @return \JobType This JobType (for method chaining)
+     */
+    public function setMprFileContents(?string $mprFileContents = null) : \JobType
+    {
+        $this->_mprFileContents = $mprFileContents;
         return $this;
     }
     
@@ -445,9 +464,9 @@ class JobType extends \ModelTypeGeneric implements \JsonSerializable
      *
      * @throws
      * @author Marc-Olivier Bazin-Maurice
-     * @return JobType This JobType (for method chaining)
+     * @return \JobType This JobType (for method chaining)
      */
-    private function setTimestamp(?string $timestamp = null) : JobType
+    private function setTimestamp(?string $timestamp = null) : \JobType
     {
         $this->_timestamp = $timestamp;
         return $this;
@@ -493,15 +512,27 @@ class JobType extends \ModelTypeGeneric implements \JsonSerializable
     }
     
     /**
+     * Get the name of the mpr file of this JobType (when not using a generic program).
+     *
+     * @throws
+     * @author Marc-Olivier Bazin-Maurice
+     * @return string The name of the mpr file of this JobType
+     */
+    public function getMprFileName() : ?string
+    {
+        return $this->_mprFileName;
+    }
+
+    /**
      * Get the contents of the mpr file of this JobType (when not using a generic program).
      *
      * @throws
      * @author Marc-Olivier Bazin-Maurice
      * @return string The contents of the mpr file of this JobType
      */
-    public function getMprFile() : ?string
+    public function getMprFileContents() : ?string
     {
-        return $this->_mprFile;
+        return $this->_mprFileContents;
     }
     
     /**
