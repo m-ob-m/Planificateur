@@ -173,6 +173,7 @@ class ParameterEditor{
 		this.emptyParametersTable();
 		if(parameters !== null)
 		{
+			document.getElementById("mprFileName").value = "";
 			document.getElementById("mprFileContents").value = "";
 			let parametersTableBody = document.getElementById("parametersArray").getElementsByTagName("tbody")[0];
 			parameters.map((parameter) => {
