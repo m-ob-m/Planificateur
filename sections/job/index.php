@@ -170,7 +170,7 @@
 							<td class="firstVisibleColumn" style="width: 10%;">Fichier mpr</td>
 							<td class="lastVisibleColumn">
 								<input id="mprFileSelectionInputBox" type="file" value="" style="display: none;">
-								<input id="mprFileName" style="text-align: left;">
+								<input id="mprFileName" style="text-align: left;" readonly>
 							</td>
 						</tr>
 						<tr>
