@@ -123,7 +123,7 @@ class mprCutrite
 	    if($jobType->getModel()->getId() === 2)
 	    {
 	        // Unification des sauts de ligne
-	        $this->_generic = preg_replace("/(?<!\r)\n|\r(?!\n)/", "\r\n", $jobType->getMprFile());
+	        $this->_generic = preg_replace("/(?<!\r)\n|\r(?!\n)/", "\r\n", $jobType->getMprFileContents());
 	        
 	        $this->extractMprBlocks();
 	        $this->_mpr = $this->_header;
