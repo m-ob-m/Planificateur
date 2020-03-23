@@ -17,12 +17,15 @@ class ParameterEditor{
 			document.getElementById("typeNo").addEventListener("change", async () => {
 				await this.onModelOrTypeChange();
 			});
-			document.getElementById("mprFileSelectionInputBox").addEventListener("change", async () => {
-				let mprFileInput = document.getElementById("mprFileSelectionInputBox");
-				if(mprFileInput.files.length > 0){
-					await this.readMpr(mprFileInput.files[0]);
-					mprFileInput.value = "";
-				}
+			let mprFileInput = document.getElementById("mprFileSelectionInputBox");
+			document.getElementById("mprFileName").addEventListener("click", async () => {
+				mprFileInput.value = null;
+				mprFileInput.click();
+				return true;
+			});
+			mprFileInput.addEventListener("change", async () => {
+				await this.readMpr(mprFileInput.files[0]);
+				document.getElementById("mprFileName").value = mprFileInput.value.match(/(?<=\\|\/)[^\\\/]*$/)[0];
 			});
 			this._acceptCallBack = null;
 			this._cancelCallBack = null;
@@ -40,12 +43,19 @@ class ParameterEditor{
 		try{
 			document.getElementById("loadingModal").style.display = "block";
 			if(parseInt(document.getElementById("modelId").value) === 2){
-				let mprFile = document.getElementById("mprFileContents").value;
-				if(mprFile !== "" && mprFile !== null){
-					this.reload(mprFile);
+				if(!["", null].includes(document.getElementById("mprFileName").value)){
+					this.reload(
+						null, 
+						document.getElementById("mprFileName").value, 
+						document.getElementById("mprFileContents").value
+					);
 				}
 				else{
-					this.reload(JSON.parse(window.sessionStorage.jobType).mprFile);
+					this.reload(
+						null, 
+						JSON.parse(window.sessionStorage.jobType).mprFileName, 
+						JSON.parse(window.sessionStorage.jobType).mprFileContents
+					);
 				}
 			}
 			else{
@@ -83,7 +93,7 @@ class ParameterEditor{
 	}
 
 	/**
-	 * Opens the parameterEditor
+	 * Opens the parameterEditor.
 	 * @param {Function|null} [acceptCallBack=null] A callback function for the accept event of this ParameterEditor
 	 * @param {Function|null} [cancelCallBack=null] A callback function for the cancel event of this ParameterEditor
 	 * @return {ParameterEditor} This ParameterEditor
@@ -110,10 +120,10 @@ class ParameterEditor{
 		document.getElementById("modelId").value = jobType.model.id;
 		document.getElementById("typeNo").value = jobType.type.importNo;
 		if(isInteger(jobType.model.id, true) && parseInt(jobType.model.id) !== 2){
-			this.reload(jobType.parameters);
+			this.reload(jobType.parameters, null, null);
 		}
 		else{
-			this.reload(jobType.mprFile);
+			this.reload(null, jobType.mprFileName, jobType.mprFileContents);
 		}
 		return this;
 	}
@@ -128,7 +138,8 @@ class ParameterEditor{
 		jobType.model.description = document.getElementById("modelId")[document.getElementById("modelId").selectedIndex].text;
 		jobType.type.importNo = document.getElementById("typeNo").value;
 		jobType.type.description = document.getElementById("typeNo")[document.getElementById("typeNo").selectedIndex].text;
-		jobType.mprFile = document.getElementById("mprFileContents").value;
+		jobType.mprFileName = document.getElementById("mprFileName").value;
+		jobType.mprFileContents = document.getElementById("mprFileContents").value;
 		let parametersTableBody = document.getElementById("parametersArray").getElementsByTagName("tbody")[0];
 		jobType.parameters = [...parametersTableBody.getElementsByTagName("tr")].map((parameterRow) => {
 			return {
@@ -144,8 +155,8 @@ class ParameterEditor{
 	}
 
 	/**
-	 * Closes the parameterEditor
-	 * @return {ParameterEditor} This ParameterEditor
+	 * Closes the parameterEditor.
+	 * @return {ParameterEditor} This ParameterEditor.
 	 */
 	close(){
 		this._parameterEditor.style.display = "none";
@@ -153,26 +164,26 @@ class ParameterEditor{
 	}
 
 	/** Reloads the parameters editor.
-	 * @param {object[]|string} [parametersOrMprFile=[]] An array of parameters or a mpr file.
+	 * @param {null|object[]} parameters An array of parameters or null.
+	 * @param {null|String} [mprFileName=null] The name of the mpr file.
+	 * @param {null|String} [mprFileContents=null] The contents of the mpr file.
 	 * @return {ParameterEditor} This ParameterEditor
 	 */
-	reload(parametersOrMprFile = []){
+	reload(parameters = null, mprFileName = null, mprFileContents = null){
 		this.emptyParametersTable();
-		if(isArray(parametersOrMprFile))
+		if(parameters !== null)
 		{
 			document.getElementById("mprFileContents").value = "";
 			let parametersTableBody = document.getElementById("parametersArray").getElementsByTagName("tbody")[0];
-			parametersOrMprFile.map((parameter) => {
+			parameters.map((parameter) => {
 				parametersTableBody.appendChild(this.newParameterRow(parameter));
 			});
 			this.switchEditionMode(0);
 		}
-		else if(isString(parametersOrMprFile, false)){
-			document.getElementById("mprFileContents").value = parametersOrMprFile;
-			this.switchEditionMode(1);
-		}
 		else{
-			throw "The parameters editors was reloaded with an invalid parameters array or mpr file."
+			document.getElementById("mprFileName").value = mprFileName;
+			document.getElementById("mprFileContents").value = mprFileContents;
+			this.switchEditionMode(1);
 		}
 		return this;
 	}

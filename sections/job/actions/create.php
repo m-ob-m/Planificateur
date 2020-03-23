@@ -133,7 +133,8 @@
 
                 $model = \Model::withDescription($db, $inputJobType->model) ?? \Model::withID($db, 1);
                 $type = \Type::withImportNo($db, $inputJobType->type);
-                $jobType = (new \JobType())->setModel($model)->setType($type);
+                $jobType = new \JobType();
+                $jobType->setModel($model)->setType($type);
 
                 /* Set parameters. */
                 $parameters = $jobType->loadParameters($db)->getSpecificParametersAsKeyValuePairs();
@@ -199,7 +200,8 @@
                     $jobTypePorte = new \JobTypePorte(null, null, $part->quantity, 0, $part->height, $part->width, $part->grain);
                     array_push($jobTypePortes, $jobTypePorte);
                 }
-                $jobType->setParameters($jobTypeParameters)->setParts($jobTypePortes);
+                $jobType->setParameters($jobTypeParameters);
+                $jobType->setParts($jobTypePortes);
                 
                 array_push($jobTypes, $jobType);
             }
