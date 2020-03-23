@@ -27,6 +27,7 @@ div.porte{
 	text-align: center;
 	flex-direction:column;
 	cursor:pointer;
+	display: flex;
 }
 
 div.porte:hover{
@@ -175,12 +176,6 @@ div.pannel{
 {
 	font-size: 8pt;
 	line-height: 1.5;
-}
-
-@media screen {
-	div.porte{
-		display: flex;
-	}
 }
 
 @media print {

@@ -169,7 +169,7 @@
                     		<div id="quantity" style="display: inline-block; border: 1px black solid; padding: 2px;">Qté : <?= 
                                 $panel->getQuantity(); 
                             ?></div>
-                    		<div id="batchName" style="display: inline-block; border: 1px black solid;  padding: 2px;"><?= 
+                    		<div id="batchName" style="display: inline-block; border: 1px black solid; padding: 2px;"><?= 
                                 $batch->getName(); 
                              ?></div>
                     	</div>
@@ -191,12 +191,16 @@
 										<?php $job = \Job::withID(new \FabplanConnection(), $jobType->getJobId()); ?>
 										<?php $model = $jobType->getModel(); ?>
                         				<?php $mpr = $part->getMprName(); ?>
-                        				<?php $l = $part->getViewLeft(); ?>
-                    				    <?php $t = $part->getViewTop() - 30; // Haut de pièce décalé de 30px vers le bas. ?>
-    									<?php $w = $part->getViewHeight(); ?>
-                    				    <?php $h = $part->getViewWidth(); ?>
-    									<div class="porte no-print" data-id="<?= $idjtp; ?>" 
-    										style="left: <?= $l; ?>px; top: <?= $t; ?>px; width: <?= $w; ?>px; height: <?= $h; ?>px;">
+										<?php $rot0_180 = $part->getRotation() == 0 || $part->getRotation() == 180 ?>
+                        				<?php $x = $part->getXCoordinate(); ?>
+										<?php $y = $part->getYCoordinate(); ?>
+										<?php $w = $part->getWidth(); ?>
+										<?php $l = 100 * ($x - ($rot0_180 ? $part->getHeight() : $w) / 2) / $panel->getLength(); ?>
+                    				    <?php $t = 100 * ($y - ($rot0_180 ? $w : $part->getHeight()) / 2) / $panel->getWidth(); ?>
+    									<?php $w = 100 * ($rot0_180 ? $part->getHeight() : $w) / $panel->getLength(); ?>
+                    				    <?php $h = 100 * ($rot0_180 ? $w : $part->getHeight()) / $panel->getWidth(); ?>
+    									<div class="porte" data-id="<?= $idjtp; ?>" 
+    										style="left: <?= $l; ?>%; top: <?= $t; ?>%; width: <?= $w; ?>%; height: <?= $h; ?>%;">
                         					<?= $job->getName(); ?><br>
                         					<?= $model->getDescription(); ?><br>
                         					<?= $part->getHeightIn() . " X " . $part->getWidthIn(); ?>

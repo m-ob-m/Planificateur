@@ -139,89 +139,89 @@
 		<link rel="stylesheet" href="../../assets/css/parametersTable.css"/>
 		<link rel="stylesheet" href="../../assets/css/imageButton.css">
 	</head>
-	<body style="background-image: none; background-color: #FFFFFF;">
-		<div style="display: flex; flex-flow: row;">
-			<div style="flex: 1 1 auto;">
-			<?php if($collection !== null && !empty($collection->getPanels())): ?>
-            	<?php foreach($collection->getPanels() as $index => $panel): ?>
-        			<div class="pannelContainer" style="page-break-after: always;">
-                    	<!-- Entete de navigation (on veut l'avoir sur chaque page lors de l'impression) -->
-                    	<div style="width: 100%; margin-top: 2px; margin-bottom: 2px; text-align: center; overflow: hidden;">
-                            <button title="Premier" class="no-print goToFirst">&lt;&lt;</button>
-                            <button title="Précédent" class="no-print goToPrevious">&lt;</button>
-                    		<div id="index" style="display: inline-block; border: 1px black solid; padding: 2px;"><?= 
-                                ($index + 1) . " / " . count($collection->getPanels()); 
-                            ?></div>
-                            <button title="Suivant" class="no-print goToNext">&gt;</button>
-                            <button title="Dernier" class="no-print goToLast">&gt;&gt;</button>
-                    		<button class="no-print printSingle">Imprimer</button>
-                    		<button class="no-print printAll">Imprimer tout</button> 
-                    		<div id="quantity" style="display: inline-block; border: 1px black solid; padding: 2px;">Qté : <?= 
-                                $panel->getQuantity(); 
-                            ?></div>
-                    		<div id="batchName" style="display: inline-block; border: 1px black solid;  padding: 2px;"><?= 
-                                $batch->getName(); 
-                             ?></div>
-                    		<button class="no-print" onclick="window.close();" style="float: right; margin-right: 2px;">
-                    			<img src="../../images/exit.png" style="width: 16px; height: 16px;">
-                    		Sortir</button>
-                    	</div>
-                    	
-                    	<div style="display: flex; flex-flow: row;">
-                        	<div style="flex: 1 1 auto; float: left;"></div>
-                        	<div style="flex: 0 1 auto;">
-                        		<?php $sourceFileName = $batch->getName() . fillZero($index + 1, 4) . ".jpg";?>
-                        		<?php $sourceFilePath = CR_FABRIDOR . "SYSTEM_DATA\\DATA\\" . $sourceFileName; ?>
-                                <?php $destinationRootPath = "/Planificateur/sections/visualiseur/temp/panel_{$sourceFileName}"; ?>
-                        		<?php $destinationFilePath = $_SERVER["DOCUMENT_ROOT"] . $destinationRootPath; ?>
-                                <?php copy($sourceFilePath, $destinationFilePath); ?>
-                        		<div class="pannel">
-                        			<img src="temp/panel_<?= $sourceFileName; ?>" style="display: block;">
-                        			<?php foreach($panel->getParts() as $part): ?>
-                        				<?php $idjtp = $part->getJobTypePorteId(); ?>
-										<?php $jobTypePorte = \JobTypePorte::withID(new \FabplanConnection(), $idjtp); ?>
-										<?php $jobType = \JobType::withID(new \FabplanConnection(), $jobTypePorte->getJobTypeId()); ?>
-										<?php $job = \Job::withID(new \FabplanConnection(), $jobType->getJobId()); ?>
-										<?php $model = $jobType->getModel(); ?>
-                        				<?php $mpr = $part->getMprName(); ?>
-                        				<?php $l = $part->getViewLeft(); ?>
-                    				    <?php $t = $part->getViewTop() - 30; // Haut de pièce décalé de 30px vers le bas. ?>
-    									<?php $w = $part->getViewHeight(); ?>
-                    				    <?php $h = $part->getViewWidth(); ?>
-    									<div class="porte no-print" data-id="<?= $idjtp; ?>" 
-    										style="left: <?= $l; ?>px; top: <?= $t; ?>px; width: <?= $w; ?>px; height: <?= $h; ?>px;">
-                        					<?= $job->getName(); ?><br>
-                        					<?= $model->getDescription(); ?><br>
-                        					<?= $part->getHeightIn() . " X " . $part->getWidthIn(); ?>
-                        				</div>
-                        			<?php endforeach; ?>
-                        		</div>
-                            </div>
-                            <div style="flex: 1 1 auto; float: right;"></div>
-                    	</div>
-                	</div>
-                <?php endforeach; ?>
-            <?php else: ?>
-    			<p>Il n'y a rien à afficher. Veuillez regénérer le projet.</p>
-    		<?php endif;?>
-            </div>
-        	<div id="rightPannel" class="no-print" style="flex: 0 1 auto; display: none;">	
-                <!-- Visualisation des propriétés -->
-        		<table class="parametersTable" style="width: 100%;">
-            		<thead>
-                		<tr>
-                			<td style="padding-left: 5px; padding-right: 5px;">Propriétés de la porte</td>
-                			<td>
-                				<img id="propertiesWindowCloseButton" src="../../images/closewin.png" 
-                					style="float: right; padding-right: 2px; cursor: pointer;">
-                			</td>
-                		</tr>
-            		<thead>
-					<tbody>
-					</tbody>
-        		</table>
-        	</div>
-    	</div>
+	<body style="background-image: none; background-color: #FFFFFF; display: flex; flex-flow: row;">
+		<div style="flex: 1 1 auto;">
+		<?php if($collection !== null && !empty($collection->getPanels())): ?>
+			<?php foreach($collection->getPanels() as $index => $panel): ?>
+				<div class="pannelContainer" style="page-break-after: always;">
+					<!-- Entête de navigation (on veut l'avoir sur chaque page lors de l'impression) -->
+					<div style="width: 100%; margin-top: 2px; margin-bottom: 2px; text-align: center; overflow: hidden;">
+						<button title="Premier" class="no-print goToFirst">&lt;&lt;</button>
+						<button title="Précédent" class="no-print goToPrevious">&lt;</button>
+						<div id="index" style="display: inline-block; border: 1px black solid; padding: 2px;"><?= 
+							($index + 1) . " / " . count($collection->getPanels()); 
+						?></div>
+						<button title="Suivant" class="no-print goToNext">&gt;</button>
+						<button title="Dernier" class="no-print goToLast">&gt;&gt;</button>
+						<button class="no-print printSingle">Imprimer</button>
+						<button class="no-print printAll">Imprimer tout</button> 
+						<div id="quantity" style="display: inline-block; border: 1px black solid; padding: 2px;">Qté : <?= 
+							$panel->getQuantity(); 
+						?></div>
+						<div id="batchName" style="display: inline-block; border: 1px black solid; padding: 2px;"><?= 
+							$batch->getName(); 
+						 ?></div>
+						<button class="no-print" onclick="window.close();" style="float: right; margin-right: 2px;">
+							<img src="../../images/exit.png" style="width: 16px; height: 16px;">
+						Sortir</button>
+					</div>
+					
+					<div style="display: flex; flex-flow: row;">
+						<div style="flex: 1 1 auto; float: left;"></div>
+						<div class="pannel" style="flex: 0 1 auto;">
+							<?php $sourceFileName = $batch->getName() . fillZero($index + 1, 4) . ".jpg";?>
+							<?php $sourceFilePath = CR_FABRIDOR . "SYSTEM_DATA\\DATA\\" . $sourceFileName; ?>
+							<?php $destinationRootPath = "/Planificateur/sections/visualiseur/temp/panel_{$sourceFileName}"; ?>
+							<?php $destinationFilePath = $_SERVER["DOCUMENT_ROOT"] . $destinationRootPath; ?>
+							<?php copy($sourceFilePath, $destinationFilePath); ?>
+							<img src="temp/panel_<?= $sourceFileName; ?>" style="display: block;">
+							<?php foreach($panel->getParts() as $part): ?>
+								<?php $idjtp = $part->getJobTypePorteId(); ?>
+								<?php $jobTypePorte = \JobTypePorte::withID(new \FabplanConnection(), $idjtp); ?>
+								<?php $jobType = \JobType::withID(new \FabplanConnection(), $jobTypePorte->getJobTypeId()); ?>
+								<?php $job = \Job::withID(new \FabplanConnection(), $jobType->getJobId()); ?>
+								<?php $model = $jobType->getModel(); ?>
+								<?php $mpr = $part->getMprName(); ?>
+								<?php $rot0_180 = $part->getRotation() == 0 || $part->getRotation() == 180 ?>
+								<?php $x = $part->getXCoordinate(); ?>
+								<?php $y = $part->getYCoordinate(); ?>
+								<?php $w = $part->getWidth(); ?>
+								<?php $l = 100 * ($x - ($rot0_180 ? $part->getHeight() : $w) / 2) / $panel->getLength(); ?>
+								<?php $t = 100 * ($y - ($rot0_180 ? $w : $part->getHeight()) / 2) / $panel->getWidth(); ?>
+								<?php $w = 100 * ($rot0_180 ? $part->getHeight() : $w) / $panel->getLength(); ?>
+								<?php $h = 100 * ($rot0_180 ? $w : $part->getHeight()) / $panel->getWidth(); ?>
+								<div class="porte" data-id="<?= $idjtp; ?>" 
+									style="left: <?= $l; ?>%; top: <?= $t; ?>%; width: <?= $w; ?>%; height: <?= $h; ?>%;">
+									<?= $job->getName(); ?><br>
+									<?= $model->getDescription(); ?><br>
+									<?= $part->getHeightIn() . " X " . $part->getWidthIn(); ?>
+								</div>
+							<?php endforeach; ?>
+						</div>
+						<div style="flex: 1 1 auto; float: right;"></div>
+					</div>
+				</div>
+			<?php endforeach; ?>
+		<?php else: ?>
+			<p>Il n'y a rien à afficher. Veuillez regénérer le projet.</p>
+		<?php endif;?>
+		</div>
+		<div id="rightPannel" class="no-print" style="flex: 0 1 auto; display: none;">	
+			<!-- Visualisation des propriétés -->
+			<table class="parametersTable" style="width: 100%;">
+				<thead>
+					<tr>
+						<td style="padding-left: 5px; padding-right: 5px;">Propriétés de la porte</td>
+						<td>
+							<img id="propertiesWindowCloseButton" src="../../images/closewin.png" 
+								style="float: right; padding-right: 2px; cursor: pointer;">
+						</td>
+					</tr>
+				<thead>
+				<tbody>
+				</tbody>
+			</table>
+		</div>
     	
     	<script type="text/javascript" src="../../assets/js/ajax.js"></script>
 		<script type="text/javascript" src="../../assets/js/docReady.js"></script>

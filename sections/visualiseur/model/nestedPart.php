@@ -21,10 +21,6 @@ class NestedPart
 	private $_rotation;
 	private $_mprName;
 	private $_idJobTypePorte;
-	
-	private const SCALE = 0.492;
-	private const OFFSET_X = 0;
-	private const OFFSET_Y = 30;
     
 	/**
 	 * Porte NestedPart
@@ -149,25 +145,6 @@ class NestedPart
 	}
 	
 	/**
-	 * Returns the left coordinate of this NestedPart on the view
-	 *
-	 * @throws
-	 * @author Marc-Olivier Bazin-Maurice
-	 * @return float The left coordinate of this NestedPart on the view
-	 */ 
-	public function getViewLeft() : float
-	{			
-		if($this->_rotation == 0 || $this->_rotation == 180)
-		{
-			return ($this->getXCoordinate() - $this->getHeight() / 2) * self::SCALE + self::OFFSET_X;
-		}
-		else 
-		{
-            return ($this->getXCoordinate() - $this->getWidth() / 2) * self::SCALE + self::OFFSET_X;
-		}
-	}
-	
-	/**
 	 * Returns the X coordinate of this NestedPart on its associated NestedPanel
 	 *
 	 * @throws
@@ -180,25 +157,6 @@ class NestedPart
 	}
 	
 	/**
-	 * Returns the top coordinate of this NestedPart on the view
-	 *
-	 * @throws
-	 * @author Marc-Olivier Bazin-Maurice
-	 * @return float The top coordinate of this NestedPart on the view
-	 */ 
-	public function getViewTop() : float
-	{	
-		if($this->_rotation == 0 || $this->_rotation == 180)
-		{
-			return ($this->getYCoordinate() - $this->getWidth() / 2) * self::SCALE + self::OFFSET_Y;
-		}
-		else 
-		{
-		    return ($this->getYCoordinate() - $this->getHeight() / 2) * self::SCALE + self::OFFSET_Y;
-		}
-	}
-	
-	/**
 	 * Returns the Y coordinate of this NestedPart on its associated NestedPanel
 	 *
 	 * @throws
@@ -208,45 +166,6 @@ class NestedPart
 	public function getYCoordinate() : float
 	{
 		return $this->_yCoordinate;
-	}
-	
-	/**
-	 * Returns the height of this NestedPart on the view
-	 *
-	 * @throws
-	 * @author Marc-Olivier Bazin-Maurice
-	 * @return float The height of this NestedPart on the view
-	 */ 
-	public function getViewHeight() : float
-	{	
-		if($this->_rotation == 0 || $this->_rotation == 180)
-		{
-			return $this->getHeight() * self::SCALE;
-		}
-		else 
-		{
-            return $this->getWidth() * self::SCALE;
-		}
-	}
-	
-	/**
-	 * Returns the width of this NestedPart on the view
-	 *
-	 * @throws
-	 * @author Marc-Olivier Bazin-Maurice
-	 * @return float The width of this NestedPart on the view
-	 */ 
-	public function getViewWidth() : float
-	{
-		
-		if($this->_rotation == 0 || $this->_rotation == 180)
-		{
-			return $this->getWidth() * self::SCALE;
-		}
-		else   
-		{
-		    return $this->getHeight() * self::SCALE;
-		}
 	}
 	
 	/**
