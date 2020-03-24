@@ -198,4 +198,9 @@ div.pannel{
 	div.pannel >img{
 		width: 10in;
 	}
+	
+	div.porte {
+		font-size: 0.75em;
+		line-height: 1.5em;
+	}
 }
