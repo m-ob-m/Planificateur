@@ -194,11 +194,10 @@
 										<?php $rot0_180 = $part->getRotation() == 0 || $part->getRotation() == 180 ?>
                         				<?php $x = $part->getXCoordinate(); ?>
 										<?php $y = $part->getYCoordinate(); ?>
-										<?php $w = $part->getWidth(); ?>
-										<?php $l = 100 * ($x - ($rot0_180 ? $part->getHeight() : $w) / 2) / $panel->getLength(); ?>
-                    				    <?php $t = 100 * ($y - ($rot0_180 ? $w : $part->getHeight()) / 2) / $panel->getWidth(); ?>
-    									<?php $w = 100 * ($rot0_180 ? $part->getHeight() : $w) / $panel->getLength(); ?>
-                    				    <?php $h = 100 * ($rot0_180 ? $w : $part->getHeight()) / $panel->getWidth(); ?>
+										<?php $l = 100 * ($x - ($rot0_180 ? $part->getHeight() : $part->getWidth()) / 2) / $panel->getLength(); ?>
+                    				    <?php $t = 100 * ($y - ($rot0_180 ? $part->getWidth() : $part->getHeight()) / 2) / $panel->getWidth(); ?>
+    									<?php $w = 100 * ($rot0_180 ? $part->getHeight() : $part->getWidth()) / $panel->getLength(); ?>
+                    				    <?php $h = 100 * ($rot0_180 ? $part->getWidth() : $part->getHeight()) / $panel->getWidth(); ?>
     									<div class="porte" data-id="<?= $idjtp; ?>" 
     										style="left: <?= $l; ?>%; top: <?= $t; ?>%; width: <?= $w; ?>%; height: <?= $h; ?>%;">
                         					<?= $job->getName(); ?><br>
