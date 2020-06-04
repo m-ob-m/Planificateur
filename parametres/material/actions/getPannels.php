@@ -69,7 +69,7 @@
                 throw new \Exception("Cut Rite's board library file \"mmatv9.mdb\" doesn't exist.");
             }
             
-            $accessDb =  new \PDO("odbc:DRIVER={Microsoft Access Driver (*.mdb)}; DBQ={$accessDbPath};", "", "", array());
+            $accessDb =  new \PDO("odbc:DRIVER={Microsoft Access Driver (*.mdb, *.accdb)}; DBQ={$accessDbPath};", "", "", array());
             $stmt = $accessDb->prepare("
                 SELECT [b].[BoardsCode] AS [BoardCode]
                 FROM [Boards] AS [b]

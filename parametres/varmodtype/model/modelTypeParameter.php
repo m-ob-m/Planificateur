@@ -271,7 +271,7 @@ class ModelTypeParameter extends \Parameter
      * @author Marc-Olivier Bazin-Maurice
      * @return array This object in a JSON compatible format
      */
-    public function jsonSerialize()
+    public function jsonSerialize() : ?array
     {
         return get_object_vars($this);
     }
