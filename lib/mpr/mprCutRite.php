@@ -23,7 +23,7 @@ class mprCutrite
 	function __construct($genericFilePath)
 	{
 		$this->_header = "";
-		
+		$this->_blocks = array();
 		$myfile = fopen($genericFilePath, "r") or die("Unable to open generic MPR file!");
 		$this->_generic = utf8_encode(fread($myfile,filesize($genericFilePath)));
 		fclose($myfile);
