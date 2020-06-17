@@ -1,6 +1,6 @@
 <?php
 
-require_once __DIR__ . '/Autoloader.php';
+include_once __DIR__ . '/Autoloader.php';
 
 \Complex\Autoloader::Register();
 
@@ -33,6 +33,6 @@ $filteredFileList = new FilenameFilter($filteredFileList, '/^(?!.*(Complex|Excep
 
 foreach (new RecursiveIteratorIterator($filteredFileList) as $file) {
     if ($file->isFile()) {
-        require_once $file;
+        include_once $file;
     }
 }
