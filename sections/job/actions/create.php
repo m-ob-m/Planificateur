@@ -131,20 +131,20 @@
                     throw new \Exception("JobType {$jobTypeIndex} of job {$jobName} has no specified material.");
                 }
 	
-				if(preg_match("/\ATHERMO\z/i", $inputJobType->material))
+				if(preg_match("/\\ATHERMO\\z/i", $inputJobType->material))
 				{
-					if($inputJobType->type === 1)
+					if($inputJobType->type === "1")
 					{
-						$inputJobType->type = 21;
+						$inputJobType->type = "21";
 					}
-					elseif($inputJobType->type === 2)
+					elseif($inputJobType->type === "2")
 					{
-						$inputJobType->type = 22;
+						$inputJobType->type = "22";
 					}
 				}
 	
                 $model = \Model::withDescription($db, $inputJobType->model) ?? \Model::withID($db, 1);
-                $type = \Type::withImportNo($db, $inputJobType->type);
+                $type = \Type::withImportNo($db, intval($inputJobType->type));
                 $jobType = new \JobType();
                 $jobType->setModel($model)->setType($type);
 
