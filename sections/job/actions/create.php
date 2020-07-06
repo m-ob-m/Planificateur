@@ -130,7 +130,19 @@
                 {
                     throw new \Exception("JobType {$jobTypeIndex} of job {$jobName} has no specified material.");
                 }
-
+	
+				if(preg_match("/\ATHERMO\z/i", $inputJobType->material))
+				{
+					if($inputJobType->type === 1)
+					{
+						$inputJobType->type = 21;
+					}
+					elseif($inputJobType->type === 2)
+					{
+						$inputJobType->type = 22;
+					}
+				}
+	
                 $model = \Model::withDescription($db, $inputJobType->model) ?? \Model::withID($db, 1);
                 $type = \Type::withImportNo($db, $inputJobType->type);
                 $jobType = new \JobType();
@@ -140,7 +152,11 @@
                 $parameters = $jobType->loadParameters($db)->getSpecificParametersAsKeyValuePairs();
 				
 				$externalProfile = $inputJobType->externalProfile;
-				if($externalProfile === "" || $externalProfile === null)
+				if(in_array($type->getImportNo(), array(9, 10, 11, 12, 13)) && !preg_match("/\AC\d+\z/", $model->getDescription()))
+				{
+					$parameters["T_Ext"] = "_PROF_A";
+				}
+				elseif($externalProfile === "" || $externalProfile === null)
 				{
 					$parameters["T_Ext"] = $parameters["T_Ext"] ?? "0";
 				}
@@ -158,10 +174,6 @@
 					$parameters["T_Ext"] = $externalProfile;
 				}
 				
-                if(in_array($type->getImportNo(), array(1, 2), true) && preg_match("/\ATHERMO\z/i", $inputJobType->material))
-                {
-                    $parameters["thermo"] = 1;
-                }
                 
                 $jobTypeParameters = array();
                 foreach($parameters as $key => $value)
