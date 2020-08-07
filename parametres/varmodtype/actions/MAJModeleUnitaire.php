@@ -85,7 +85,7 @@
                 fclose($lock);
             }
             
-            if($responseArray["status"] === "success")
+            if(file_exists($lockName))
             {
                 unlink($lockName);
             }
@@ -143,12 +143,12 @@
             }
             
             /* \var $type \Type */
-            foreach($typesToUpdate as $type)
+            foreach($typesToUpdate as $typeToUpdate)
             {
                 /* \var $model \Model */
-                foreach($modelsToUpdate as $model)
+                foreach($modelsToUpdate as $modelToUpdate)
                 {
-                    $modelTypeGeneric = (new \ModelTypeGeneric($model, $type))->loadParameters($db);
+                    $modelTypeGeneric = (new \ModelTypeGeneric($modelToUpdate, $typeToUpdate))->loadParameters($db);
                     $model = \Model::withID($db, $modelTypeGeneric->getModel()->getId());
                     $type = \Type::withImportNo($db, $modelTypeGeneric->getType()->getImportNo());
                     $name = getUnitaryProgramName($model, $type);
@@ -197,14 +197,16 @@
         try 
         {
             $mpr->makeMprFromTest($test, $generic->getParametersAsKeyDescriptionPairs());
-
+			
             $i = 0;
             while($i < 5)
             {
                 try
                 {
                     // Créer le mpr dans le système de fichiers.
+					$oldErrorReporting = error_reporting(E_ALL & ~E_WARNING);
                     $mpr->makeMprFile(getUnitaryProgramLocation($model, $type) . $test->getName());
+					error_reporting($oldErrorReporting);
                     break;
                 }
                 catch (\Exception $e)
@@ -212,9 +214,8 @@
                     if($i < 5)
                     {
                         // Réessayer
-                        sleep(500);
+                        usleep(500000);
                         $i++;
-                        continue;
                     }
                     else
                     {

@@ -38,7 +38,7 @@ KM="Variable bidon"
 ]1
 $E0
 KP 
-X=(LPX/2)-LinXext
+X=(_LPX/2)-LinXext
 Y=-LinYext
 Z=LinZext
 KO=00
@@ -49,7 +49,7 @@ KO=00
 
 $E1
 KL 
-X=(LPX/2)-(LinXext/2)
+X=(_LPX/2)-(LinXext/2)
 Y=-LinYext
 Z=0.0
 .X=0.000000
@@ -60,7 +60,7 @@ Z=0.0
 
 $E2
 KL 
-X=(LPX/2)
+X=(_LPX/2)
 Y=0.0
 .X=0.000000
 .Y=0.000000
@@ -85,7 +85,7 @@ R=100
 
 $E4
 KL 
-X=LPX
+X=_LPX
 Y=0.0
 Z=0.0
 .X=0.000000
@@ -96,7 +96,7 @@ Z=0.0
 
 $E5
 KR 
-R=Raycoin
+R=IF Raycoin = 0 THEN 0.05 ELSE Raycoin
 .R=0.000000
 .X=0.000000
 .Y=0.000000
@@ -111,8 +111,8 @@ R=Raycoin
 
 $E6
 KL 
-X=LPX
-Y=LPY
+X=_LPX
+Y=_LPY
 Z=0.0
 .X=0.000000
 .Y=0.000000
@@ -122,7 +122,7 @@ Z=0.0
 
 $E7
 KR 
-R=Raycoin
+R=IF Raycoin = 0 THEN 0.05 ELSE Raycoin
 .R=0.000000
 .X=0.000000
 .Y=0.000000
@@ -138,7 +138,7 @@ R=Raycoin
 $E8
 KL 
 X=0.0
-Y=LPY
+Y=_LPY
 Z=0.0
 .X=0.000000
 .Y=0.000000
@@ -148,7 +148,7 @@ Z=0.0
 
 $E9
 KR 
-R=Raycoin
+R=IF Raycoin = 0 THEN 0.05 ELSE Raycoin
 .R=0.000000
 .X=0.000000
 .Y=0.000000
@@ -174,7 +174,7 @@ Z=0.0
 
 $E11
 KR 
-R=Raycoin
+R=IF Raycoin = 0 THEN 0.05 ELSE Raycoin
 .R=0.000000
 .X=0.000000
 .Y=0.000000
@@ -189,7 +189,7 @@ R=Raycoin
 
 $E12
 KL 
-X=(LPX/2)+_OVLAPE
+X=(_LPX/2)+_OVLAPE
 Y=0.0
 Z=0.0
 .X=0.000000
@@ -215,7 +215,7 @@ R=50
 
 $E14
 KL 
-X=(LPX/2)+_OVLAPE+LoutXext
+X=(_LPX/2)+_OVLAPE+LoutXext
 Y=-LoutYext
 Z=LoutZext
 .X=0.000000
@@ -238,7 +238,7 @@ KO=00
 
 $E1
 KL 
-X=LPX+5
+X=_LPX+5
 Y=_BG+Dec_Lbat
 Z=LPZ-Prf_Lbat
 .X=0.000000
@@ -250,8 +250,8 @@ Z=LPZ-Prf_Lbat
 ]3
 $E0
 KP 
-X=LPX+5
-Y=LPY-_BD-Dec_Lbat
+X=_LPX+5
+Y=_LPY-_BD-Dec_Lbat
 Z=LPZ-Prf_Lbat
 KO=00
 .X=0.000000
@@ -262,7 +262,7 @@ KO=00
 $E1
 KL 
 X=-5
-Y=LPY-_BD-Dec_Lbat
+Y=_LPY-_BD-Dec_Lbat
 Z=LPZ-Prf_Lbat
 .X=0.000000
 .Y=0.000000
@@ -273,7 +273,7 @@ Z=LPZ-Prf_Lbat
 ]4
 $E0
 KP NEST
-X=(LPX/2)
+X=(_LPX/2)
 Y=-Nest_G
 Z=0.0
 KO=00
@@ -284,7 +284,7 @@ KO=00
 
 $E1
 KL 
-X=LPX+Nest_B
+X=_LPX+Nest_B
 Y=-Nest_G
 Z=0.0
 .X=0.000000
@@ -295,8 +295,8 @@ Z=0.0
 
 $E2
 KL 
-X=LPX+Nest_B
-Y=LPY+Nest_D
+X=_LPX+Nest_B
+Y=_LPY+Nest_D
 Z=0.0
 .X=0.000000
 .Y=0.000000
@@ -307,7 +307,7 @@ Z=0.0
 $E3
 KL 
 X=-Nest_H
-Y=LPY+Nest_D
+Y=_LPY+Nest_D
 Z=0.0
 .X=0.000000
 .Y=0.000000
@@ -328,7 +328,7 @@ Z=0.0
 
 $E5
 KL 
-X=LPX/2
+X=_LPX/2
 Y=-Nest_G
 Z=0.0
 .X=0.000000
@@ -340,7 +340,7 @@ Z=0.0
 ]5
 $E0
 KP 
-X=(LPX + DecBHExt - DecBBExt) / 2 - LinXext
+X=(_LPX + DecBHExt - DecBBExt) / 2 - LinXext
 Y=DecBGExt-LinYext
 Z=LinZext
 KO=00
@@ -351,7 +351,7 @@ KO=00
 
 $E1
 KL 
-X=(LPX + DecBHExt - DecBBExt - LinXext) / 2
+X=(_LPX + DecBHExt - DecBBExt - LinXext) / 2
 Y=@0
 Z=0.0
 .X=0.000000
@@ -362,7 +362,7 @@ Z=0.0
 
 $E2
 KL 
-X=(LPX + DecBHExt - DecBBExt) / 2
+X=(_LPX + DecBHExt - DecBBExt) / 2
 Y=DecBGExt
 .X=0.000000
 .Y=0.000000
@@ -387,7 +387,7 @@ R=100
 
 $E4
 KL 
-X=LPX - DecBBExt
+X=_LPX - DecBBExt
 Y=@0
 Z=0.0
 .X=0.000000
@@ -398,7 +398,7 @@ Z=0.0
 
 $E5
 KR 
-R=Raycoin
+R=IF Raycoin = 0 THEN 0.05 ELSE Raycoin
 .R=0.000000
 .X=0.000000
 .Y=0.000000
@@ -414,7 +414,7 @@ R=Raycoin
 $E6
 KL 
 X=@0
-Y=LPY-DecBDExt
+Y=_LPY-DecBDExt
 Z=0.0
 .X=0.000000
 .Y=0.000000
@@ -424,7 +424,7 @@ Z=0.0
 
 $E7
 KR 
-R=Raycoin
+R=IF Raycoin = 0 THEN 0.05 ELSE Raycoin
 .R=0.000000
 .X=0.000000
 .Y=0.000000
@@ -450,7 +450,7 @@ Z=0.0
 
 $E9
 KR 
-R=Raycoin
+R=IF Raycoin = 0 THEN 0.05 ELSE Raycoin
 .R=0.000000
 .X=0.000000
 .Y=0.000000
@@ -476,7 +476,7 @@ Z=0.0
 
 $E11
 KR 
-R=Raycoin
+R=IF Raycoin = 0 THEN 0.05 ELSE Raycoin
 .R=0.000000
 .X=0.000000
 .Y=0.000000
@@ -491,7 +491,7 @@ R=Raycoin
 
 $E12
 KL 
-X=(LPX + DecBHExt - DecBBExt) / 2 + _OVLAPE
+X=(_LPX + DecBHExt - DecBBExt) / 2 + _OVLAPE
 Y=@0
 Z=0.0
 .X=0.000000
@@ -517,7 +517,7 @@ R=50
 
 $E14
 KL 
-X=(LPX + DecBHExt - DecBBExt) / 2 + _OVLAPE + LoutXext
+X=(_LPX + DecBHExt - DecBBExt) / 2 + _OVLAPE + LoutXext
 Y=DecBGExt - LoutYext
 Z=LoutZext
 .X=0.000000
@@ -530,7 +530,7 @@ Z=LoutZext
 $E0
 KP 
 X=_BH + ShpWidFr
-Y=LPY / 2
+Y=_LPY / 2
 Z=0
 KO=00
 .X=0.000000
@@ -541,7 +541,7 @@ KO=00
 $E1
 KL 
 X=@0
-Y=_BG3 + ShpWidFr + 0.1 * ((_BG3 + ShpWidFr) = (LPY / 2))
+Y=_BG3 + ShpWidFr + 0.1 * ((_BG3 + ShpWidFr) = (_LPY / 2))
 .X=0.000000
 .Y=0.000000
 .Z=0.000000
@@ -561,7 +561,7 @@ Y=@0
 $E3
 KL 
 X=@0
-Y=LPY - _BD3 - ShpWidFr + 0.1 * (LPY = (_BG3 + _BD3 + 2 * ShpWidFr + 0.1 * ((LPY / 2) = (_BG3 + ShpWidFr))))
+Y=_LPY - _BD3 - ShpWidFr + 0.1 * (_LPY = (_BG3 + _BD3 + 2 * ShpWidFr + 0.1 * ((_LPY / 2) = (_BG3 + ShpWidFr))))
 .X=0.000000
 .Y=0.000000
 .Z=0.000000
@@ -581,7 +581,7 @@ Y=@0
 $E5
 KL 
 X=@0
-Y=LPY/2-20+0.1*((_BD3+ShpWidFr)=(LPY/2+20+0.1*(LPY=(_BG3+_BD3+2*ShpWidFr+0.1*((LPY/2)=(_BG3+ShpWidFr))))))
+Y=_LPY/2-20+0.1*((_BD3+ShpWidFr)=(_LPY/2+20+0.1*(_LPY=(_BG3+_BD3+2*ShpWidFr+0.1*((_LPY/2)=(_BG3+ShpWidFr))))))
 .X=0.000000
 .Y=0.000000
 .Z=0.000000
@@ -591,7 +591,7 @@ Y=LPY/2-20+0.1*((_BD3+ShpWidFr)=(LPY/2+20+0.1*(LPY=(_BG3+_BD3+2*ShpWidFr+0.1*((L
 ]7
 $E0
 KP 
-X=(LPX + DecBHExt - DecBBExt) / 2 - LinXext
+X=(_LPX + DecBHExt - DecBBExt) / 2 - LinXext
 Y=DecBGExt - LinYext + 1 / 4 * 25.4
 Z=LinZext
 KO=00
@@ -602,7 +602,7 @@ KO=00
 
 $E1
 KL 
-X=(LPX + DecBHExt - DecBBExt - LinXext) / 2
+X=(_LPX + DecBHExt - DecBBExt - LinXext) / 2
 Y=@0
 Z=0.0
 .X=0.000000
@@ -613,7 +613,7 @@ Z=0.0
 
 $E2
 KL 
-X=(LPX + DecBHExt - DecBBExt) / 2
+X=(_LPX + DecBHExt - DecBBExt) / 2
 Y=DecBGExt + 1 / 4 * 25.4
 .X=0.000000
 .Y=0.000000
@@ -638,7 +638,7 @@ R=50
 
 $E4
 KL 
-X=LPX - DecBBExt - 1 / 4 * 25.4
+X=_LPX - DecBBExt - 1 / 4 * 25.4
 Y=@0
 Z=0.0
 .X=0.000000
@@ -650,7 +650,7 @@ Z=0.0
 $E5
 KL 
 X=@0
-Y=LPY - DecBDExt - 1 / 4 * 25.4
+Y=_LPY - DecBDExt - 1 / 4 * 25.4
 Z=0.0
 .X=0.000000
 .Y=0.000000
@@ -682,7 +682,7 @@ Z=0.0
 
 $E8
 KL 
-X=(LPX + DecBHExt - DecBBExt) / 2 + _OVLAPE
+X=(_LPX + DecBHExt - DecBBExt) / 2 + _OVLAPE
 Y=@0
 Z=0.0
 .X=0.000000
@@ -708,7 +708,7 @@ R=50
 
 $E10
 KL 
-X=(LPX + DecBHExt - DecBBExt) / 2 + _OVLAPE + LoutXext
+X=(_LPX + DecBHExt - DecBBExt) / 2 + _OVLAPE + LoutXext
 Y=DecBGExt - LoutYext + 1 / 4 * 25.4
 Z=LoutZext
 .X=0.000000
@@ -717,9 +717,138 @@ Z=LoutZext
 .WI=0.000000
 .WZ=0.000000
 
+]8
+$E0
+KP 
+X=(_LPX/2)-LinXext
+Y=-LinYext
+Z=LinZext
+KO=00
+.X=0.000000
+.Y=0.000000
+.Z=0.000000
+.KO=00
+
+$E1
+KL 
+X=(_LPX/2)-(LinXext/2)
+Y=-LinYext
+Z=0.0
+.X=0.000000
+.Y=0.000000
+.Z=0.000000
+.WI=0.000000
+.WZ=0.000000
+
+$E2
+KL 
+X=(_LPX/2)
+Y=0.0
+.X=0.000000
+.Y=0.000000
+.Z=0.000000
+.WI=0.000000
+.WZ=0.000000
+
+$E3
+KR 
+R=100
+.R=0.000000
+.X=0.000000
+.Y=0.000000
+.Z=0.000000
+.I=0.000000
+.J=0.000000
+.DS=0
+.R=0.000000
+.WI=4.712389
+.WO=4.712389
+.WAZ=0.000000
+
+$E4
+KL 
+X=_LPX
+Y=0.0
+Z=0.0
+.X=0.000000
+.Y=0.000000
+.Z=0.000000
+.WI=0.000000
+.WZ=0.000000
+
+$E5
+KL 
+X=_LPX
+Y=_LPY
+Z=0.0
+.X=0.000000
+.Y=0.000000
+.Z=0.000000
+.WI=0.000000
+.WZ=0.000000
+
+$E6
+KL 
+X=0.0
+Y=_LPY
+Z=0.0
+.X=0.000000
+.Y=0.000000
+.Z=0.000000
+.WI=0.000000
+.WZ=0.000000
+
+$E7
+KL 
+X=0.0
+Y=0.0
+Z=0.0
+.X=0.000000
+.Y=0.000000
+.Z=0.000000
+.WI=0.000000
+.WZ=0.000000
+
+$E8
+KL 
+X=(_LPX/2)+_OVLAPE
+Y=0.0
+Z=0.0
+.X=0.000000
+.Y=0.000000
+.Z=0.000000
+.WI=0.000000
+.WZ=0.000000
+
+$E9
+KR 
+R=50
+.R=0.000000
+.X=0.000000
+.Y=0.000000
+.Z=0.000000
+.I=0.000000
+.J=0.000000
+.DS=0
+.R=0.000000
+.WI=4.712389
+.WO=4.712389
+.WAZ=0.000000
+
+$E10
+KL 
+X=(_LPX/2)+_OVLAPE+LoutXext
+Y=-LoutYext
+Z=LoutZext
+.X=0.000000
+.Y=0.000000
+.Z=0.000000
+.WI=0.000000
+.WZ=0.000000
+
 <100 \WerkStck\
-LA=" LPX"
-BR="LPY"
+LA=" _LPX"
+BR="_LPY"
 DI="LPZ"
 FNX="Nest_H"
 FNY="Nest_G"
@@ -748,8 +877,8 @@ XA="IF CadrH = 0 THEN _BH ELSE _BH + HT3 + _BCX3"
 YA="_BG"
 ZA="0"
 EM="0"
-VA="LPX2 IF CadrH = 0 THEN LPX - _BH - _BB ELSE LPX - _BB - _BCX3 - HT3 - _BH"
-VA="LPY2 LPY - _BG - _BD"
+VA="LPX2 IF CadrH = 0 THEN _LPX - _BH - _BB ELSE _LPX - _BB - _BCX3 - HT3 - _BH"
+VA="LPY2 _LPY - _BG - _BD"
 VA="LPZ2 LPZ"
 VA="_BC _BCY"
 VA="Safety 1"
@@ -1354,7 +1483,7 @@ KO="00"
 
 <139 \Komponente\
 IN="Int_Centre.mpr"
-XA="LPX - _BB - HT1 + DeBCPK_C"
+XA="_LPX - _BB - HT1 + DeBCPK_C"
 YA="_BG1"
 ZA="0"
 EM="0"
@@ -1431,7 +1560,7 @@ KO="00"
 ??="Act_PK_C = 1 AND NbcarX >= 2 AND NbcarY >= 1 AND FullPK_C = 0"
 
 <121 \Block\
-XP="LPX - _BB - HT1 + DeBCPK_C"
+XP="_LPX - _BB - HT1 + DeBCPK_C"
 YP="_BG1 + DimCarY1 + _BCY + DeBCPK_C"
 ZP="0.0"
 AX="1"
@@ -1526,7 +1655,7 @@ KO="00"
 
 <139 \Komponente\
 IN="Int_Centre.mpr"
-XA="LPX - _BB - HT1 + DeBCPK_C"
+XA="_LPX - _BB - HT1 + DeBCPK_C"
 YA="_BG1 + (DimCarY1 + _BCY) * (NbcarY - 1) + DeBCPK_C"
 ZA="0"
 EM="0"
@@ -1603,16 +1732,16 @@ KO="00"
 ??="Act_PK_C = 1 AND NbcarX >= 2 AND NbcarY >= 2 AND FullPK_C = 0"
 
 <112 \Tasche\
-XA="_BH + (LPX - _BH - _BB) / 2"
-YA="_BG + (LPY - _BG - _BD) / 2"
-LA="LPX + 40"
-BR="LPY - _BG - _BD - 2 * Dec_pock"
+XA="_BH + (_LPX - _BH - _BB) / 2"
+YA="_BG + (_LPY - _BG - _BD) / 2"
+LA="_LPX + 40"
+BR="_LPY - _BG - _BD - 2 * Dec_pock"
 RD="0"
 WI="0"
 TI="Prf_Pock"
 ZT="0"
 XY="80"
-T_="IF LPX + 40 >= 50 AND LPY - _BG - _BD - 2 * Dec_pock >= 35 THEN _T_SPCKT ELSE _T_FIN"
+T_="IF _LPX + 40 >= 50 AND _LPY - _BG - _BD - 2 * Dec_pock >= 35 THEN _T_SPCKT ELSE _T_FIN"
 F_="STANDARD"
 DS="1"
 OSZI="0"
@@ -1640,7 +1769,7 @@ KO="00"
 ??="Act_PK_H = 1"
 
 <112 \Tasche\
-XA="LPX / 2 - DecHPK_S"
+XA="_LPX / 2 - DecHPK_S"
 YA="_BG - DecLPK_S - L_PockS / 2"
 LA="H_PockS"
 BR="L_PockS"
@@ -1677,8 +1806,8 @@ KO="00"
 ??="Act_PK_S = 1"
 
 <112 \Tasche\
-XA="LPX / 2"
-YA="LPY - (_BD - DecLPK_S - L_PockS / 2)"
+XA="_LPX / 2"
+YA="_LPY - (_BD - DecLPK_S - L_PockS / 2)"
 LA="H_PockS"
 BR="L_PockS"
 RD="0"
@@ -1727,8 +1856,8 @@ XA="Dec_BatH + Dec_bat1"
 YA="Dec_BatG + Dec_bat1"
 ZA="(Typ_BT1 <> 2) * (LPZ - Prf_bat1)"
 EM="0"
-VA="LPX2 LPX - Dec_BatH - Dec_BatB - 2 * Dec_bat1"
-VA="LPY2 LPY - Dec_BatG - Dec_BatD - 2 * Dec_bat1"
+VA="LPX2 _LPX - Dec_BatH - Dec_BatB - 2 * Dec_bat1"
+VA="LPY2 _LPY - Dec_BatG - Dec_BatD - 2 * Dec_bat1"
 VA="LPZ2 LPZ"
 VA="_BC _BCY"
 VA="Safety 1"
@@ -1805,8 +1934,8 @@ XA="Dec_BatH + Dec_bat2"
 YA="Dec_BatG + Dec_bat2"
 ZA="(Typ_BT2 <> 2) * (LPZ - Prf_bat2)"
 EM="0"
-VA="LPX2 LPX - Dec_BatH - Dec_BatB - 2 * Dec_bat2"
-VA="LPY2 LPY - Dec_BatG - Dec_BatD - 2 * Dec_bat2"
+VA="LPX2 _LPX - Dec_BatH - Dec_BatB - 2 * Dec_bat2"
+VA="LPY2 _LPY - Dec_BatG - Dec_BatD - 2 * Dec_bat2"
 VA="LPZ2 LPZ"
 VA="_BC _BCY"
 VA="Safety 1"
@@ -1883,8 +2012,8 @@ XA="Dec_BatH + Dec_bat3"
 YA="Dec_BatG + Dec_bat3"
 ZA="(Typ_BT3 <> 2) * (LPZ - Prf_bat3)"
 EM="0"
-VA="LPX2 LPX - Dec_BatH - Dec_BatB - 2 * Dec_bat3"
-VA="LPY2 LPY - Dec_BatG - Dec_BatD - 2 * Dec_bat3"
+VA="LPX2 _LPX - Dec_BatH - Dec_BatB - 2 * Dec_bat3"
+VA="LPY2 _LPY - Dec_BatG - Dec_BatD - 2 * Dec_bat3"
 VA="LPZ2 LPZ"
 VA="_BC _BCY"
 VA="Safety 1"
@@ -1961,8 +2090,8 @@ XA="Dec_BatH + Dec_bat4"
 YA="Dec_BatG + Dec_bat4"
 ZA="(Typ_BT4 <> 2) * (LPZ - Prf_bat4)"
 EM="0"
-VA="LPX2 LPX - Dec_BatH - Dec_BatB - 2 * Dec_bat4"
-VA="LPY2 LPY - Dec_BatG - Dec_BatD - 2 * Dec_bat4"
+VA="LPX2 _LPX - Dec_BatH - Dec_BatB - 2 * Dec_bat4"
+VA="LPY2 _LPY - Dec_BatG - Dec_BatD - 2 * Dec_bat4"
 VA="LPZ2 LPZ"
 VA="_BC _BCY"
 VA="Safety 1"
@@ -2039,8 +2168,8 @@ XA="Dec_BatH + Dec_bat5"
 YA="Dec_BatG + Dec_bat5"
 ZA="(Typ_BT5 <> 2) * (LPZ - Prf_bat5)"
 EM="0"
-VA="LPX2 LPX - Dec_BatH - Dec_BatB - 2 * Dec_bat5"
-VA="LPY2 LPY - Dec_BatG - Dec_BatD - 2 * Dec_bat5"
+VA="LPX2 _LPX - Dec_BatH - Dec_BatB - 2 * Dec_bat5"
+VA="LPY2 _LPY - Dec_BatG - Dec_BatD - 2 * Dec_bat5"
 VA="LPZ2 LPZ"
 VA="_BC _BCY"
 VA="Safety 1"
@@ -2117,8 +2246,8 @@ XA="Dec_BatH + Dec_bat6"
 YA="Dec_BatG + Dec_bat6"
 ZA="(Typ_BT6 <> 2) * (LPZ - Prf_bat6)"
 EM="0"
-VA="LPX2 LPX - Dec_BatH - Dec_BatB - 2 * Dec_bat6"
-VA="LPY2 LPY - Dec_BatG - Dec_BatD - 2 * Dec_bat6"
+VA="LPX2 _LPX - Dec_BatH - Dec_BatB - 2 * Dec_bat6"
+VA="LPY2 _LPY - Dec_BatG - Dec_BatD - 2 * Dec_bat6"
 VA="LPZ2 LPZ"
 VA="_BC _BCY"
 VA="Safety 1"
@@ -2195,8 +2324,8 @@ XA="Dec_BatH + Dec_bat7"
 YA="Dec_BatG + Dec_bat7"
 ZA="(Typ_BT7 <> 2) * (LPZ - Prf_bat7)"
 EM="0"
-VA="LPX2 LPX - Dec_BatH - Dec_BatB - 2 * Dec_bat7"
-VA="LPY2 LPY - Dec_BatG - Dec_BatD - 2 * Dec_bat7"
+VA="LPX2 _LPX - Dec_BatH - Dec_BatB - 2 * Dec_bat7"
+VA="LPY2 _LPY - Dec_BatG - Dec_BatD - 2 * Dec_bat7"
 VA="LPZ2 LPZ"
 VA="_BC _BCY"
 VA="Safety 1"
@@ -2273,8 +2402,8 @@ XA="Dec_BatH + Dec_bat8"
 YA="Dec_BatG + Dec_bat8"
 ZA="(Typ_BT8 <> 2) * (LPZ - Prf_bat8)"
 EM="0"
-VA="LPX2 LPX - Dec_BatH - Dec_BatB - 2 * Dec_bat8"
-VA="LPY2 LPY - Dec_BatG - Dec_BatD - 2 * Dec_bat8"
+VA="LPX2 _LPX - Dec_BatH - Dec_BatB - 2 * Dec_bat8"
+VA="LPY2 _LPY - Dec_BatG - Dec_BatD - 2 * Dec_bat8"
 VA="LPZ2 LPZ"
 VA="_BC _BCY"
 VA="Safety 1"
@@ -2351,8 +2480,8 @@ XA="Dec_BatH + Dec_bat9"
 YA="Dec_BatG + Dec_bat9"
 ZA="(Typ_BT9 <> 2) * (LPZ - Prf_bat9)"
 EM="0"
-VA="LPX2 LPX - Dec_BatH - Dec_BatB - 2 * Dec_bat9"
-VA="LPY2 LPY - Dec_BatG - Dec_BatD - 2 * Dec_bat9"
+VA="LPX2 _LPX - Dec_BatH - Dec_BatB - 2 * Dec_bat9"
+VA="LPY2 _LPY - Dec_BatG - Dec_BatD - 2 * Dec_bat9"
 VA="LPZ2 LPZ"
 VA="_BC _BCY"
 VA="Safety 1"
@@ -2747,7 +2876,7 @@ XA="0"
 YA="0"
 ZA="0"
 EM="0"
-VA="Length LPY + 2 * ExtLBatC"
+VA="Length _LPY + 2 * ExtLBatC"
 VA="LPZ LPZ"
 VA="Rotation 90"
 VA="Width WidLBatC"
@@ -2784,8 +2913,8 @@ XA="IF CadrH = 0 THEN _BH ELSE _BH + HT3 + _BCX3"
 YA="_BG"
 ZA="(TypINT1 <> 2) * (LPZ - Prf_int1)"
 EM="0"
-VA="LPX2 IF CadrH = 0 THEN LPX - _BH - _BB ELSE LPX - _BB - _BCX3 - HT3 - _BH"
-VA="LPY2 LPY - _BG - _BD"
+VA="LPX2 IF CadrH = 0 THEN _LPX - _BH - _BB ELSE _LPX - _BB - _BCX3 - HT3 - _BH"
+VA="LPY2 _LPY - _BG - _BD"
 VA="LPZ2 LPZ"
 VA="_BC _BCY"
 VA="Safety 1"
@@ -3390,7 +3519,7 @@ KO="00"
 
 <139 \Komponente\
 IN="Int_Centre.mpr"
-XA="LPX - _BB - HT1 + DeBCIN1"
+XA="_LPX - _BB - HT1 + DeBCIN1"
 YA="_BG1"
 ZA="(TypINT1 <> 2) * (LPZ - Prf_int1)"
 EM="0"
@@ -3467,7 +3596,7 @@ KO="00"
 ??="NpasInt >= 1 AND NbcarX >= 2 AND NbcarY >= 1 AND FullIN1 = 0"
 
 <121 \Block\
-XP="LPX - _BB - HT1 + DeBCIN1"
+XP="_LPX - _BB - HT1 + DeBCIN1"
 YP="_BG1 + DimCarY1 + _BCY + DeBCIN1"
 ZP="0.0"
 AX="1"
@@ -3562,7 +3691,7 @@ KO="00"
 
 <139 \Komponente\
 IN="Int_Centre.mpr"
-XA="LPX - _BB - HT1 + DeBCIN1"
+XA="_LPX - _BB - HT1 + DeBCIN1"
 YA="_BG1 + (DimCarY1 + _BCY) * (NbcarY - 1) + DeBCIN1"
 ZA="(TypINT1 <> 2) * (LPZ - Prf_int1)"
 EM="0"
@@ -3652,8 +3781,8 @@ XA="IF CadrH = 0 THEN _BH ELSE _BH + HT3 + _BCX3"
 YA="_BG"
 ZA="(TypINT2 <> 2) * (LPZ - Prf_int2)"
 EM="0"
-VA="LPX2 IF CadrH = 0 THEN LPX - _BH - _BB ELSE LPX - _BB - _BCX3 - HT3 - _BH"
-VA="LPY2 LPY - _BG - _BD"
+VA="LPX2 IF CadrH = 0 THEN _LPX - _BH - _BB ELSE _LPX - _BB - _BCX3 - HT3 - _BH"
+VA="LPY2 _LPY - _BG - _BD"
 VA="LPZ2 LPZ"
 VA="_BC _BCY"
 VA="Safety 1"
@@ -4258,7 +4387,7 @@ KO="00"
 
 <139 \Komponente\
 IN="Int_Centre.mpr"
-XA="LPX - _BB - HT1 + DeBCIN2"
+XA="_LPX - _BB - HT1 + DeBCIN2"
 YA="_BG1"
 ZA="(TypINT2 <> 2) * (LPZ - Prf_int2)"
 EM="0"
@@ -4335,7 +4464,7 @@ KO="00"
 ??="NpasInt >= 2 AND NbcarX >= 2 AND NbcarY >= 1 AND FullIN2 = 0"
 
 <121 \Block\
-XP="LPX - _BB - HT1 + DeBCIN2"
+XP="_LPX - _BB - HT1 + DeBCIN2"
 YP="_BG1 + DimCarY1 + _BCY + DeBCIN2"
 ZP="0.0"
 AX="1"
@@ -4430,7 +4559,7 @@ KO="00"
 
 <139 \Komponente\
 IN="Int_Centre.mpr"
-XA="LPX - _BB - HT1 + DeBCIN2"
+XA="_LPX - _BB - HT1 + DeBCIN2"
 YA="_BG1 + (DimCarY1 + _BCY) * (NbcarY - 1) + DeBCIN2"
 ZA="(TypINT2 <> 2) * (LPZ - Prf_int2)"
 EM="0"
@@ -4520,8 +4649,8 @@ XA="IF CadrH = 0 THEN _BH ELSE _BH + HT3 + _BCX3"
 YA="_BG"
 ZA="(TypINT3 <> 2) * (LPZ - Prf_int3)"
 EM="0"
-VA="LPX2 IF CadrH = 0 THEN LPX - _BH - _BB ELSE LPX - _BB - _BCX3 - HT3 - _BH"
-VA="LPY2 LPY - _BG - _BD"
+VA="LPX2 IF CadrH = 0 THEN _LPX - _BH - _BB ELSE _LPX - _BB - _BCX3 - HT3 - _BH"
+VA="LPY2 _LPY - _BG - _BD"
 VA="LPZ2 LPZ"
 VA="_BC _BCY"
 VA="Safety 1"
@@ -5126,7 +5255,7 @@ KO="00"
 
 <139 \Komponente\
 IN="Int_Centre.mpr"
-XA="LPX - _BB - HT1 + DeBCIN3"
+XA="_LPX - _BB - HT1 + DeBCIN3"
 YA="_BG1"
 ZA="(TypINT3 <> 2) * (LPZ - Prf_int3)"
 EM="0"
@@ -5203,7 +5332,7 @@ KO="00"
 ??="NpasInt >= 3 AND NbcarX >= 2 AND NbcarY >= 1 AND FullIN3 = 0"
 
 <121 \Block\
-XP="LPX - _BB - HT1 + DeBCIN3"
+XP="_LPX - _BB - HT1 + DeBCIN3"
 YP="_BG1 + DimCarY1 + _BCY + DeBCIN3"
 ZP="0.0"
 AX="1"
@@ -5298,7 +5427,7 @@ KO="00"
 
 <139 \Komponente\
 IN="Int_Centre.mpr"
-XA="LPX - _BB - HT1 + DeBCIN3"
+XA="_LPX - _BB - HT1 + DeBCIN3"
 YA="_BG1 + (DimCarY1 + _BCY) * (NbcarY - 1) + DeBCIN3"
 ZA="(TypINT3 <> 2) * (LPZ - Prf_int3)"
 EM="0"
@@ -5388,8 +5517,8 @@ XA="IF CadrH = 0 THEN _BH ELSE _BH + HT3 + _BCX3"
 YA="_BG"
 ZA="(TypINT4 <> 2) * (LPZ - Prf_int4)"
 EM="0"
-VA="LPX2 IF CadrH = 0 THEN LPX - _BH - _BB ELSE LPX - _BB - _BCX3 - HT3 - _BH"
-VA="LPY2 LPY - _BG - _BD"
+VA="LPX2 IF CadrH = 0 THEN _LPX - _BH - _BB ELSE _LPX - _BB - _BCX3 - HT3 - _BH"
+VA="LPY2 _LPY - _BG - _BD"
 VA="LPZ2 LPZ"
 VA="_BC _BCY"
 VA="Safety 1"
@@ -5994,7 +6123,7 @@ KO="00"
 
 <139 \Komponente\
 IN="Int_Centre.mpr"
-XA="LPX - _BB - HT1 + DeBCIN4"
+XA="_LPX - _BB - HT1 + DeBCIN4"
 YA="_BG1"
 ZA="(TypINT4 <> 2) * (LPZ - Prf_int4)"
 EM="0"
@@ -6071,7 +6200,7 @@ KO="00"
 ??="NpasInt >= 4 AND NbcarX >= 2 AND NbcarY >= 1 AND FullIN4 = 0"
 
 <121 \Block\
-XP="LPX - _BB - HT1 + DeBCIN4"
+XP="_LPX - _BB - HT1 + DeBCIN4"
 YP="_BG1 + DimCarY1 + _BCY + DeBCIN4"
 ZP="0.0"
 AX="1"
@@ -6166,7 +6295,7 @@ KO="00"
 
 <139 \Komponente\
 IN="Int_Centre.mpr"
-XA="LPX - _BB - HT1 + DeBCIN4"
+XA="_LPX - _BB - HT1 + DeBCIN4"
 YA="_BG1 + (DimCarY1 + _BCY) * (NbcarY - 1) + DeBCIN4"
 ZA="(TypINT4 <> 2) * (LPZ - Prf_int4)"
 EM="0"
@@ -6256,8 +6385,8 @@ XA="IF CadrH = 0 THEN _BH ELSE _BH + HT3 + _BCX3"
 YA="_BG"
 ZA="(TypINT5 <> 2) * (LPZ - Prf_int5)"
 EM="0"
-VA="LPX2 IF CadrH = 0 THEN LPX - _BH - _BB ELSE LPX - _BB - _BCX3 - HT3 - _BH"
-VA="LPY2 LPY - _BG - _BD"
+VA="LPX2 IF CadrH = 0 THEN _LPX - _BH - _BB ELSE _LPX - _BB - _BCX3 - HT3 - _BH"
+VA="LPY2 _LPY - _BG - _BD"
 VA="LPZ2 LPZ"
 VA="_BC _BCY"
 VA="Safety 1"
@@ -6862,7 +6991,7 @@ KO="00"
 
 <139 \Komponente\
 IN="Int_Centre.mpr"
-XA="LPX - _BB - HT1 + DeBCIN5"
+XA="_LPX - _BB - HT1 + DeBCIN5"
 YA="_BG1"
 ZA="(TypINT5 <> 2) * (LPZ - Prf_int5)"
 EM="0"
@@ -6939,7 +7068,7 @@ KO="00"
 ??="NpasInt >= 5 AND NbcarX >= 2 AND NbcarY >= 1 AND FullIN5 = 0"
 
 <121 \Block\
-XP="LPX - _BB - HT1 + DeBCIN5"
+XP="_LPX - _BB - HT1 + DeBCIN5"
 YP="_BG1 + DimCarY1 + _BCY + DeBCIN5"
 ZP="0.0"
 AX="1"
@@ -7034,7 +7163,7 @@ KO="00"
 
 <139 \Komponente\
 IN="Int_Centre.mpr"
-XA="LPX - _BB - HT1 + DeBCIN5"
+XA="_LPX - _BB - HT1 + DeBCIN5"
 YA="_BG1 + (DimCarY1 + _BCY) * (NbcarY - 1) + DeBCIN5"
 ZA="(TypINT5 <> 2) * (LPZ - Prf_int5)"
 EM="0"
@@ -7124,8 +7253,8 @@ XA="IF CadrH = 0 THEN _BH ELSE _BH + HT3 + _BCX3"
 YA="_BG"
 ZA="(TypINT6 <> 2) * (LPZ - Prf_int6)"
 EM="0"
-VA="LPX2 IF CadrH = 0 THEN LPX - _BH - _BB ELSE LPX - _BB - _BCX3 - HT3 - _BH"
-VA="LPY2 LPY - _BG - _BD"
+VA="LPX2 IF CadrH = 0 THEN _LPX - _BH - _BB ELSE _LPX - _BB - _BCX3 - HT3 - _BH"
+VA="LPY2 _LPY - _BG - _BD"
 VA="LPZ2 LPZ"
 VA="_BC _BCY"
 VA="Safety 1"
@@ -7730,7 +7859,7 @@ KO="00"
 
 <139 \Komponente\
 IN="Int_Centre.mpr"
-XA="LPX - _BB - HT1 + DeBCIN6"
+XA="_LPX - _BB - HT1 + DeBCIN6"
 YA="_BG1"
 ZA="(TypINT6 <> 2) * (LPZ - Prf_int6)"
 EM="0"
@@ -7807,7 +7936,7 @@ KO="00"
 ??="NpasInt >= 6 AND NbcarX >= 2 AND NbcarY >= 1 AND FullIN6 = 0"
 
 <121 \Block\
-XP="LPX - _BB - HT1 + DeBCIN6"
+XP="_LPX - _BB - HT1 + DeBCIN6"
 YP="_BG1 + DimCarY1 + _BCY + DeBCIN6"
 ZP="0.0"
 AX="1"
@@ -7902,7 +8031,7 @@ KO="00"
 
 <139 \Komponente\
 IN="Int_Centre.mpr"
-XA="LPX - _BB - HT1 + DeBCIN6"
+XA="_LPX - _BB - HT1 + DeBCIN6"
 YA="_BG1 + (DimCarY1 + _BCY) * (NbcarY - 1) + DeBCIN6"
 ZA="(TypINT6 <> 2) * (LPZ - Prf_int6)"
 EM="0"
@@ -7992,8 +8121,8 @@ XA="IF CadrH = 0 THEN _BH ELSE _BH + HT3 + _BCX3"
 YA="_BG"
 ZA="(TypINT7 <> 2) * (LPZ - Prf_int7)"
 EM="0"
-VA="LPX2 IF CadrH = 0 THEN LPX - _BH - _BB ELSE LPX - _BB - _BCX3 - HT3 - _BH"
-VA="LPY2 LPY - _BG - _BD"
+VA="LPX2 IF CadrH = 0 THEN _LPX - _BH - _BB ELSE _LPX - _BB - _BCX3 - HT3 - _BH"
+VA="LPY2 _LPY - _BG - _BD"
 VA="LPZ2 LPZ"
 VA="_BC _BCY"
 VA="Safety 1"
@@ -8598,7 +8727,7 @@ KO="00"
 
 <139 \Komponente\
 IN="Int_Centre.mpr"
-XA="LPX - _BB - HT1 + DeBCIN7"
+XA="_LPX - _BB - HT1 + DeBCIN7"
 YA="_BG1"
 ZA="(TypINT7 <> 2) * (LPZ - Prf_int7)"
 EM="0"
@@ -8675,7 +8804,7 @@ KO="00"
 ??="NpasInt >= 7 AND NbcarX >= 2 AND NbcarY >= 1 AND FullIN7 = 0"
 
 <121 \Block\
-XP="LPX - _BB - HT1 + DeBCIN7"
+XP="_LPX - _BB - HT1 + DeBCIN7"
 YP="_BG1 + DimCarY1 + _BCY + DeBCIN7"
 ZP="0.0"
 AX="1"
@@ -8770,7 +8899,7 @@ KO="00"
 
 <139 \Komponente\
 IN="Int_Centre.mpr"
-XA="LPX - _BB - HT1 + DeBCIN7"
+XA="_LPX - _BB - HT1 + DeBCIN7"
 YA="_BG1 + (DimCarY1 + _BCY) * (NbcarY - 1) + DeBCIN7"
 ZA="(TypINT7 <> 2) * (LPZ - Prf_int7)"
 EM="0"
@@ -8860,8 +8989,8 @@ XA="IF CadrH = 0 THEN _BH ELSE _BH + HT3 + _BCX3"
 YA="_BG"
 ZA="(TypINT8 <> 2) * (LPZ - Prf_int8)"
 EM="0"
-VA="LPX2 IF CadrH = 0 THEN LPX - _BH - _BB ELSE LPX - _BB - _BCX3 - HT3 - _BH"
-VA="LPY2 LPY - _BG - _BD"
+VA="LPX2 IF CadrH = 0 THEN _LPX - _BH - _BB ELSE _LPX - _BB - _BCX3 - HT3 - _BH"
+VA="LPY2 _LPY - _BG - _BD"
 VA="LPZ2 LPZ"
 VA="_BC _BCY"
 VA="Safety 1"
@@ -9466,7 +9595,7 @@ KO="00"
 
 <139 \Komponente\
 IN="Int_Centre.mpr"
-XA="LPX - _BB - HT1 + DeBCIN8"
+XA="_LPX - _BB - HT1 + DeBCIN8"
 YA="_BG1"
 ZA="(TypINT8 <> 2) * (LPZ - Prf_int8)"
 EM="0"
@@ -9543,7 +9672,7 @@ KO="00"
 ??="NpasInt >= 8 AND NbcarX >= 2 AND NbcarY >= 1 AND FullIN8 = 0"
 
 <121 \Block\
-XP="LPX - _BB - HT1 + DeBCIN8"
+XP="_LPX - _BB - HT1 + DeBCIN8"
 YP="_BG1 + DimCarY1 + _BCY + DeBCIN8"
 ZP="0.0"
 AX="1"
@@ -9638,7 +9767,7 @@ KO="00"
 
 <139 \Komponente\
 IN="Int_Centre.mpr"
-XA="LPX - _BB - HT1 + DeBCIN8"
+XA="_LPX - _BB - HT1 + DeBCIN8"
 YA="_BG1 + (DimCarY1 + _BCY) * (NbcarY - 1) + DeBCIN8"
 ZA="(TypINT8 <> 2) * (LPZ - Prf_int8)"
 EM="0"
@@ -9728,8 +9857,8 @@ XA="IF CadrH = 0 THEN _BH ELSE _BH + HT3 + _BCX3"
 YA="_BG"
 ZA="(TypINT9 <> 2) * (LPZ - Prf_int9)"
 EM="0"
-VA="LPX2 IF CadrH = 0 THEN LPX - _BH - _BB ELSE LPX - _BB - _BCX3 - HT3 - _BH"
-VA="LPY2 LPY - _BG - _BD"
+VA="LPX2 IF CadrH = 0 THEN _LPX - _BH - _BB ELSE _LPX - _BB - _BCX3 - HT3 - _BH"
+VA="LPY2 _LPY - _BG - _BD"
 VA="LPZ2 LPZ"
 VA="_BC _BCY"
 VA="Safety 1"
@@ -10334,7 +10463,7 @@ KO="00"
 
 <139 \Komponente\
 IN="Int_Centre.mpr"
-XA="LPX - _BB - HT1 + DeBCIN9"
+XA="_LPX - _BB - HT1 + DeBCIN9"
 YA="_BG1"
 ZA="(TypINT9 <> 2) * (LPZ - Prf_int9)"
 EM="0"
@@ -10411,7 +10540,7 @@ KO="00"
 ??="NpasInt >= 9 AND NbcarX >= 2 AND NbcarY >= 1 AND FullIN9 = 0"
 
 <121 \Block\
-XP="LPX - _BB - HT1 + DeBCIN9"
+XP="_LPX - _BB - HT1 + DeBCIN9"
 YP="_BG1 + DimCarY1 + _BCY + DeBCIN9"
 ZP="0.0"
 AX="1"
@@ -10506,7 +10635,7 @@ KO="00"
 
 <139 \Komponente\
 IN="Int_Centre.mpr"
-XA="LPX - _BB - HT1 + DeBCIN9"
+XA="_LPX - _BB - HT1 + DeBCIN9"
 YA="_BG1 + (DimCarY1 + _BCY) * (NbcarY - 1) + DeBCIN9"
 ZA="(TypINT9 <> 2) * (LPZ - Prf_int9)"
 EM="0"
@@ -10596,8 +10725,8 @@ XA="IF CadrH = 0 THEN _BH ELSE _BH + HT3 + _BCX3"
 YA="_BG"
 ZA="(TypINT10 <> 2) * (LPZ - Prf_in10)"
 EM="0"
-VA="LPX2 IF CadrH = 0 THEN LPX - _BH - _BB ELSE LPX - _BB - _BCX3 - HT3 - _BH"
-VA="LPY2 LPY - _BG - _BD"
+VA="LPX2 IF CadrH = 0 THEN _LPX - _BH - _BB ELSE _LPX - _BB - _BCX3 - HT3 - _BH"
+VA="LPY2 _LPY - _BG - _BD"
 VA="LPZ2 LPZ"
 VA="_BC _BCY"
 VA="Safety 1"
@@ -11202,7 +11331,7 @@ KO="00"
 
 <139 \Komponente\
 IN="Int_Centre.mpr"
-XA="LPX - _BB - HT1 + DeBCIN10"
+XA="_LPX - _BB - HT1 + DeBCIN10"
 YA="_BG1"
 ZA="(TypINT10 <> 2) * (LPZ - Prf_in10)"
 EM="0"
@@ -11279,7 +11408,7 @@ KO="00"
 ??="NpasInt >= 10 AND NbcarX >= 2 AND NbcarY >= 1 AND FullIN10 = 0"
 
 <121 \Block\
-XP="LPX - _BB - HT1 + DeBCIN10"
+XP="_LPX - _BB - HT1 + DeBCIN10"
 YP="_BG1 + DimCarY1 + _BCY + DeBCIN10"
 ZP="0.0"
 AX="1"
@@ -11374,7 +11503,7 @@ KO="00"
 
 <139 \Komponente\
 IN="Int_Centre.mpr"
-XA="LPX - _BB - HT1 + DeBCIN10"
+XA="_LPX - _BB - HT1 + DeBCIN10"
 YA="_BG1 + (DimCarY1 + _BCY) * (NbcarY - 1) + DeBCIN10"
 ZA="(TypINT10 <> 2) * (LPZ - Prf_in10)"
 EM="0"
@@ -11464,8 +11593,8 @@ XA="IF CadrH = 0 THEN _BH ELSE _BH + HT3 + _BCX3"
 YA="_BG"
 ZA="(TypINT11 <> 2) * (LPZ - Prf_in11)"
 EM="0"
-VA="LPX2 IF CadrH = 0 THEN LPX - _BH - _BB ELSE LPX - _BB - _BCX3 - HT3 - _BH"
-VA="LPY2 LPY - _BG - _BD"
+VA="LPX2 IF CadrH = 0 THEN _LPX - _BH - _BB ELSE _LPX - _BB - _BCX3 - HT3 - _BH"
+VA="LPY2 _LPY - _BG - _BD"
 VA="LPZ2 LPZ"
 VA="_BC _BCY"
 VA="Safety 1"
@@ -12070,7 +12199,7 @@ KO="00"
 
 <139 \Komponente\
 IN="Int_Centre.mpr"
-XA="LPX - _BB - HT1 + DeBCIN11"
+XA="_LPX - _BB - HT1 + DeBCIN11"
 YA="_BG1"
 ZA="(TypINT11 <> 2) * (LPZ - Prf_in11)"
 EM="0"
@@ -12147,7 +12276,7 @@ KO="00"
 ??="NpasInt >= 11 AND NbcarX >= 2 AND NbcarY >= 1 AND FullIN11 = 0"
 
 <121 \Block\
-XP="LPX - _BB - HT1 + DeBCIN11"
+XP="_LPX - _BB - HT1 + DeBCIN11"
 YP="_BG1 + DimCarY1 + _BCY + DeBCIN11"
 ZP="0.0"
 AX="1"
@@ -12242,7 +12371,7 @@ KO="00"
 
 <139 \Komponente\
 IN="Int_Centre.mpr"
-XA="LPX - _BB - HT1 + DeBCIN11"
+XA="_LPX - _BB - HT1 + DeBCIN11"
 YA="_BG1 + (DimCarY1 + _BCY) * (NbcarY - 1) + DeBCIN11"
 ZA="(TypINT11 <> 2) * (LPZ - Prf_in11)"
 EM="0"
@@ -12332,8 +12461,8 @@ XA="IF CadrH = 0 THEN _BH ELSE _BH + HT3 + _BCX3"
 YA="_BG"
 ZA="(TypINT12 <> 2) * (LPZ - Prf_in12)"
 EM="0"
-VA="LPX2 IF CadrH = 0 THEN LPX - _BH - _BB ELSE LPX - _BB - _BCX3 - HT3 - _BH"
-VA="LPY2 LPY - _BG - _BD"
+VA="LPX2 IF CadrH = 0 THEN _LPX - _BH - _BB ELSE _LPX - _BB - _BCX3 - HT3 - _BH"
+VA="LPY2 _LPY - _BG - _BD"
 VA="LPZ2 LPZ"
 VA="_BC _BCY"
 VA="Safety 1"
@@ -12938,7 +13067,7 @@ KO="00"
 
 <139 \Komponente\
 IN="Int_Centre.mpr"
-XA="LPX - _BB - HT1 + DeBCIN12"
+XA="_LPX - _BB - HT1 + DeBCIN12"
 YA="_BG1"
 ZA="(TypINT12 <> 2) * (LPZ - Prf_in12)"
 EM="0"
@@ -13015,7 +13144,7 @@ KO="00"
 ??="NpasInt >= 12 AND NbcarX >= 2 AND NbcarY >= 1 AND FullIN12 = 0"
 
 <121 \Block\
-XP="LPX - _BB - HT1 + DeBCIN12"
+XP="_LPX - _BB - HT1 + DeBCIN12"
 YP="_BG1 + DimCarY1 + _BCY + DeBCIN12"
 ZP="0.0"
 AX="1"
@@ -13110,7 +13239,7 @@ KO="00"
 
 <139 \Komponente\
 IN="Int_Centre.mpr"
-XA="LPX - _BB - HT1 + DeBCIN12"
+XA="_LPX - _BB - HT1 + DeBCIN12"
 YA="_BG1 + (DimCarY1 + _BCY) * (NbcarY - 1) + DeBCIN12"
 ZA="(TypINT12 <> 2) * (LPZ - Prf_in12)"
 EM="0"
@@ -13200,8 +13329,8 @@ XA="IF CadrH = 0 THEN _BH ELSE _BH + HT3 + _BCX3"
 YA="_BG"
 ZA="(TypINT13 <> 2) * (LPZ - Prf_in13)"
 EM="0"
-VA="LPX2 IF CadrH = 0 THEN LPX - _BH - _BB ELSE LPX - _BB - _BCX3 - HT3 - _BH"
-VA="LPY2 LPY - _BG - _BD"
+VA="LPX2 IF CadrH = 0 THEN _LPX - _BH - _BB ELSE _LPX - _BB - _BCX3 - HT3 - _BH"
+VA="LPY2 _LPY - _BG - _BD"
 VA="LPZ2 LPZ"
 VA="_BC _BCY"
 VA="Safety 1"
@@ -13806,7 +13935,7 @@ KO="00"
 
 <139 \Komponente\
 IN="Int_Centre.mpr"
-XA="LPX - _BB - HT1 + DeBCIN13"
+XA="_LPX - _BB - HT1 + DeBCIN13"
 YA="_BG1"
 ZA="(TypINT13 <> 2) * (LPZ - Prf_in13)"
 EM="0"
@@ -13883,7 +14012,7 @@ KO="00"
 ??="NpasInt >= 13 AND NbcarX >= 2 AND NbcarY >= 1 AND FullIN13 = 0"
 
 <121 \Block\
-XP="LPX - _BB - HT1 + DeBCIN13"
+XP="_LPX - _BB - HT1 + DeBCIN13"
 YP="_BG1 + DimCarY1 + _BCY + DeBCIN13"
 ZP="0.0"
 AX="1"
@@ -13978,7 +14107,7 @@ KO="00"
 
 <139 \Komponente\
 IN="Int_Centre.mpr"
-XA="LPX - _BB - HT1 + DeBCIN13"
+XA="_LPX - _BB - HT1 + DeBCIN13"
 YA="_BG1 + (DimCarY1 + _BCY) * (NbcarY - 1) + DeBCIN13"
 ZA="(TypINT13 <> 2) * (LPZ - Prf_in13)"
 EM="0"
@@ -14596,7 +14725,7 @@ KO="00"
 
 <139 \Komponente\
 IN="Int_Centre.mpr"
-XA="LPX - _BB - HT1"
+XA="_LPX - _BB - HT1"
 YA="_BG1"
 ZA="LPZ - Prf_CC"
 EM="0"
@@ -14673,7 +14802,7 @@ KO="00"
 ??="A_Clean = 1 AND NbcarX >= 2 AND NbcarY >= 1"
 
 <121 \Block\
-XP="LPX - _BB - HT1"
+XP="_LPX - _BB - HT1"
 YP="_BG1 + DimCarY1 + _BCY"
 ZP="0.0"
 AX="1"
@@ -14768,7 +14897,7 @@ KO="00"
 
 <139 \Komponente\
 IN="Int_Centre.mpr"
-XA="LPX - _BB - HT1"
+XA="_LPX - _BB - HT1"
 YA="_BG1 + (DimCarY1 + _BCY) * (NbcarY - 1)"
 ZA="LPZ - Prf_CC"
 EM="0"
@@ -15164,7 +15293,7 @@ KO="00"
 
 <139 \Komponente\
 IN="int_shape.mpr"
-XA="LPX - _BB - HT1"
+XA="_LPX - _BB - HT1"
 YA="_BG1"
 ZA="LPZ - Prf_Pock"
 EM="0"
@@ -15204,7 +15333,7 @@ KO="00"
 ??="shape <> 0 AND NbcarX >= 2 AND NbcarY >= 1"
 
 <121 \Block\
-XP="LPX - _BB - HT1"
+XP="_LPX - _BB - HT1"
 YP="_BG1 + DimCarY1 + _BCY"
 ZP="0.0"
 AX="1"
@@ -15262,7 +15391,7 @@ KO="00"
 
 <139 \Komponente\
 IN="int_shape.mpr"
-XA="LPX - _BB - HT1"
+XA="_LPX - _BB - HT1"
 YA="_BG1 + (DimCarY1 + _BCY) * (NbcarY - 1)"
 ZA="LPZ - Prf_Pock"
 EM="0"
@@ -15613,7 +15742,7 @@ KO="00"
 
 <139 \Komponente\
 IN="int_shape.mpr"
-XA="LPX - _BB - HT1"
+XA="_LPX - _BB - HT1"
 YA="_BG1"
 ZA="LPZ - Prf_Pock"
 EM="0"
@@ -15653,7 +15782,7 @@ KO="00"
 ??="shape <> 0 AND NbcarX >= 2 AND NbcarY >= 1"
 
 <121 \Block\
-XP="LPX - _BB - HT1"
+XP="_LPX - _BB - HT1"
 YP="_BG1 + DimCarY1 + _BCY"
 ZP="0.0"
 AX="1"
@@ -15711,7 +15840,7 @@ KO="00"
 
 <139 \Komponente\
 IN="int_shape.mpr"
-XA="LPX - _BB - HT1"
+XA="_LPX - _BB - HT1"
 YA="_BG1 + (DimCarY1 + _BCY) * (NbcarY - 1)"
 ZA="LPZ - Prf_Pock"
 EM="0"
@@ -15796,7 +15925,7 @@ VA="length (Directio = 0) * LPX2 + (Directio = 1) * LPY2"
 VA="width (Directio = 0) * LPY2 + (Directio = 1) * LPX2"
 VA="Nb_Space MOD((width - Dim_Off * 2 - (Typ_Line = 2) * Small + 0.001) / Long)"
 VA="Nb_Line Nb_Space + 1"
-VA="G_cc (Center = 0 OR Center = 1) * Long + (Center = 2) * (width - Dim_Off * 2 - (Typ_Line = 2) * Small) / Nb_Space"
+VA="G_cc (Center = 0 OR Center = 1) * Long + (Center = 2) * (width - Dim_Off * 2 - (Typ_Line = 2) * Small) / (Nb_Space + (Nb_Space = 0) * 0.01)"
 VA="Y1 IF Center = 0 THEN Dim_Off + (Typ_Line = 2) * Small / 2 ELSE (width - Nb_Space * G_cc) / 2"
 KAT="Komponentenmakro"
 MNM="Lignes au centre groupe 1 en X"
@@ -15842,7 +15971,7 @@ VA="length (Directio = 0) * LPX2 + (Directio = 1) * LPY2"
 VA="width (Directio = 0) * LPY2 + (Directio = 1) * LPX2"
 VA="Nb_Space MOD((width - Dim_Off * 2 - (Typ_Line = 2) * Small + 0.001) / Long)"
 VA="Nb_Line Nb_Space + 1"
-VA="G_cc (Center = 0 OR Center = 1) * Long + (Center = 2) * (width - Dim_Off * 2 - (Typ_Line = 2) * Small) / Nb_Space"
+VA="G_cc (Center = 0 OR Center = 1) * Long + (Center = 2) * (width - Dim_Off * 2 - (Typ_Line = 2) * Small) / (Nb_Space + (Nb_Space = 0) * 0.01)"
 VA="Y1 IF Center = 0 THEN Dim_Off + (Typ_Line = 2) * Small / 2 ELSE (width - Nb_Space * G_cc) / 2"
 KAT="Komponentenmakro"
 MNM="Lignes au centre groupe 2 en X"
@@ -15868,7 +15997,7 @@ KO="00"
 
 <139 \Komponente\
 IN="Groove.mpr"
-XA="LPX - _BB - HT1"
+XA="_LPX - _BB - HT1"
 YA="_BG1"
 ZA="LPZ - Prf_Lcen"
 EM="0"
@@ -15888,7 +16017,7 @@ VA="length (Directio = 0) * LPX2 + (Directio = 1) * LPY2"
 VA="width (Directio = 0) * LPY2 + (Directio = 1) * LPX2"
 VA="Nb_Space MOD((width - Dim_Off * 2 - (Typ_Line = 2) * Small + 0.001) / Long)"
 VA="Nb_Line Nb_Space + 1"
-VA="G_cc (Center = 0 OR Center = 1) * Long + (Center = 2) * (width - Dim_Off * 2 - (Typ_Line = 2) * Small) / Nb_Space"
+VA="G_cc (Center = 0 OR Center = 1) * Long + (Center = 2) * (width - Dim_Off * 2 - (Typ_Line = 2) * Small) / (Nb_Space + (Nb_Space = 0) * 0.01)"
 VA="Y1 IF Center = 0 THEN Dim_Off + (Typ_Line = 2) * Small / 2 ELSE (width - Nb_Space * G_cc) / 2"
 KAT="Komponentenmakro"
 MNM="Lignes au centre groupe 3 en X"
@@ -15901,8 +16030,8 @@ XA="0"
 YA="0"
 ZA="LPZ-Prf_LPor"
 EM="0"
-VA="LPX2 LPX"
-VA="LPY2 LPY"
+VA="LPX2 _LPX"
+VA="LPY2 _LPY"
 VA="LPZ2 LPZ"
 VA="Center 1"
 VA="Directio 0"
@@ -15917,7 +16046,7 @@ VA="length (Directio = 0) * LPX2 + (Directio = 1) * LPY2"
 VA="width (Directio = 0) * LPY2 + (Directio = 1) * LPX2"
 VA="Nb_Space MOD((width - Dim_Off * 2 - (Typ_Line = 2) * Small + 0.001) / Long)"
 VA="Nb_Line Nb_Space + 1"
-VA="G_cc (Center = 0 OR Center = 1) * Long + (Center = 2) * (width - Dim_Off * 2 - (Typ_Line = 2) * Small) / Nb_Space"
+VA="G_cc (Center = 0 OR Center = 1) * Long + (Center = 2) * (width - Dim_Off * 2 - (Typ_Line = 2) * Small) / (Nb_Space + (Nb_Space = 0) * 0.01)"
 VA="Y1 IF Center = 0 THEN Dim_Off + (Typ_Line = 2) * Small / 2 ELSE (width - Nb_Space * G_cc) / 2"
 KAT="Komponentenmakro"
 MNM="Lignes de haut en bas sur la porte au complet"
@@ -16056,6 +16185,7 @@ ORI=""
 NM=""
 DP="20"
 KO="00"
+??="Raycoin <> 0"
 
 <105 \Konturfraesen\
 EA="5:0"
@@ -17074,7 +17204,7 @@ RP="STANDARD"
 RSEL="0"
 RWID="0"
 KAT="Fräsen"
-MNM="Découpe de contour (première passe)"
+MNM="Découpe de contour avec coins arrondis (première passe)"
 ORI=""
 MX="0"
 MY="0"
@@ -17084,7 +17214,7 @@ MYF="1"
 MZF="1"
 SYA="0"
 SYV="0"
-??="Act_Cont = 1 AND (LPX < DimMinX OR LPY < DimMinY OR RealArea < AreaMin)"
+??="Raycoin <> 0 AND Act_Cont = 1 AND (_LPX < DimMinX OR _LPY < DimMinY OR RealArea < AreaMin)"
 
 <105 \Konturfraesen\
 EA="1:0"
@@ -17123,7 +17253,7 @@ RP="STANDARD"
 RSEL="0"
 RWID="0"
 KAT="Fräsen"
-MNM="Découpe de contour (défonçage)"
+MNM="Découpe de contour avec coins arrondis (défonçage)"
 ORI=""
 MX="0"
 MY="0"
@@ -17133,7 +17263,105 @@ MYF="1"
 MZF="1"
 SYA="0"
 SYV="0"
-??="Act_Cont = 1"
+??="Raycoin <> 0 AND Act_Cont = 1"
+
+<105 \Konturfraesen\
+EA="8:0"
+MDA="SEN"
+STUFEN="0"
+BL="0"
+WZS="1"
+OSZI="0"
+OSZVS="0"
+ZSTART="0"
+ANZZST="0"
+RK="WRKR"
+EE="8:10"
+MDE="SEN_AB"
+EM="0"
+RI="1"
+TNO="(LPZ <= 22.225) * _T_CUT + (LPZ > 22.225) * _T_CUT_L"
+SM="0"
+S_="STANDARD"
+F_="STANDARD"
+AB="1.5"
+AF="0"
+AW="0"
+BW="0"
+VLS="0"
+VLE="0"
+ZA="@1.5"
+SC="0"
+HP="0"
+SP="0"
+YVE="0"
+WW="1,2,3"
+ASG="2"
+KG="0"
+RP="STANDARD"
+RSEL="0"
+RWID="0"
+KAT="Fräsen"
+MNM="Découpe de contour sans coins arrondis (première passe)"
+ORI=""
+MX="0"
+MY="0"
+MZ="0"
+MXF="1"
+MYF="1"
+MZF="1"
+SYA="0"
+SYV="0"
+??="Raycoin = 0 AND Act_Cont = 1 AND (_LPX < DimMinX OR _LPY < DimMinY OR RealArea < AreaMin)"
+
+<105 \Konturfraesen\
+EA="8:0"
+MDA="SEN"
+STUFEN="0"
+BL="0"
+WZS="1"
+OSZI="0"
+OSZVS="0"
+ZSTART="0"
+ANZZST="0"
+RK="WRKR"
+EE="8:10"
+MDE="SEN_AB"
+EM="0"
+RI="1"
+TNO="(LPZ <= 22.225) * _T_CUT + (LPZ > 22.225) * _T_CUT_L"
+SM="0"
+S_="STANDARD"
+F_="STANDARD"
+AB="0"
+AF="0"
+AW="0"
+BW="0"
+VLS="0"
+VLE="0"
+ZA="@-0.2"
+SC="0"
+HP="0"
+SP="0"
+YVE="0"
+WW="1,2,3"
+ASG="2"
+KG="0"
+RP="STANDARD"
+RSEL="0"
+RWID="0"
+KAT="Fräsen"
+MNM="Découpe de contour sans coins arrondis (défonçage)"
+ORI=""
+MX="0"
+MY="0"
+MZ="0"
+MXF="1"
+MYF="1"
+MZF="1"
+SYA="0"
+SYV="0"
+??="Raycoin = 0 AND Act_Cont = 1"
 
 <101 \Kommentar\
 KM="USINAGE INTÉRIEUR RECTANGULAIRE POST-CONTOUR"
@@ -17677,7 +17905,7 @@ KO="00"
 
 <139 \Komponente\
 IN="Int_Centre.mpr"
-XA="LPX - _BB - HT1"
+XA="_LPX - _BB - HT1"
 YA="_BG1"
 ZA="LPZ - Prf_in21"
 EM="0"
@@ -17754,7 +17982,7 @@ KO="00"
 ??="NpasInt2 >= 1 AND NbcarX >= 2 AND NbcarY >= 1"
 
 <121 \Block\
-XP="LPX - _BB - HT1"
+XP="_LPX - _BB - HT1"
 YP="_BG1 + DimCarY1 + _BCY"
 ZP="0.0"
 AX="1"
@@ -17849,7 +18077,7 @@ KO="00"
 
 <139 \Komponente\
 IN="Int_Centre.mpr"
-XA="LPX - _BB - HT1"
+XA="_LPX - _BB - HT1"
 YA="_BG1 + (DimCarY1 + _BCY) * (NbcarY - 1)"
 ZA="LPZ - Prf_in21"
 EM="0"
@@ -18467,7 +18695,7 @@ KO="00"
 
 <139 \Komponente\
 IN="Int_Centre.mpr"
-XA="LPX - _BB - HT1"
+XA="_LPX - _BB - HT1"
 YA="_BG1"
 ZA="LPZ - Prf_in22"
 EM="0"
@@ -18544,7 +18772,7 @@ KO="00"
 ??="NpasInt2 >= 2 AND NbcarX >= 2 AND NbcarY >= 1"
 
 <121 \Block\
-XP="LPX - _BB - HT1"
+XP="_LPX - _BB - HT1"
 YP="_BG1 + DimCarY1 + _BCY"
 ZP="0.0"
 AX="1"
@@ -18639,7 +18867,7 @@ KO="00"
 
 <139 \Komponente\
 IN="Int_Centre.mpr"
-XA="LPX - _BB - HT1"
+XA="_LPX - _BB - HT1"
 YA="_BG1 + (DimCarY1 + _BCY) * (NbcarY - 1)"
 ZA="LPZ - Prf_in22"
 EM="0"
@@ -19257,7 +19485,7 @@ KO="00"
 
 <139 \Komponente\
 IN="Int_Centre.mpr"
-XA="LPX - _BB - HT1"
+XA="_LPX - _BB - HT1"
 YA="_BG1"
 ZA="LPZ - Prf_in23"
 EM="0"
@@ -19334,7 +19562,7 @@ KO="00"
 ??="NpasInt2 >= 3 AND NbcarX >= 2 AND NbcarY >= 1"
 
 <121 \Block\
-XP="LPX - _BB - HT1"
+XP="_LPX - _BB - HT1"
 YP="_BG1 + DimCarY1 + _BCY"
 ZP="0.0"
 AX="1"
@@ -19429,7 +19657,7 @@ KO="00"
 
 <139 \Komponente\
 IN="Int_Centre.mpr"
-XA="LPX - _BB - HT1"
+XA="_LPX - _BB - HT1"
 YA="_BG1 + (DimCarY1 + _BCY) * (NbcarY - 1)"
 ZA="LPZ - Prf_in23"
 EM="0"
@@ -20047,7 +20275,7 @@ KO="00"
 
 <139 \Komponente\
 IN="Int_Centre.mpr"
-XA="LPX - _BB - HT1"
+XA="_LPX - _BB - HT1"
 YA="_BG1"
 ZA="LPZ - Prf_in24"
 EM="0"
@@ -20124,7 +20352,7 @@ KO="00"
 ??="NpasInt2 >= 4 AND NbcarX >= 2 AND NbcarY >= 1"
 
 <121 \Block\
-XP="LPX - _BB - HT1"
+XP="_LPX - _BB - HT1"
 YP="_BG1 + DimCarY1 + _BCY"
 ZP="0.0"
 AX="1"
@@ -20219,7 +20447,7 @@ KO="00"
 
 <139 \Komponente\
 IN="Int_Centre.mpr"
-XA="LPX - _BB - HT1"
+XA="_LPX - _BB - HT1"
 YA="_BG1 + (DimCarY1 + _BCY) * (NbcarY - 1)"
 ZA="LPZ - Prf_in24"
 EM="0"
@@ -20294,1584 +20522,4 @@ MNM="Usinage intérieur post-contour 4 dernier groupe en X dernier carreau"
 ORI=""
 KO="00"
 ??="NpasInt2 >= 4 AND NbcarX >= 2 AND NbcarY >= 2"
-
-<101 \Kommentar\
-KM="USINAGE INTÉRIEUR RECTANGULAIRE PROPRE AU THERMOPLASTIQUE"
-KM="PASSE NO.1"
-KAT="Kommentar"
-MNM="Usinage intérieur propre au thermoplastique 1"
-ORI=""
-??="0"
-
-<139 \Komponente\
-IN="Int_Centre.mpr"
-XA="_BH"
-YA="_BG3"
-ZA="LPZ - Prf_Th1"
-EM="0"
-VA="LPX2 IF HT3 < MinHT THEN MinHT ELSE HT3"
-VA="LPY2 (CadrH = 0) * DimCarY3 + (CadrH = 1) * (LPY - _BG3 - _BD3)"
-VA="LPZ2 LPZ"
-VA="_BC _BCY"
-VA="Safety 1"
-VA="Pock_C 0"
-VA="C_Corner 0"
-VA="C_Angle Angle_CC"
-VA="_Type _Type"
-VA="_PosType IF NbcarY = 1 OR Act_Pan = 1 THEN 0 ELSE 1"
-VA="OFF_INT Dec_Th1"
-VA="T_InShp T_Th1"
-VA="Shp_dep Prf_Th1"
-VA="Comp_P Comp_Th1"
-VA="_OVLAPI _OVLAPI"
-VA="LinXint LinXint"
-VA="LinZint Shp_dep + Safety"
-VA="LoutXint LoutXint"
-VA="LoutZint Shp_dep + Safety"
-VA="DecTot (C_Corner = 1) * Shp_dep / TAN(C_Angle) + OFF_INT"
-VA="DecLT0 DecTot < 0"
-VA="DecGE0 DecTot >= 0"
-VA="DecLTY4 DecTot < LPY2 / 4"
-VA="DecGEY4 DecTot >= LPY2 / 4"
-VA="H40CatOK DecLT0 AND (LPY2^2 / 640 + 10 >= -2 * DecTot) AND ((LPY2 + _BC / 2)^2 / 160 + 10 >= -2 * DecTot) OR DecGE0 AND (((LPY2 + _BC / 2)^2 / 160 + 10 - DecTot)^2 >= (DecTot + _BC / 2)^2)"
-VA="Haut_Arc IF (LPX2 >= 54 AND LPY2 >= 54) THEN 27 ELSE (LPX2 <= LPY2) * LPX2 / 2 + (LPX2 > LPY2) * (LPY2 / 2 - 0.1)"
-VA="Haut_Cat IF (LPX2 >= 80 AND LPY2 >= 80 AND H40CatOK) THEN 40 ELSE (DecLTY4 AND DecGE0) * ((LPX2 < LPY2) * LPX2 + (LPX2 >= LPY2) * LPY2) / 2 + DecGEY4 * LPY2 / 4 - DecLT0 * 8 * DecTot"
-VA="RayArc1 (Haut_Arc^2 + (LPY2 + _BC / 2)^2) / (2 * Haut_Arc)"
-VA="RayArc2 (Haut_Arc^2 + (LPY2 / 2)^2) / (2 * Haut_Arc)"
-VA="RayCat1 ((LPY2 + _BC / 2) / 2)^2 / Haut_Cat + Haut_Cat / 4"
-VA="RayCat2 ((LPY2 / 2) / 2)^2 / Haut_Cat + Haut_Cat / 4"
-VA="HauArUs1 RayArc1 - SQRT((RayArc1 - DecTot)^2 - (DecTot - (LPY2 + _BC / 2))^2)"
-VA="HauArUs2 RayArc2 - SQRT((RayArc2 - DecTot)^2 - (DecTot - LPY2 / 2)^2)"
-VA="DecArUs1 RayArc1 - SQRT((RayArc1 - DecTot)^2 - ((LPY2 - DecTot) - (LPY2 + _BC / 2))^2)"
-VA="HauCaUs1 Haut_Cat - RayCat1 + SQRT(RayCat1^2 + 2 * DecTot * RayCat1)"
-VA="HauCaUs2 Haut_Cat - RayCat2 + SQRT(RayCat2^2 + 2 * DecTot * RayCat2)"
-VA="DecCaUs1 RayCat1 - SQRT(RayCat1^2 - DecTot * (2 * RayCat1 + _BC) - _BC^2 / 4)"
-VA="g1 (Haut_Cat - 2 * RayCat1) / (LPY2 + _BC / 2)"
-VA="h1Usi (2 * (Haut_Cat + 2 * DecTot) * RayCat1 - Haut_Cat^2 + (LPY2 + _BC / 2)^2) / (2 * (LPY2 + _BC / 2))"
-VA="JoXCaUs1 -2 * (RayCat1 - Haut_Cat + g1* h1Usi) / (2 * (g1^2 + 1))"
-VA="JoYCaUs1 SQRT((RayCat1 + DecTot)^2 - (JoXCaUs1 - (Haut_Cat - RayCat1))^2)"
-VA="g2 (Haut_Cat - 2 * RayCat2) / (LPY2 / 2)"
-VA="h2Usi (2 * (Haut_Cat + 2 * DecTot) * RayCat2 - Haut_Cat^2 + (LPY2 / 2)^2) / (2 * (LPY2 / 2))"
-VA="JoXCaUs2 -2 * (RayCat2 - Haut_Cat + g2 * h2Usi) / (2 * (g2^2 + 1))"
-VA="JoYCaUs2 SQRT((RayCat2 + DecTot)^2 - (JoXCaUs2 - (Haut_Cat - RayCat2))^2)"
-VA="HIsRCC2 HauArUs2 = RayArc2"
-VA="AngCCA1 0"
-VA="AngCCA2 90 + ARCTAN((DecTot - (LPY2 + _BC / 2)) / (HauArUs1 - RayArc1))"
-VA="AngCCA ABS(AngCCA2 - AngCCA1)"
-VA="AngCCB1 -90 + ARCTAN(((LPY2 - DecTot) - (LPY2 + _BC / 2)) / (DecArUs1 - RayArc1))"
-VA="AngCCB2 0"
-VA="AngCCB ABS(AngCCB2 - AngCCB1)"
-VA="AngCCC1 0"
-VA="AngCCC2 90+ (HIsRCC2 = 0) * ARCTAN((DecTot - LPY2 / 2) / (HauArUs2 - RayArc2 + (HIsRCC2 = 1) * 0.01))"
-VA="AngCCC ABS(AngCCC2 - AngCCC1)"
-VA="AngCCD1 0"
-VA="AngCCD2 90 + ARCTAN((DecTot - 0) / (HauCaUs1 - (Haut_Cat - RayCat1)))"
-VA="AngCCD ABS(AngCCD2 - AngCCD1)"
-VA="AngCCE1 -90 + ARCTAN(((LPY2 - DecTot) - (LPY2 + _BC / 2)) / (DecCaUs1 - RayCat1))"
-VA="AngCCE2 0"
-VA="AngCCE ABS(AngCCE2 - AngCCE1)"
-VA="AngCCF1 0"
-VA="AngCCF2 90+ ARCTAN((DecTot - 0) / (HauCaUs2 - (Haut_Cat - RayCat2)))"
-VA="AngCCF ABS(AngCCF2 - AngCCF1)"
-VA="AnCCArGa (_PosType = 0) * AngCCC +(_PosType = 1) * AngCCA + (_PosType = 2) * AngCCB"
-VA="AnCCArDr (_PosType = 0) * AngCCC + (_PosType = 1) * AngCCB + (_PosType = 2) * AngCCA"
-KAT="Komponentenmakro"
-MNM="Usinage intérieur propre au thermoplastique 1 premier groupe en X premier carreau"
-ORI=""
-KO="00"
-??="NpasTh >= 1 AND NbcarX >= 1 AND NbcarY >= 1"
-
-<121 \Block\
-XP="_BH"
-YP="_BG3 + DimCarY3 + _BCY"
-ZP="0.0"
-AX="1"
-AY="IF NbcarY - 2 < 0 THEN 0 ELSE NbcarY - 2"
-RX="0.0"
-RY="DimCarY3 + _BCY"
-CS="0"
-KAT="BlockMakro"
-MNM="Usinage intérieur propre au thermoplastique 1 premier groupe en X carreaux centraux"
-ORI=""
-NM=""
-DP="1"
-KO="00"
-??="NpasTh >= 1 AND NbcarX >= 1 AND NbcarY >= 3"
-
-<139 \Komponente\
-IN="Int_Centre.mpr"
-XA="0"
-YA="0"
-ZA="LPZ - Prf_Th1"
-EM="0"
-VA="LPX2 IF HT3 < MinHT THEN MinHT ELSE HT3"
-VA="LPY2 DimCarY3"
-VA="LPZ2 LPZ"
-VA="_BC _BCY"
-VA="Safety 1"
-VA="Pock_C 0"
-VA="C_Corner 0"
-VA="C_Angle Angle_CC"
-VA="_Type _Type"
-VA="_PosType 0"
-VA="OFF_INT Dec_Th1"
-VA="T_InShp T_Th1"
-VA="Shp_dep Prf_Th1"
-VA="Comp_P Comp_Th1"
-VA="_OVLAPI _OVLAPI"
-VA="LinXint LinXint"
-VA="LinZint Shp_dep + Safety"
-VA="LoutXint LoutXint"
-VA="LoutZint Shp_dep + Safety"
-VA="DecTot (C_Corner = 1) * Shp_dep / TAN(C_Angle) + OFF_INT"
-VA="DecLT0 DecTot < 0"
-VA="DecGE0 DecTot >= 0"
-VA="DecLTY4 DecTot < LPY2 / 4"
-VA="DecGEY4 DecTot >= LPY2 / 4"
-VA="H40CatOK DecLT0 AND (LPY2^2 / 640 + 10 >= -2 * DecTot) AND ((LPY2 + _BC / 2)^2 / 160 + 10 >= -2 * DecTot) OR DecGE0 AND (((LPY2 + _BC / 2)^2 / 160 + 10 - DecTot)^2 >= (DecTot + _BC / 2)^2)"
-VA="Haut_Arc IF (LPX2 >= 54 AND LPY2 >= 54) THEN 27 ELSE (LPX2 <= LPY2) * LPX2 / 2 + (LPX2 > LPY2) * (LPY2 / 2 - 0.1)"
-VA="Haut_Cat IF (LPX2 >= 80 AND LPY2 >= 80 AND H40CatOK) THEN 40 ELSE (DecLTY4 AND DecGE0) * ((LPX2 < LPY2) * LPX2 + (LPX2 >= LPY2) * LPY2) / 2 + DecGEY4 * LPY2 / 4 - DecLT0 * 8 * DecTot"
-VA="RayArc1 (Haut_Arc^2 + (LPY2 + _BC / 2)^2) / (2 * Haut_Arc)"
-VA="RayArc2 (Haut_Arc^2 + (LPY2 / 2)^2) / (2 * Haut_Arc)"
-VA="RayCat1 ((LPY2 + _BC / 2) / 2)^2 / Haut_Cat + Haut_Cat / 4"
-VA="RayCat2 ((LPY2 / 2) / 2)^2 / Haut_Cat + Haut_Cat / 4"
-VA="HauArUs1 RayArc1 - SQRT((RayArc1 - DecTot)^2 - (DecTot - (LPY2 + _BC / 2))^2)"
-VA="HauArUs2 RayArc2 - SQRT((RayArc2 - DecTot)^2 - (DecTot - LPY2 / 2)^2)"
-VA="DecArUs1 RayArc1 - SQRT((RayArc1 - DecTot)^2 - ((LPY2 - DecTot) - (LPY2 + _BC / 2))^2)"
-VA="HauCaUs1 Haut_Cat - RayCat1 + SQRT(RayCat1^2 + 2 * DecTot * RayCat1)"
-VA="HauCaUs2 Haut_Cat - RayCat2 + SQRT(RayCat2^2 + 2 * DecTot * RayCat2)"
-VA="DecCaUs1 RayCat1 - SQRT(RayCat1^2 - DecTot * (2 * RayCat1 + _BC) - _BC^2 / 4)"
-VA="g1 (Haut_Cat - 2 * RayCat1) / (LPY2 + _BC / 2)"
-VA="h1Usi (2 * (Haut_Cat + 2 * DecTot) * RayCat1 - Haut_Cat^2 + (LPY2 + _BC / 2)^2) / (2 * (LPY2 + _BC / 2))"
-VA="JoXCaUs1 -2 * (RayCat1 - Haut_Cat + g1* h1Usi) / (2 * (g1^2 + 1))"
-VA="JoYCaUs1 SQRT((RayCat1 + DecTot)^2 - (JoXCaUs1 - (Haut_Cat - RayCat1))^2)"
-VA="g2 (Haut_Cat - 2 * RayCat2) / (LPY2 / 2)"
-VA="h2Usi (2 * (Haut_Cat + 2 * DecTot) * RayCat2 - Haut_Cat^2 + (LPY2 / 2)^2) / (2 * (LPY2 / 2))"
-VA="JoXCaUs2 -2 * (RayCat2 - Haut_Cat + g2 * h2Usi) / (2 * (g2^2 + 1))"
-VA="JoYCaUs2 SQRT((RayCat2 + DecTot)^2 - (JoXCaUs2 - (Haut_Cat - RayCat2))^2)"
-VA="HIsRCC2 HauArUs2 = RayArc2"
-VA="AngCCA1 0"
-VA="AngCCA2 90 + ARCTAN((DecTot - (LPY2 + _BC / 2)) / (HauArUs1 - RayArc1))"
-VA="AngCCA ABS(AngCCA2 - AngCCA1)"
-VA="AngCCB1 -90 + ARCTAN(((LPY2 - DecTot) - (LPY2 + _BC / 2)) / (DecArUs1 - RayArc1))"
-VA="AngCCB2 0"
-VA="AngCCB ABS(AngCCB2 - AngCCB1)"
-VA="AngCCC1 0"
-VA="AngCCC2 90+ (HIsRCC2 = 0) * ARCTAN((DecTot - LPY2 / 2) / (HauArUs2 - RayArc2 + (HIsRCC2 = 1) * 0.01))"
-VA="AngCCC ABS(AngCCC2 - AngCCC1)"
-VA="AngCCD1 0"
-VA="AngCCD2 90 + ARCTAN((DecTot - 0) / (HauCaUs1 - (Haut_Cat - RayCat1)))"
-VA="AngCCD ABS(AngCCD2 - AngCCD1)"
-VA="AngCCE1 -90 + ARCTAN(((LPY2 - DecTot) - (LPY2 + _BC / 2)) / (DecCaUs1 - RayCat1))"
-VA="AngCCE2 0"
-VA="AngCCE ABS(AngCCE2 - AngCCE1)"
-VA="AngCCF1 0"
-VA="AngCCF2 90+ ARCTAN((DecTot - 0) / (HauCaUs2 - (Haut_Cat - RayCat2)))"
-VA="AngCCF ABS(AngCCF2 - AngCCF1)"
-VA="AnCCArGa (_PosType = 0) * AngCCC +(_PosType = 1) * AngCCA + (_PosType = 2) * AngCCB"
-VA="AnCCArDr (_PosType = 0) * AngCCC + (_PosType = 1) * AngCCB + (_PosType = 2) * AngCCA"
-KAT="Komponentenmakro"
-MNM="Usinage intérieur propre au thermoplastique 1 premier groupe en X carreau central"
-ORI=""
-KO="00"
-
-<139 \Komponente\
-IN="Int_Centre.mpr"
-XA="_BH"
-YA="_BG3 + (DimCarY3 + _BCY) * (NbcarY - 1)"
-ZA="LPZ - Prf_Th1"
-EM="0"
-VA="LPX2 IF HT3 < MinHT THEN MinHT ELSE HT3"
-VA="LPY2 DimCarY3"
-VA="LPZ2 LPZ"
-VA="_BC _BCY"
-VA="Safety 1"
-VA="Pock_C 0"
-VA="C_Corner 0"
-VA="C_Angle Angle_CC"
-VA="_Type _Type"
-VA="_PosType IF Act_Pan = 1 THEN 0 ELSE 2"
-VA="OFF_INT Dec_Th1"
-VA="T_InShp T_Th1"
-VA="Shp_dep Prf_Th1"
-VA="Comp_P Comp_Th1"
-VA="_OVLAPI _OVLAPI"
-VA="LinXint LinXint"
-VA="LinZint Shp_dep + Safety"
-VA="LoutXint LoutXint"
-VA="LoutZint Shp_dep + Safety"
-VA="DecTot (C_Corner = 1) * Shp_dep / TAN(C_Angle) + OFF_INT"
-VA="DecLT0 DecTot < 0"
-VA="DecGE0 DecTot >= 0"
-VA="DecLTY4 DecTot < LPY2 / 4"
-VA="DecGEY4 DecTot >= LPY2 / 4"
-VA="H40CatOK DecLT0 AND (LPY2^2 / 640 + 10 >= -2 * DecTot) AND ((LPY2 + _BC / 2)^2 / 160 + 10 >= -2 * DecTot) OR DecGE0 AND (((LPY2 + _BC / 2)^2 / 160 + 10 - DecTot)^2 >= (DecTot + _BC / 2)^2)"
-VA="Haut_Arc IF (LPX2 >= 54 AND LPY2 >= 54) THEN 27 ELSE (LPX2 <= LPY2) * LPX2 / 2 + (LPX2 > LPY2) * (LPY2 / 2 - 0.1)"
-VA="Haut_Cat IF (LPX2 >= 80 AND LPY2 >= 80 AND H40CatOK) THEN 40 ELSE (DecLTY4 AND DecGE0) * ((LPX2 < LPY2) * LPX2 + (LPX2 >= LPY2) * LPY2) / 2 + DecGEY4 * LPY2 / 4 - DecLT0 * 8 * DecTot"
-VA="RayArc1 (Haut_Arc^2 + (LPY2 + _BC / 2)^2) / (2 * Haut_Arc)"
-VA="RayArc2 (Haut_Arc^2 + (LPY2 / 2)^2) / (2 * Haut_Arc)"
-VA="RayCat1 ((LPY2 + _BC / 2) / 2)^2 / Haut_Cat + Haut_Cat / 4"
-VA="RayCat2 ((LPY2 / 2) / 2)^2 / Haut_Cat + Haut_Cat / 4"
-VA="HauArUs1 RayArc1 - SQRT((RayArc1 - DecTot)^2 - (DecTot - (LPY2 + _BC / 2))^2)"
-VA="HauArUs2 RayArc2 - SQRT((RayArc2 - DecTot)^2 - (DecTot - LPY2 / 2)^2)"
-VA="DecArUs1 RayArc1 - SQRT((RayArc1 - DecTot)^2 - ((LPY2 - DecTot) - (LPY2 + _BC / 2))^2)"
-VA="HauCaUs1 Haut_Cat - RayCat1 + SQRT(RayCat1^2 + 2 * DecTot * RayCat1)"
-VA="HauCaUs2 Haut_Cat - RayCat2 + SQRT(RayCat2^2 + 2 * DecTot * RayCat2)"
-VA="DecCaUs1 RayCat1 - SQRT(RayCat1^2 - DecTot * (2 * RayCat1 + _BC) - _BC^2 / 4)"
-VA="g1 (Haut_Cat - 2 * RayCat1) / (LPY2 + _BC / 2)"
-VA="h1Usi (2 * (Haut_Cat + 2 * DecTot) * RayCat1 - Haut_Cat^2 + (LPY2 + _BC / 2)^2) / (2 * (LPY2 + _BC / 2))"
-VA="JoXCaUs1 -2 * (RayCat1 - Haut_Cat + g1* h1Usi) / (2 * (g1^2 + 1))"
-VA="JoYCaUs1 SQRT((RayCat1 + DecTot)^2 - (JoXCaUs1 - (Haut_Cat - RayCat1))^2)"
-VA="g2 (Haut_Cat - 2 * RayCat2) / (LPY2 / 2)"
-VA="h2Usi (2 * (Haut_Cat + 2 * DecTot) * RayCat2 - Haut_Cat^2 + (LPY2 / 2)^2) / (2 * (LPY2 / 2))"
-VA="JoXCaUs2 -2 * (RayCat2 - Haut_Cat + g2 * h2Usi) / (2 * (g2^2 + 1))"
-VA="JoYCaUs2 SQRT((RayCat2 + DecTot)^2 - (JoXCaUs2 - (Haut_Cat - RayCat2))^2)"
-VA="HIsRCC2 HauArUs2 = RayArc2"
-VA="AngCCA1 0"
-VA="AngCCA2 90 + ARCTAN((DecTot - (LPY2 + _BC / 2)) / (HauArUs1 - RayArc1))"
-VA="AngCCA ABS(AngCCA2 - AngCCA1)"
-VA="AngCCB1 -90 + ARCTAN(((LPY2 - DecTot) - (LPY2 + _BC / 2)) / (DecArUs1 - RayArc1))"
-VA="AngCCB2 0"
-VA="AngCCB ABS(AngCCB2 - AngCCB1)"
-VA="AngCCC1 0"
-VA="AngCCC2 90+ (HIsRCC2 = 0) * ARCTAN((DecTot - LPY2 / 2) / (HauArUs2 - RayArc2 + (HIsRCC2 = 1) * 0.01))"
-VA="AngCCC ABS(AngCCC2 - AngCCC1)"
-VA="AngCCD1 0"
-VA="AngCCD2 90 + ARCTAN((DecTot - 0) / (HauCaUs1 - (Haut_Cat - RayCat1)))"
-VA="AngCCD ABS(AngCCD2 - AngCCD1)"
-VA="AngCCE1 -90 + ARCTAN(((LPY2 - DecTot) - (LPY2 + _BC / 2)) / (DecCaUs1 - RayCat1))"
-VA="AngCCE2 0"
-VA="AngCCE ABS(AngCCE2 - AngCCE1)"
-VA="AngCCF1 0"
-VA="AngCCF2 90+ ARCTAN((DecTot - 0) / (HauCaUs2 - (Haut_Cat - RayCat2)))"
-VA="AngCCF ABS(AngCCF2 - AngCCF1)"
-VA="AnCCArGa (_PosType = 0) * AngCCC +(_PosType = 1) * AngCCA + (_PosType = 2) * AngCCB"
-VA="AnCCArDr (_PosType = 0) * AngCCC + (_PosType = 1) * AngCCB + (_PosType = 2) * AngCCA"
-KAT="Komponentenmakro"
-MNM="Usinage intérieur propre au thermoplastique 1 premier groupe en X dernier carreau"
-ORI=""
-KO="00"
-??="NpasTh >= 1 AND NbcarX >= 1 AND NbcarY >= 2"
-
-<121 \Block\
-XP="_BH + HT3 + _BCX3"
-YP="_BG2"
-ZP="LPZ - Prf_Th1"
-AX="IF NbcarX - 2 < 0 THEN 0 ELSE NbcarX - 2"
-AY="1"
-RX="HT2 + _BCX2"
-RY="0"
-CS="0"
-KAT="BlockMakro"
-MNM="Usinage intérieur propre au thermoplastique 1 groupes centraux en X premier carreau"
-ORI=""
-NM=""
-DP="1"
-KO="00"
-??="NpasTh >= 1 AND NbcarX >= 3 AND NbcarY >= 1 AND CadrH = 0"
-
-<139 \Komponente\
-IN="Int_Centre.mpr"
-XA="0"
-YA="0"
-ZA="0"
-EM="0"
-VA="LPX2 IF HT2 < MinHT THEN MinHT ELSE HT2"
-VA="LPY2 DimCarY2"
-VA="LPZ2 LPZ"
-VA="_BC _BCY"
-VA="Safety 1"
-VA="Pock_C 0"
-VA="C_Corner 0"
-VA="C_Angle Angle_CC"
-VA="_Type (Act_Pan = 1) * _Type"
-VA="_PosType 0"
-VA="OFF_INT Dec_Th1"
-VA="T_InShp T_Th1"
-VA="Shp_dep Prf_Th1"
-VA="Comp_P Comp_Th1"
-VA="_OVLAPI _OVLAPI"
-VA="LinXint LinXint"
-VA="LinZint Shp_dep + Safety"
-VA="LoutXint LoutXint"
-VA="LoutZint Shp_dep + Safety"
-VA="DecTot (C_Corner = 1) * Shp_dep / TAN(C_Angle) + OFF_INT"
-VA="DecLT0 DecTot < 0"
-VA="DecGE0 DecTot >= 0"
-VA="DecLTY4 DecTot < LPY2 / 4"
-VA="DecGEY4 DecTot >= LPY2 / 4"
-VA="H40CatOK DecLT0 AND (LPY2^2 / 640 + 10 >= -2 * DecTot) AND ((LPY2 + _BC / 2)^2 / 160 + 10 >= -2 * DecTot) OR DecGE0 AND (((LPY2 + _BC / 2)^2 / 160 + 10 - DecTot)^2 >= (DecTot + _BC / 2)^2)"
-VA="Haut_Arc IF (LPX2 >= 54 AND LPY2 >= 54) THEN 27 ELSE (LPX2 <= LPY2) * LPX2 / 2 + (LPX2 > LPY2) * (LPY2 / 2 - 0.1)"
-VA="Haut_Cat IF (LPX2 >= 80 AND LPY2 >= 80 AND H40CatOK) THEN 40 ELSE (DecLTY4 AND DecGE0) * ((LPX2 < LPY2) * LPX2 + (LPX2 >= LPY2) * LPY2) / 2 + DecGEY4 * LPY2 / 4 - DecLT0 * 8 * DecTot"
-VA="RayArc1 (Haut_Arc^2 + (LPY2 + _BC / 2)^2) / (2 * Haut_Arc)"
-VA="RayArc2 (Haut_Arc^2 + (LPY2 / 2)^2) / (2 * Haut_Arc)"
-VA="RayCat1 ((LPY2 + _BC / 2) / 2)^2 / Haut_Cat + Haut_Cat / 4"
-VA="RayCat2 ((LPY2 / 2) / 2)^2 / Haut_Cat + Haut_Cat / 4"
-VA="HauArUs1 RayArc1 - SQRT((RayArc1 - DecTot)^2 - (DecTot - (LPY2 + _BC / 2))^2)"
-VA="HauArUs2 RayArc2 - SQRT((RayArc2 - DecTot)^2 - (DecTot - LPY2 / 2)^2)"
-VA="DecArUs1 RayArc1 - SQRT((RayArc1 - DecTot)^2 - ((LPY2 - DecTot) - (LPY2 + _BC / 2))^2)"
-VA="HauCaUs1 Haut_Cat - RayCat1 + SQRT(RayCat1^2 + 2 * DecTot * RayCat1)"
-VA="HauCaUs2 Haut_Cat - RayCat2 + SQRT(RayCat2^2 + 2 * DecTot * RayCat2)"
-VA="DecCaUs1 RayCat1 - SQRT(RayCat1^2 - DecTot * (2 * RayCat1 + _BC) - _BC^2 / 4)"
-VA="g1 (Haut_Cat - 2 * RayCat1) / (LPY2 + _BC / 2)"
-VA="h1Usi (2 * (Haut_Cat + 2 * DecTot) * RayCat1 - Haut_Cat^2 + (LPY2 + _BC / 2)^2) / (2 * (LPY2 + _BC / 2))"
-VA="JoXCaUs1 -2 * (RayCat1 - Haut_Cat + g1* h1Usi) / (2 * (g1^2 + 1))"
-VA="JoYCaUs1 SQRT((RayCat1 + DecTot)^2 - (JoXCaUs1 - (Haut_Cat - RayCat1))^2)"
-VA="g2 (Haut_Cat - 2 * RayCat2) / (LPY2 / 2)"
-VA="h2Usi (2 * (Haut_Cat + 2 * DecTot) * RayCat2 - Haut_Cat^2 + (LPY2 / 2)^2) / (2 * (LPY2 / 2))"
-VA="JoXCaUs2 -2 * (RayCat2 - Haut_Cat + g2 * h2Usi) / (2 * (g2^2 + 1))"
-VA="JoYCaUs2 SQRT((RayCat2 + DecTot)^2 - (JoXCaUs2 - (Haut_Cat - RayCat2))^2)"
-VA="HIsRCC2 HauArUs2 = RayArc2"
-VA="AngCCA1 0"
-VA="AngCCA2 90 + ARCTAN((DecTot - (LPY2 + _BC / 2)) / (HauArUs1 - RayArc1))"
-VA="AngCCA ABS(AngCCA2 - AngCCA1)"
-VA="AngCCB1 -90 + ARCTAN(((LPY2 - DecTot) - (LPY2 + _BC / 2)) / (DecArUs1 - RayArc1))"
-VA="AngCCB2 0"
-VA="AngCCB ABS(AngCCB2 - AngCCB1)"
-VA="AngCCC1 0"
-VA="AngCCC2 90+ (HIsRCC2 = 0) * ARCTAN((DecTot - LPY2 / 2) / (HauArUs2 - RayArc2 + (HIsRCC2 = 1) * 0.01))"
-VA="AngCCC ABS(AngCCC2 - AngCCC1)"
-VA="AngCCD1 0"
-VA="AngCCD2 90 + ARCTAN((DecTot - 0) / (HauCaUs1 - (Haut_Cat - RayCat1)))"
-VA="AngCCD ABS(AngCCD2 - AngCCD1)"
-VA="AngCCE1 -90 + ARCTAN(((LPY2 - DecTot) - (LPY2 + _BC / 2)) / (DecCaUs1 - RayCat1))"
-VA="AngCCE2 0"
-VA="AngCCE ABS(AngCCE2 - AngCCE1)"
-VA="AngCCF1 0"
-VA="AngCCF2 90+ ARCTAN((DecTot - 0) / (HauCaUs2 - (Haut_Cat - RayCat2)))"
-VA="AngCCF ABS(AngCCF2 - AngCCF1)"
-VA="AnCCArGa (_PosType = 0) * AngCCC +(_PosType = 1) * AngCCA + (_PosType = 2) * AngCCB"
-VA="AnCCArDr (_PosType = 0) * AngCCC + (_PosType = 1) * AngCCB + (_PosType = 2) * AngCCA"
-KAT="Komponentenmakro"
-MNM="Usinage intérieur propre au thermoplastique 1 groupe central en X premier carreau"
-ORI=""
-KO="00"
-
-<121 \Block\
-XP="_BH + HT3 + _BCX3"
-YP="_BG2 + DimCarY2 + _BCY"
-ZP="0.0"
-AX="IF NbcarX - 2 < 0 THEN 0 ELSE NbcarX - 2"
-AY="IF NbcarY - 2 < 0 THEN 0 ELSE NbcarY - 2"
-RX="HT2 + _BCX2"
-RY="DimCarY2 + _BCY"
-CS="0"
-KAT="BlockMakro"
-MNM="Usinage intérieur propre au thermoplastique 1 groupes centraux en X carreaux centraux"
-ORI=""
-NM=""
-DP="1"
-KO="00"
-??="NpasTh >= 1 AND NbcarX >= 3 AND NbcarY >= 3 AND CadrH = 0"
-
-<139 \Komponente\
-IN="Int_Centre.mpr"
-XA="0"
-YA="0"
-ZA="LPZ - Prf_Th1"
-EM="0"
-VA="LPX2 IF HT2 < MinHT THEN MinHT ELSE HT2"
-VA="LPY2 DimCarY2"
-VA="LPZ2 LPZ"
-VA="_BC _BCY"
-VA="Safety 1"
-VA="Pock_C 0"
-VA="C_Corner 0"
-VA="C_Angle Angle_CC"
-VA="_Type (Act_Pan = 1) * _Type"
-VA="_PosType 0"
-VA="OFF_INT Dec_Th1"
-VA="T_InShp T_Th1"
-VA="Shp_dep Prf_Th1"
-VA="Comp_P Comp_Th1"
-VA="_OVLAPI _OVLAPI"
-VA="LinXint LinXint"
-VA="LinZint Shp_dep + Safety"
-VA="LoutXint LoutXint"
-VA="LoutZint Shp_dep + Safety"
-VA="DecTot (C_Corner = 1) * Shp_dep / TAN(C_Angle) + OFF_INT"
-VA="DecLT0 DecTot < 0"
-VA="DecGE0 DecTot >= 0"
-VA="DecLTY4 DecTot < LPY2 / 4"
-VA="DecGEY4 DecTot >= LPY2 / 4"
-VA="H40CatOK DecLT0 AND (LPY2^2 / 640 + 10 >= -2 * DecTot) AND ((LPY2 + _BC / 2)^2 / 160 + 10 >= -2 * DecTot) OR DecGE0 AND (((LPY2 + _BC / 2)^2 / 160 + 10 - DecTot)^2 >= (DecTot + _BC / 2)^2)"
-VA="Haut_Arc IF (LPX2 >= 54 AND LPY2 >= 54) THEN 27 ELSE (LPX2 <= LPY2) * LPX2 / 2 + (LPX2 > LPY2) * (LPY2 / 2 - 0.1)"
-VA="Haut_Cat IF (LPX2 >= 80 AND LPY2 >= 80 AND H40CatOK) THEN 40 ELSE (DecLTY4 AND DecGE0) * ((LPX2 < LPY2) * LPX2 + (LPX2 >= LPY2) * LPY2) / 2 + DecGEY4 * LPY2 / 4 - DecLT0 * 8 * DecTot"
-VA="RayArc1 (Haut_Arc^2 + (LPY2 + _BC / 2)^2) / (2 * Haut_Arc)"
-VA="RayArc2 (Haut_Arc^2 + (LPY2 / 2)^2) / (2 * Haut_Arc)"
-VA="RayCat1 ((LPY2 + _BC / 2) / 2)^2 / Haut_Cat + Haut_Cat / 4"
-VA="RayCat2 ((LPY2 / 2) / 2)^2 / Haut_Cat + Haut_Cat / 4"
-VA="HauArUs1 RayArc1 - SQRT((RayArc1 - DecTot)^2 - (DecTot - (LPY2 + _BC / 2))^2)"
-VA="HauArUs2 RayArc2 - SQRT((RayArc2 - DecTot)^2 - (DecTot - LPY2 / 2)^2)"
-VA="DecArUs1 RayArc1 - SQRT((RayArc1 - DecTot)^2 - ((LPY2 - DecTot) - (LPY2 + _BC / 2))^2)"
-VA="HauCaUs1 Haut_Cat - RayCat1 + SQRT(RayCat1^2 + 2 * DecTot * RayCat1)"
-VA="HauCaUs2 Haut_Cat - RayCat2 + SQRT(RayCat2^2 + 2 * DecTot * RayCat2)"
-VA="DecCaUs1 RayCat1 - SQRT(RayCat1^2 - DecTot * (2 * RayCat1 + _BC) - _BC^2 / 4)"
-VA="g1 (Haut_Cat - 2 * RayCat1) / (LPY2 + _BC / 2)"
-VA="h1Usi (2 * (Haut_Cat + 2 * DecTot) * RayCat1 - Haut_Cat^2 + (LPY2 + _BC / 2)^2) / (2 * (LPY2 + _BC / 2))"
-VA="JoXCaUs1 -2 * (RayCat1 - Haut_Cat + g1* h1Usi) / (2 * (g1^2 + 1))"
-VA="JoYCaUs1 SQRT((RayCat1 + DecTot)^2 - (JoXCaUs1 - (Haut_Cat - RayCat1))^2)"
-VA="g2 (Haut_Cat - 2 * RayCat2) / (LPY2 / 2)"
-VA="h2Usi (2 * (Haut_Cat + 2 * DecTot) * RayCat2 - Haut_Cat^2 + (LPY2 / 2)^2) / (2 * (LPY2 / 2))"
-VA="JoXCaUs2 -2 * (RayCat2 - Haut_Cat + g2 * h2Usi) / (2 * (g2^2 + 1))"
-VA="JoYCaUs2 SQRT((RayCat2 + DecTot)^2 - (JoXCaUs2 - (Haut_Cat - RayCat2))^2)"
-VA="HIsRCC2 HauArUs2 = RayArc2"
-VA="AngCCA1 0"
-VA="AngCCA2 90 + ARCTAN((DecTot - (LPY2 + _BC / 2)) / (HauArUs1 - RayArc1))"
-VA="AngCCA ABS(AngCCA2 - AngCCA1)"
-VA="AngCCB1 -90 + ARCTAN(((LPY2 - DecTot) - (LPY2 + _BC / 2)) / (DecArUs1 - RayArc1))"
-VA="AngCCB2 0"
-VA="AngCCB ABS(AngCCB2 - AngCCB1)"
-VA="AngCCC1 0"
-VA="AngCCC2 90+ (HIsRCC2 = 0) * ARCTAN((DecTot - LPY2 / 2) / (HauArUs2 - RayArc2 + (HIsRCC2 = 1) * 0.01))"
-VA="AngCCC ABS(AngCCC2 - AngCCC1)"
-VA="AngCCD1 0"
-VA="AngCCD2 90 + ARCTAN((DecTot - 0) / (HauCaUs1 - (Haut_Cat - RayCat1)))"
-VA="AngCCD ABS(AngCCD2 - AngCCD1)"
-VA="AngCCE1 -90 + ARCTAN(((LPY2 - DecTot) - (LPY2 + _BC / 2)) / (DecCaUs1 - RayCat1))"
-VA="AngCCE2 0"
-VA="AngCCE ABS(AngCCE2 - AngCCE1)"
-VA="AngCCF1 0"
-VA="AngCCF2 90+ ARCTAN((DecTot - 0) / (HauCaUs2 - (Haut_Cat - RayCat2)))"
-VA="AngCCF ABS(AngCCF2 - AngCCF1)"
-VA="AnCCArGa (_PosType = 0) * AngCCC +(_PosType = 1) * AngCCA + (_PosType = 2) * AngCCB"
-VA="AnCCArDr (_PosType = 0) * AngCCC + (_PosType = 1) * AngCCB + (_PosType = 2) * AngCCA"
-KAT="Komponentenmakro"
-MNM="Usinage intérieur propre au thermoplastique 1 groupe central en X carreau central"
-ORI=""
-KO="00"
-
-<121 \Block\
-XP="_BH + HT3 + _BCX3"
-YP="_BG2 + (DimCarY2 + _BCY) * (NbcarY - 1)"
-ZP="LPZ - Prf_Th1"
-AX="IF NbcarX - 2 < 0 THEN 0 ELSE NbcarX - 2"
-AY="1"
-RX="HT2 + _BCX2"
-RY="0"
-CS="0"
-KAT="BlockMakro"
-MNM="Usinage intérieur propre au thermoplastique 1 groupes centraux en X dernier carreau"
-ORI=""
-NM=""
-DP="1"
-KO="00"
-??="NpasTh >= 1 AND NbcarX >= 3 AND NbcarY >= 2 AND CadrH = 0"
-
-<139 \Komponente\
-IN="Int_Centre.mpr"
-XA="0"
-YA="0"
-ZA="0"
-EM="0"
-VA="LPX2 IF HT2 < MinHT THEN MinHT ELSE HT2"
-VA="LPY2 DimCarY2"
-VA="LPZ2 LPZ"
-VA="_BC _BCY"
-VA="Safety 1"
-VA="Pock_C 0"
-VA="C_Corner 0"
-VA="C_Angle Angle_CC"
-VA="_Type (Act_Pan = 1) * _Type"
-VA="_PosType 0"
-VA="OFF_INT Dec_Th1"
-VA="T_InShp T_Th1"
-VA="Shp_dep Prf_Th1"
-VA="Comp_P Comp_Th1"
-VA="_OVLAPI _OVLAPI"
-VA="LinXint LinXint"
-VA="LinZint Shp_dep + Safety"
-VA="LoutXint LoutXint"
-VA="LoutZint Shp_dep + Safety"
-VA="DecTot (C_Corner = 1) * Shp_dep / TAN(C_Angle) + OFF_INT"
-VA="DecLT0 DecTot < 0"
-VA="DecGE0 DecTot >= 0"
-VA="DecLTY4 DecTot < LPY2 / 4"
-VA="DecGEY4 DecTot >= LPY2 / 4"
-VA="H40CatOK DecLT0 AND (LPY2^2 / 640 + 10 >= -2 * DecTot) AND ((LPY2 + _BC / 2)^2 / 160 + 10 >= -2 * DecTot) OR DecGE0 AND (((LPY2 + _BC / 2)^2 / 160 + 10 - DecTot)^2 >= (DecTot + _BC / 2)^2)"
-VA="Haut_Arc IF (LPX2 >= 54 AND LPY2 >= 54) THEN 27 ELSE (LPX2 <= LPY2) * LPX2 / 2 + (LPX2 > LPY2) * (LPY2 / 2 - 0.1)"
-VA="Haut_Cat IF (LPX2 >= 80 AND LPY2 >= 80 AND H40CatOK) THEN 40 ELSE (DecLTY4 AND DecGE0) * ((LPX2 < LPY2) * LPX2 + (LPX2 >= LPY2) * LPY2) / 2 + DecGEY4 * LPY2 / 4 - DecLT0 * 8 * DecTot"
-VA="RayArc1 (Haut_Arc^2 + (LPY2 + _BC / 2)^2) / (2 * Haut_Arc)"
-VA="RayArc2 (Haut_Arc^2 + (LPY2 / 2)^2) / (2 * Haut_Arc)"
-VA="RayCat1 ((LPY2 + _BC / 2) / 2)^2 / Haut_Cat + Haut_Cat / 4"
-VA="RayCat2 ((LPY2 / 2) / 2)^2 / Haut_Cat + Haut_Cat / 4"
-VA="HauArUs1 RayArc1 - SQRT((RayArc1 - DecTot)^2 - (DecTot - (LPY2 + _BC / 2))^2)"
-VA="HauArUs2 RayArc2 - SQRT((RayArc2 - DecTot)^2 - (DecTot - LPY2 / 2)^2)"
-VA="DecArUs1 RayArc1 - SQRT((RayArc1 - DecTot)^2 - ((LPY2 - DecTot) - (LPY2 + _BC / 2))^2)"
-VA="HauCaUs1 Haut_Cat - RayCat1 + SQRT(RayCat1^2 + 2 * DecTot * RayCat1)"
-VA="HauCaUs2 Haut_Cat - RayCat2 + SQRT(RayCat2^2 + 2 * DecTot * RayCat2)"
-VA="DecCaUs1 RayCat1 - SQRT(RayCat1^2 - DecTot * (2 * RayCat1 + _BC) - _BC^2 / 4)"
-VA="g1 (Haut_Cat - 2 * RayCat1) / (LPY2 + _BC / 2)"
-VA="h1Usi (2 * (Haut_Cat + 2 * DecTot) * RayCat1 - Haut_Cat^2 + (LPY2 + _BC / 2)^2) / (2 * (LPY2 + _BC / 2))"
-VA="JoXCaUs1 -2 * (RayCat1 - Haut_Cat + g1* h1Usi) / (2 * (g1^2 + 1))"
-VA="JoYCaUs1 SQRT((RayCat1 + DecTot)^2 - (JoXCaUs1 - (Haut_Cat - RayCat1))^2)"
-VA="g2 (Haut_Cat - 2 * RayCat2) / (LPY2 / 2)"
-VA="h2Usi (2 * (Haut_Cat + 2 * DecTot) * RayCat2 - Haut_Cat^2 + (LPY2 / 2)^2) / (2 * (LPY2 / 2))"
-VA="JoXCaUs2 -2 * (RayCat2 - Haut_Cat + g2 * h2Usi) / (2 * (g2^2 + 1))"
-VA="JoYCaUs2 SQRT((RayCat2 + DecTot)^2 - (JoXCaUs2 - (Haut_Cat - RayCat2))^2)"
-VA="HIsRCC2 HauArUs2 = RayArc2"
-VA="AngCCA1 0"
-VA="AngCCA2 90 + ARCTAN((DecTot - (LPY2 + _BC / 2)) / (HauArUs1 - RayArc1))"
-VA="AngCCA ABS(AngCCA2 - AngCCA1)"
-VA="AngCCB1 -90 + ARCTAN(((LPY2 - DecTot) - (LPY2 + _BC / 2)) / (DecArUs1 - RayArc1))"
-VA="AngCCB2 0"
-VA="AngCCB ABS(AngCCB2 - AngCCB1)"
-VA="AngCCC1 0"
-VA="AngCCC2 90+ (HIsRCC2 = 0) * ARCTAN((DecTot - LPY2 / 2) / (HauArUs2 - RayArc2 + (HIsRCC2 = 1) * 0.01))"
-VA="AngCCC ABS(AngCCC2 - AngCCC1)"
-VA="AngCCD1 0"
-VA="AngCCD2 90 + ARCTAN((DecTot - 0) / (HauCaUs1 - (Haut_Cat - RayCat1)))"
-VA="AngCCD ABS(AngCCD2 - AngCCD1)"
-VA="AngCCE1 -90 + ARCTAN(((LPY2 - DecTot) - (LPY2 + _BC / 2)) / (DecCaUs1 - RayCat1))"
-VA="AngCCE2 0"
-VA="AngCCE ABS(AngCCE2 - AngCCE1)"
-VA="AngCCF1 0"
-VA="AngCCF2 90+ ARCTAN((DecTot - 0) / (HauCaUs2 - (Haut_Cat - RayCat2)))"
-VA="AngCCF ABS(AngCCF2 - AngCCF1)"
-VA="AnCCArGa (_PosType = 0) * AngCCC +(_PosType = 1) * AngCCA + (_PosType = 2) * AngCCB"
-VA="AnCCArDr (_PosType = 0) * AngCCC + (_PosType = 1) * AngCCB + (_PosType = 2) * AngCCA"
-KAT="Komponentenmakro"
-MNM="Usinage intérieur propre au thermoplastique 1 groupe central en X dernier carreau"
-ORI=""
-KO="00"
-
-<139 \Komponente\
-IN="Int_Centre.mpr"
-XA="LPX - _BB - HT1"
-YA="_BG1"
-ZA="LPZ - Prf_Th1"
-EM="0"
-VA="LPX2 IF HT1 < MinHT THEN MinHT ELSE HT1"
-VA="LPY2 DimCarY1"
-VA="LPZ2 LPZ"
-VA="_BC _BCY"
-VA="Safety 1"
-VA="Pock_C 0"
-VA="C_Corner 0"
-VA="C_Angle Angle_CC"
-VA="_Type (Act_Pan = 1) * _Type"
-VA="_PosType 0"
-VA="OFF_INT Dec_Th1"
-VA="T_InShp T_Th1"
-VA="Shp_dep Prf_Th1"
-VA="Comp_P Comp_Th1"
-VA="_OVLAPI _OVLAPI"
-VA="LinXint LinXint"
-VA="LinZint Shp_dep + Safety"
-VA="LoutXint LoutXint"
-VA="LoutZint Shp_dep + Safety"
-VA="DecTot (C_Corner = 1) * Shp_dep / TAN(C_Angle) + OFF_INT"
-VA="DecLT0 DecTot < 0"
-VA="DecGE0 DecTot >= 0"
-VA="DecLTY4 DecTot < LPY2 / 4"
-VA="DecGEY4 DecTot >= LPY2 / 4"
-VA="H40CatOK DecLT0 AND (LPY2^2 / 640 + 10 >= -2 * DecTot) AND ((LPY2 + _BC / 2)^2 / 160 + 10 >= -2 * DecTot) OR DecGE0 AND (((LPY2 + _BC / 2)^2 / 160 + 10 - DecTot)^2 >= (DecTot + _BC / 2)^2)"
-VA="Haut_Arc IF (LPX2 >= 54 AND LPY2 >= 54) THEN 27 ELSE (LPX2 <= LPY2) * LPX2 / 2 + (LPX2 > LPY2) * (LPY2 / 2 - 0.1)"
-VA="Haut_Cat IF (LPX2 >= 80 AND LPY2 >= 80 AND H40CatOK) THEN 40 ELSE (DecLTY4 AND DecGE0) * ((LPX2 < LPY2) * LPX2 + (LPX2 >= LPY2) * LPY2) / 2 + DecGEY4 * LPY2 / 4 - DecLT0 * 8 * DecTot"
-VA="RayArc1 (Haut_Arc^2 + (LPY2 + _BC / 2)^2) / (2 * Haut_Arc)"
-VA="RayArc2 (Haut_Arc^2 + (LPY2 / 2)^2) / (2 * Haut_Arc)"
-VA="RayCat1 ((LPY2 + _BC / 2) / 2)^2 / Haut_Cat + Haut_Cat / 4"
-VA="RayCat2 ((LPY2 / 2) / 2)^2 / Haut_Cat + Haut_Cat / 4"
-VA="HauArUs1 RayArc1 - SQRT((RayArc1 - DecTot)^2 - (DecTot - (LPY2 + _BC / 2))^2)"
-VA="HauArUs2 RayArc2 - SQRT((RayArc2 - DecTot)^2 - (DecTot - LPY2 / 2)^2)"
-VA="DecArUs1 RayArc1 - SQRT((RayArc1 - DecTot)^2 - ((LPY2 - DecTot) - (LPY2 + _BC / 2))^2)"
-VA="HauCaUs1 Haut_Cat - RayCat1 + SQRT(RayCat1^2 + 2 * DecTot * RayCat1)"
-VA="HauCaUs2 Haut_Cat - RayCat2 + SQRT(RayCat2^2 + 2 * DecTot * RayCat2)"
-VA="DecCaUs1 RayCat1 - SQRT(RayCat1^2 - DecTot * (2 * RayCat1 + _BC) - _BC^2 / 4)"
-VA="g1 (Haut_Cat - 2 * RayCat1) / (LPY2 + _BC / 2)"
-VA="h1Usi (2 * (Haut_Cat + 2 * DecTot) * RayCat1 - Haut_Cat^2 + (LPY2 + _BC / 2)^2) / (2 * (LPY2 + _BC / 2))"
-VA="JoXCaUs1 -2 * (RayCat1 - Haut_Cat + g1* h1Usi) / (2 * (g1^2 + 1))"
-VA="JoYCaUs1 SQRT((RayCat1 + DecTot)^2 - (JoXCaUs1 - (Haut_Cat - RayCat1))^2)"
-VA="g2 (Haut_Cat - 2 * RayCat2) / (LPY2 / 2)"
-VA="h2Usi (2 * (Haut_Cat + 2 * DecTot) * RayCat2 - Haut_Cat^2 + (LPY2 / 2)^2) / (2 * (LPY2 / 2))"
-VA="JoXCaUs2 -2 * (RayCat2 - Haut_Cat + g2 * h2Usi) / (2 * (g2^2 + 1))"
-VA="JoYCaUs2 SQRT((RayCat2 + DecTot)^2 - (JoXCaUs2 - (Haut_Cat - RayCat2))^2)"
-VA="HIsRCC2 HauArUs2 = RayArc2"
-VA="AngCCA1 0"
-VA="AngCCA2 90 + ARCTAN((DecTot - (LPY2 + _BC / 2)) / (HauArUs1 - RayArc1))"
-VA="AngCCA ABS(AngCCA2 - AngCCA1)"
-VA="AngCCB1 -90 + ARCTAN(((LPY2 - DecTot) - (LPY2 + _BC / 2)) / (DecArUs1 - RayArc1))"
-VA="AngCCB2 0"
-VA="AngCCB ABS(AngCCB2 - AngCCB1)"
-VA="AngCCC1 0"
-VA="AngCCC2 90+ (HIsRCC2 = 0) * ARCTAN((DecTot - LPY2 / 2) / (HauArUs2 - RayArc2 + (HIsRCC2 = 1) * 0.01))"
-VA="AngCCC ABS(AngCCC2 - AngCCC1)"
-VA="AngCCD1 0"
-VA="AngCCD2 90 + ARCTAN((DecTot - 0) / (HauCaUs1 - (Haut_Cat - RayCat1)))"
-VA="AngCCD ABS(AngCCD2 - AngCCD1)"
-VA="AngCCE1 -90 + ARCTAN(((LPY2 - DecTot) - (LPY2 + _BC / 2)) / (DecCaUs1 - RayCat1))"
-VA="AngCCE2 0"
-VA="AngCCE ABS(AngCCE2 - AngCCE1)"
-VA="AngCCF1 0"
-VA="AngCCF2 90+ ARCTAN((DecTot - 0) / (HauCaUs2 - (Haut_Cat - RayCat2)))"
-VA="AngCCF ABS(AngCCF2 - AngCCF1)"
-VA="AnCCArGa (_PosType = 0) * AngCCC +(_PosType = 1) * AngCCA + (_PosType = 2) * AngCCB"
-VA="AnCCArDr (_PosType = 0) * AngCCC + (_PosType = 1) * AngCCB + (_PosType = 2) * AngCCA"
-KAT="Komponentenmakro"
-MNM="Usinage intérieur propre au thermoplastique 1 dernier groupe en X premier carreau"
-ORI=""
-KO="00"
-??="NpasTh >= 1 AND NbcarX >= 2 AND NbcarY >= 1 AND CadrH = 0"
-
-<121 \Block\
-XP="LPX - _BB - HT1"
-YP="_BG1 + DimCarY1 + _BCY"
-ZP="0.0"
-AX="1"
-AY="IF NbcarY - 2 < 0 THEN 0 ELSE NbcarY - 2"
-RX="0.0"
-RY="DimCarY1 + _BCY"
-CS="0"
-KAT="BlockMakro"
-MNM="Usinage intérieur propre au thermoplastique 1 dernier groupe en X carreaux centraux"
-ORI=""
-NM=""
-DP="1"
-KO="00"
-??="NpasTh >= 1 AND NbcarX >= 2 AND NbcarY >= 3 AND CadrH = 0"
-
-<139 \Komponente\
-IN="Int_Centre.mpr"
-XA="0"
-YA="0"
-ZA="LPZ - Prf_Th1"
-EM="0"
-VA="LPX2 IF HT1 < MinHT THEN MinHT ELSE HT1"
-VA="LPY2 DimCarY1"
-VA="LPZ2 LPZ"
-VA="_BC _BCY"
-VA="Safety 1"
-VA="Pock_C 0"
-VA="C_Corner 0"
-VA="C_Angle Angle_CC"
-VA="_Type (Act_Pan = 1) * _Type"
-VA="_PosType 0"
-VA="OFF_INT Dec_Th1"
-VA="T_InShp T_Th1"
-VA="Shp_dep Prf_Th1"
-VA="Comp_P Comp_Th1"
-VA="_OVLAPI _OVLAPI"
-VA="LinXint LinXint"
-VA="LinZint Shp_dep + Safety"
-VA="LoutXint LoutXint"
-VA="LoutZint Shp_dep + Safety"
-VA="DecTot (C_Corner = 1) * Shp_dep / TAN(C_Angle) + OFF_INT"
-VA="DecLT0 DecTot < 0"
-VA="DecGE0 DecTot >= 0"
-VA="DecLTY4 DecTot < LPY2 / 4"
-VA="DecGEY4 DecTot >= LPY2 / 4"
-VA="H40CatOK DecLT0 AND (LPY2^2 / 640 + 10 >= -2 * DecTot) AND ((LPY2 + _BC / 2)^2 / 160 + 10 >= -2 * DecTot) OR DecGE0 AND (((LPY2 + _BC / 2)^2 / 160 + 10 - DecTot)^2 >= (DecTot + _BC / 2)^2)"
-VA="Haut_Arc IF (LPX2 >= 54 AND LPY2 >= 54) THEN 27 ELSE (LPX2 <= LPY2) * LPX2 / 2 + (LPX2 > LPY2) * (LPY2 / 2 - 0.1)"
-VA="Haut_Cat IF (LPX2 >= 80 AND LPY2 >= 80 AND H40CatOK) THEN 40 ELSE (DecLTY4 AND DecGE0) * ((LPX2 < LPY2) * LPX2 + (LPX2 >= LPY2) * LPY2) / 2 + DecGEY4 * LPY2 / 4 - DecLT0 * 8 * DecTot"
-VA="RayArc1 (Haut_Arc^2 + (LPY2 + _BC / 2)^2) / (2 * Haut_Arc)"
-VA="RayArc2 (Haut_Arc^2 + (LPY2 / 2)^2) / (2 * Haut_Arc)"
-VA="RayCat1 ((LPY2 + _BC / 2) / 2)^2 / Haut_Cat + Haut_Cat / 4"
-VA="RayCat2 ((LPY2 / 2) / 2)^2 / Haut_Cat + Haut_Cat / 4"
-VA="HauArUs1 RayArc1 - SQRT((RayArc1 - DecTot)^2 - (DecTot - (LPY2 + _BC / 2))^2)"
-VA="HauArUs2 RayArc2 - SQRT((RayArc2 - DecTot)^2 - (DecTot - LPY2 / 2)^2)"
-VA="DecArUs1 RayArc1 - SQRT((RayArc1 - DecTot)^2 - ((LPY2 - DecTot) - (LPY2 + _BC / 2))^2)"
-VA="HauCaUs1 Haut_Cat - RayCat1 + SQRT(RayCat1^2 + 2 * DecTot * RayCat1)"
-VA="HauCaUs2 Haut_Cat - RayCat2 + SQRT(RayCat2^2 + 2 * DecTot * RayCat2)"
-VA="DecCaUs1 RayCat1 - SQRT(RayCat1^2 - DecTot * (2 * RayCat1 + _BC) - _BC^2 / 4)"
-VA="g1 (Haut_Cat - 2 * RayCat1) / (LPY2 + _BC / 2)"
-VA="h1Usi (2 * (Haut_Cat + 2 * DecTot) * RayCat1 - Haut_Cat^2 + (LPY2 + _BC / 2)^2) / (2 * (LPY2 + _BC / 2))"
-VA="JoXCaUs1 -2 * (RayCat1 - Haut_Cat + g1* h1Usi) / (2 * (g1^2 + 1))"
-VA="JoYCaUs1 SQRT((RayCat1 + DecTot)^2 - (JoXCaUs1 - (Haut_Cat - RayCat1))^2)"
-VA="g2 (Haut_Cat - 2 * RayCat2) / (LPY2 / 2)"
-VA="h2Usi (2 * (Haut_Cat + 2 * DecTot) * RayCat2 - Haut_Cat^2 + (LPY2 / 2)^2) / (2 * (LPY2 / 2))"
-VA="JoXCaUs2 -2 * (RayCat2 - Haut_Cat + g2 * h2Usi) / (2 * (g2^2 + 1))"
-VA="JoYCaUs2 SQRT((RayCat2 + DecTot)^2 - (JoXCaUs2 - (Haut_Cat - RayCat2))^2)"
-VA="HIsRCC2 HauArUs2 = RayArc2"
-VA="AngCCA1 0"
-VA="AngCCA2 90 + ARCTAN((DecTot - (LPY2 + _BC / 2)) / (HauArUs1 - RayArc1))"
-VA="AngCCA ABS(AngCCA2 - AngCCA1)"
-VA="AngCCB1 -90 + ARCTAN(((LPY2 - DecTot) - (LPY2 + _BC / 2)) / (DecArUs1 - RayArc1))"
-VA="AngCCB2 0"
-VA="AngCCB ABS(AngCCB2 - AngCCB1)"
-VA="AngCCC1 0"
-VA="AngCCC2 90+ (HIsRCC2 = 0) * ARCTAN((DecTot - LPY2 / 2) / (HauArUs2 - RayArc2 + (HIsRCC2 = 1) * 0.01))"
-VA="AngCCC ABS(AngCCC2 - AngCCC1)"
-VA="AngCCD1 0"
-VA="AngCCD2 90 + ARCTAN((DecTot - 0) / (HauCaUs1 - (Haut_Cat - RayCat1)))"
-VA="AngCCD ABS(AngCCD2 - AngCCD1)"
-VA="AngCCE1 -90 + ARCTAN(((LPY2 - DecTot) - (LPY2 + _BC / 2)) / (DecCaUs1 - RayCat1))"
-VA="AngCCE2 0"
-VA="AngCCE ABS(AngCCE2 - AngCCE1)"
-VA="AngCCF1 0"
-VA="AngCCF2 90+ ARCTAN((DecTot - 0) / (HauCaUs2 - (Haut_Cat - RayCat2)))"
-VA="AngCCF ABS(AngCCF2 - AngCCF1)"
-VA="AnCCArGa (_PosType = 0) * AngCCC +(_PosType = 1) * AngCCA + (_PosType = 2) * AngCCB"
-VA="AnCCArDr (_PosType = 0) * AngCCC + (_PosType = 1) * AngCCB + (_PosType = 2) * AngCCA"
-KAT="Komponentenmakro"
-MNM="Usinage intérieur propre au thermoplastique 1 dernier groupe en X carreau central"
-ORI=""
-KO="00"
-
-<139 \Komponente\
-IN="Int_Centre.mpr"
-XA="LPX - _BB - HT1"
-YA="_BG1 + (DimCarY1 + _BCY) * (NbcarY - 1)"
-ZA="LPZ - Prf_Th1"
-EM="0"
-VA="LPX2 IF HT1 < MinHT THEN MinHT ELSE HT1"
-VA="LPY2 DimCarY1"
-VA="LPZ2 LPZ"
-VA="_BC _BCY"
-VA="Safety 1"
-VA="Pock_C 0"
-VA="C_Corner 0"
-VA="C_Angle Angle_CC"
-VA="_Type (Act_Pan = 1) * _Type"
-VA="_PosType 0"
-VA="OFF_INT Dec_Th1"
-VA="T_InShp T_Th1"
-VA="Shp_dep Prf_Th1"
-VA="Comp_P Comp_Th1"
-VA="_OVLAPI _OVLAPI"
-VA="LinXint LinXint"
-VA="LinZint Shp_dep + Safety"
-VA="LoutXint LoutXint"
-VA="LoutZint Shp_dep + Safety"
-VA="DecTot (C_Corner = 1) * Shp_dep / TAN(C_Angle) + OFF_INT"
-VA="DecLT0 DecTot < 0"
-VA="DecGE0 DecTot >= 0"
-VA="DecLTY4 DecTot < LPY2 / 4"
-VA="DecGEY4 DecTot >= LPY2 / 4"
-VA="H40CatOK DecLT0 AND (LPY2^2 / 640 + 10 >= -2 * DecTot) AND ((LPY2 + _BC / 2)^2 / 160 + 10 >= -2 * DecTot) OR DecGE0 AND (((LPY2 + _BC / 2)^2 / 160 + 10 - DecTot)^2 >= (DecTot + _BC / 2)^2)"
-VA="Haut_Arc IF (LPX2 >= 54 AND LPY2 >= 54) THEN 27 ELSE (LPX2 <= LPY2) * LPX2 / 2 + (LPX2 > LPY2) * (LPY2 / 2 - 0.1)"
-VA="Haut_Cat IF (LPX2 >= 80 AND LPY2 >= 80 AND H40CatOK) THEN 40 ELSE (DecLTY4 AND DecGE0) * ((LPX2 < LPY2) * LPX2 + (LPX2 >= LPY2) * LPY2) / 2 + DecGEY4 * LPY2 / 4 - DecLT0 * 8 * DecTot"
-VA="RayArc1 (Haut_Arc^2 + (LPY2 + _BC / 2)^2) / (2 * Haut_Arc)"
-VA="RayArc2 (Haut_Arc^2 + (LPY2 / 2)^2) / (2 * Haut_Arc)"
-VA="RayCat1 ((LPY2 + _BC / 2) / 2)^2 / Haut_Cat + Haut_Cat / 4"
-VA="RayCat2 ((LPY2 / 2) / 2)^2 / Haut_Cat + Haut_Cat / 4"
-VA="HauArUs1 RayArc1 - SQRT((RayArc1 - DecTot)^2 - (DecTot - (LPY2 + _BC / 2))^2)"
-VA="HauArUs2 RayArc2 - SQRT((RayArc2 - DecTot)^2 - (DecTot - LPY2 / 2)^2)"
-VA="DecArUs1 RayArc1 - SQRT((RayArc1 - DecTot)^2 - ((LPY2 - DecTot) - (LPY2 + _BC / 2))^2)"
-VA="HauCaUs1 Haut_Cat - RayCat1 + SQRT(RayCat1^2 + 2 * DecTot * RayCat1)"
-VA="HauCaUs2 Haut_Cat - RayCat2 + SQRT(RayCat2^2 + 2 * DecTot * RayCat2)"
-VA="DecCaUs1 RayCat1 - SQRT(RayCat1^2 - DecTot * (2 * RayCat1 + _BC) - _BC^2 / 4)"
-VA="g1 (Haut_Cat - 2 * RayCat1) / (LPY2 + _BC / 2)"
-VA="h1Usi (2 * (Haut_Cat + 2 * DecTot) * RayCat1 - Haut_Cat^2 + (LPY2 + _BC / 2)^2) / (2 * (LPY2 + _BC / 2))"
-VA="JoXCaUs1 -2 * (RayCat1 - Haut_Cat + g1* h1Usi) / (2 * (g1^2 + 1))"
-VA="JoYCaUs1 SQRT((RayCat1 + DecTot)^2 - (JoXCaUs1 - (Haut_Cat - RayCat1))^2)"
-VA="g2 (Haut_Cat - 2 * RayCat2) / (LPY2 / 2)"
-VA="h2Usi (2 * (Haut_Cat + 2 * DecTot) * RayCat2 - Haut_Cat^2 + (LPY2 / 2)^2) / (2 * (LPY2 / 2))"
-VA="JoXCaUs2 -2 * (RayCat2 - Haut_Cat + g2 * h2Usi) / (2 * (g2^2 + 1))"
-VA="JoYCaUs2 SQRT((RayCat2 + DecTot)^2 - (JoXCaUs2 - (Haut_Cat - RayCat2))^2)"
-VA="HIsRCC2 HauArUs2 = RayArc2"
-VA="AngCCA1 0"
-VA="AngCCA2 90 + ARCTAN((DecTot - (LPY2 + _BC / 2)) / (HauArUs1 - RayArc1))"
-VA="AngCCA ABS(AngCCA2 - AngCCA1)"
-VA="AngCCB1 -90 + ARCTAN(((LPY2 - DecTot) - (LPY2 + _BC / 2)) / (DecArUs1 - RayArc1))"
-VA="AngCCB2 0"
-VA="AngCCB ABS(AngCCB2 - AngCCB1)"
-VA="AngCCC1 0"
-VA="AngCCC2 90+ (HIsRCC2 = 0) * ARCTAN((DecTot - LPY2 / 2) / (HauArUs2 - RayArc2 + (HIsRCC2 = 1) * 0.01))"
-VA="AngCCC ABS(AngCCC2 - AngCCC1)"
-VA="AngCCD1 0"
-VA="AngCCD2 90 + ARCTAN((DecTot - 0) / (HauCaUs1 - (Haut_Cat - RayCat1)))"
-VA="AngCCD ABS(AngCCD2 - AngCCD1)"
-VA="AngCCE1 -90 + ARCTAN(((LPY2 - DecTot) - (LPY2 + _BC / 2)) / (DecCaUs1 - RayCat1))"
-VA="AngCCE2 0"
-VA="AngCCE ABS(AngCCE2 - AngCCE1)"
-VA="AngCCF1 0"
-VA="AngCCF2 90+ ARCTAN((DecTot - 0) / (HauCaUs2 - (Haut_Cat - RayCat2)))"
-VA="AngCCF ABS(AngCCF2 - AngCCF1)"
-VA="AnCCArGa (_PosType = 0) * AngCCC +(_PosType = 1) * AngCCA + (_PosType = 2) * AngCCB"
-VA="AnCCArDr (_PosType = 0) * AngCCC + (_PosType = 1) * AngCCB + (_PosType = 2) * AngCCA"
-KAT="Komponentenmakro"
-MNM="Usinage intérieur propre au thermoplastique 1 dernier groupe en X dernier carreau"
-ORI=""
-KO="00"
-??="NpasTh >= 1 AND NbcarX >= 2 AND NbcarY >= 2 AND CadrH = 0"
-
-<101 \Kommentar\
-KM="USINAGE INTÉRIEUR RECTANGULAIRE PROPRE AU THERMOPLASTIQUE"
-KM="PASSE NO.2"
-KAT="Kommentar"
-MNM="Usinage intérieur propre au thermoplastique 2"
-ORI=""
-??="0"
-
-<139 \Komponente\
-IN="Int_Centre.mpr"
-XA="_BH"
-YA="_BG3"
-ZA="LPZ - Prf_Th2"
-EM="0"
-VA="LPX2 IF HT3 < MinHT THEN MinHT ELSE HT3"
-VA="LPY2 (CadrH = 0) * DimCarY3 + (CadrH = 1) * (LPY - _BG3 - _BD3)"
-VA="LPZ2 LPZ"
-VA="_BC _BCY"
-VA="Safety 1"
-VA="Pock_C 0"
-VA="C_Corner 0"
-VA="C_Angle Angle_CC"
-VA="_Type _Type"
-VA="_PosType IF NbcarY = 1 OR Act_Pan = 1 THEN 0 ELSE 1"
-VA="OFF_INT Dec_Th2"
-VA="T_InShp T_Th2"
-VA="Shp_dep Prf_Th2"
-VA="Comp_P Comp_Th2"
-VA="_OVLAPI _OVLAPI"
-VA="LinXint LinXint"
-VA="LinZint Shp_dep + Safety"
-VA="LoutXint LoutXint"
-VA="LoutZint Shp_dep + Safety"
-VA="DecTot (C_Corner = 1) * Shp_dep / TAN(C_Angle) + OFF_INT"
-VA="DecLT0 DecTot < 0"
-VA="DecGE0 DecTot >= 0"
-VA="DecLTY4 DecTot < LPY2 / 4"
-VA="DecGEY4 DecTot >= LPY2 / 4"
-VA="H40CatOK DecLT0 AND (LPY2^2 / 640 + 10 >= -2 * DecTot) AND ((LPY2 + _BC / 2)^2 / 160 + 10 >= -2 * DecTot) OR DecGE0 AND (((LPY2 + _BC / 2)^2 / 160 + 10 - DecTot)^2 >= (DecTot + _BC / 2)^2)"
-VA="Haut_Arc IF (LPX2 >= 54 AND LPY2 >= 54) THEN 27 ELSE (LPX2 <= LPY2) * LPX2 / 2 + (LPX2 > LPY2) * (LPY2 / 2 - 0.1)"
-VA="Haut_Cat IF (LPX2 >= 80 AND LPY2 >= 80 AND H40CatOK) THEN 40 ELSE (DecLTY4 AND DecGE0) * ((LPX2 < LPY2) * LPX2 + (LPX2 >= LPY2) * LPY2) / 2 + DecGEY4 * LPY2 / 4 - DecLT0 * 8 * DecTot"
-VA="RayArc1 (Haut_Arc^2 + (LPY2 + _BC / 2)^2) / (2 * Haut_Arc)"
-VA="RayArc2 (Haut_Arc^2 + (LPY2 / 2)^2) / (2 * Haut_Arc)"
-VA="RayCat1 ((LPY2 + _BC / 2) / 2)^2 / Haut_Cat + Haut_Cat / 4"
-VA="RayCat2 ((LPY2 / 2) / 2)^2 / Haut_Cat + Haut_Cat / 4"
-VA="HauArUs1 RayArc1 - SQRT((RayArc1 - DecTot)^2 - (DecTot - (LPY2 + _BC / 2))^2)"
-VA="HauArUs2 RayArc2 - SQRT((RayArc2 - DecTot)^2 - (DecTot - LPY2 / 2)^2)"
-VA="DecArUs1 RayArc1 - SQRT((RayArc1 - DecTot)^2 - ((LPY2 - DecTot) - (LPY2 + _BC / 2))^2)"
-VA="HauCaUs1 Haut_Cat - RayCat1 + SQRT(RayCat1^2 + 2 * DecTot * RayCat1)"
-VA="HauCaUs2 Haut_Cat - RayCat2 + SQRT(RayCat2^2 + 2 * DecTot * RayCat2)"
-VA="DecCaUs1 RayCat1 - SQRT(RayCat1^2 - DecTot * (2 * RayCat1 + _BC) - _BC^2 / 4)"
-VA="g1 (Haut_Cat - 2 * RayCat1) / (LPY2 + _BC / 2)"
-VA="h1Usi (2 * (Haut_Cat + 2 * DecTot) * RayCat1 - Haut_Cat^2 + (LPY2 + _BC / 2)^2) / (2 * (LPY2 + _BC / 2))"
-VA="JoXCaUs1 -2 * (RayCat1 - Haut_Cat + g1* h1Usi) / (2 * (g1^2 + 1))"
-VA="JoYCaUs1 SQRT((RayCat1 + DecTot)^2 - (JoXCaUs1 - (Haut_Cat - RayCat1))^2)"
-VA="g2 (Haut_Cat - 2 * RayCat2) / (LPY2 / 2)"
-VA="h2Usi (2 * (Haut_Cat + 2 * DecTot) * RayCat2 - Haut_Cat^2 + (LPY2 / 2)^2) / (2 * (LPY2 / 2))"
-VA="JoXCaUs2 -2 * (RayCat2 - Haut_Cat + g2 * h2Usi) / (2 * (g2^2 + 1))"
-VA="JoYCaUs2 SQRT((RayCat2 + DecTot)^2 - (JoXCaUs2 - (Haut_Cat - RayCat2))^2)"
-VA="HIsRCC2 HauArUs2 = RayArc2"
-VA="AngCCA1 0"
-VA="AngCCA2 90 + ARCTAN((DecTot - (LPY2 + _BC / 2)) / (HauArUs1 - RayArc1))"
-VA="AngCCA ABS(AngCCA2 - AngCCA1)"
-VA="AngCCB1 -90 + ARCTAN(((LPY2 - DecTot) - (LPY2 + _BC / 2)) / (DecArUs1 - RayArc1))"
-VA="AngCCB2 0"
-VA="AngCCB ABS(AngCCB2 - AngCCB1)"
-VA="AngCCC1 0"
-VA="AngCCC2 90+ (HIsRCC2 = 0) * ARCTAN((DecTot - LPY2 / 2) / (HauArUs2 - RayArc2 + (HIsRCC2 = 1) * 0.01))"
-VA="AngCCC ABS(AngCCC2 - AngCCC1)"
-VA="AngCCD1 0"
-VA="AngCCD2 90 + ARCTAN((DecTot - 0) / (HauCaUs1 - (Haut_Cat - RayCat1)))"
-VA="AngCCD ABS(AngCCD2 - AngCCD1)"
-VA="AngCCE1 -90 + ARCTAN(((LPY2 - DecTot) - (LPY2 + _BC / 2)) / (DecCaUs1 - RayCat1))"
-VA="AngCCE2 0"
-VA="AngCCE ABS(AngCCE2 - AngCCE1)"
-VA="AngCCF1 0"
-VA="AngCCF2 90+ ARCTAN((DecTot - 0) / (HauCaUs2 - (Haut_Cat - RayCat2)))"
-VA="AngCCF ABS(AngCCF2 - AngCCF1)"
-VA="AnCCArGa (_PosType = 0) * AngCCC +(_PosType = 1) * AngCCA + (_PosType = 2) * AngCCB"
-VA="AnCCArDr (_PosType = 0) * AngCCC + (_PosType = 1) * AngCCB + (_PosType = 2) * AngCCA"
-KAT="Komponentenmakro"
-MNM="Usinage intérieur propre au thermoplastique 2 premier groupe en X premier carreau"
-ORI=""
-KO="00"
-??="NpasTh >= 2 AND NbcarX >= 1 AND NbcarY >= 1"
-
-<121 \Block\
-XP="_BH"
-YP="_BG3 + DimCarY3 + _BCY"
-ZP="0.0"
-AX="1"
-AY="IF NbcarY - 2 < 0 THEN 0 ELSE NbcarY - 2"
-RX="0.0"
-RY="DimCarY3 + _BCY"
-CS="0"
-KAT="BlockMakro"
-MNM="Usinage intérieur propre au thermoplastique 2 premier groupe en X carreaux centraux"
-ORI=""
-NM=""
-DP="1"
-KO="00"
-??="NpasTh >= 2 AND NbcarX >= 1 AND NbcarY >= 3"
-
-<139 \Komponente\
-IN="Int_Centre.mpr"
-XA="0"
-YA="0"
-ZA="LPZ - Prf_Th2"
-EM="0"
-VA="LPX2 IF HT3 < MinHT THEN MinHT ELSE HT3"
-VA="LPY2 DimCarY3"
-VA="LPZ2 LPZ"
-VA="_BC _BCY"
-VA="Safety 1"
-VA="Pock_C 0"
-VA="C_Corner 0"
-VA="C_Angle Angle_CC"
-VA="_Type _Type"
-VA="_PosType 0"
-VA="OFF_INT Dec_Th2"
-VA="T_InShp T_Th2"
-VA="Shp_dep Prf_Th2"
-VA="Comp_P Comp_Th2"
-VA="_OVLAPI _OVLAPI"
-VA="LinXint LinXint"
-VA="LinZint Shp_dep + Safety"
-VA="LoutXint LoutXint"
-VA="LoutZint Shp_dep + Safety"
-VA="DecTot (C_Corner = 1) * Shp_dep / TAN(C_Angle) + OFF_INT"
-VA="DecLT0 DecTot < 0"
-VA="DecGE0 DecTot >= 0"
-VA="DecLTY4 DecTot < LPY2 / 4"
-VA="DecGEY4 DecTot >= LPY2 / 4"
-VA="H40CatOK DecLT0 AND (LPY2^2 / 640 + 10 >= -2 * DecTot) AND ((LPY2 + _BC / 2)^2 / 160 + 10 >= -2 * DecTot) OR DecGE0 AND (((LPY2 + _BC / 2)^2 / 160 + 10 - DecTot)^2 >= (DecTot + _BC / 2)^2)"
-VA="Haut_Arc IF (LPX2 >= 54 AND LPY2 >= 54) THEN 27 ELSE (LPX2 <= LPY2) * LPX2 / 2 + (LPX2 > LPY2) * (LPY2 / 2 - 0.1)"
-VA="Haut_Cat IF (LPX2 >= 80 AND LPY2 >= 80 AND H40CatOK) THEN 40 ELSE (DecLTY4 AND DecGE0) * ((LPX2 < LPY2) * LPX2 + (LPX2 >= LPY2) * LPY2) / 2 + DecGEY4 * LPY2 / 4 - DecLT0 * 8 * DecTot"
-VA="RayArc1 (Haut_Arc^2 + (LPY2 + _BC / 2)^2) / (2 * Haut_Arc)"
-VA="RayArc2 (Haut_Arc^2 + (LPY2 / 2)^2) / (2 * Haut_Arc)"
-VA="RayCat1 ((LPY2 + _BC / 2) / 2)^2 / Haut_Cat + Haut_Cat / 4"
-VA="RayCat2 ((LPY2 / 2) / 2)^2 / Haut_Cat + Haut_Cat / 4"
-VA="HauArUs1 RayArc1 - SQRT((RayArc1 - DecTot)^2 - (DecTot - (LPY2 + _BC / 2))^2)"
-VA="HauArUs2 RayArc2 - SQRT((RayArc2 - DecTot)^2 - (DecTot - LPY2 / 2)^2)"
-VA="DecArUs1 RayArc1 - SQRT((RayArc1 - DecTot)^2 - ((LPY2 - DecTot) - (LPY2 + _BC / 2))^2)"
-VA="HauCaUs1 Haut_Cat - RayCat1 + SQRT(RayCat1^2 + 2 * DecTot * RayCat1)"
-VA="HauCaUs2 Haut_Cat - RayCat2 + SQRT(RayCat2^2 + 2 * DecTot * RayCat2)"
-VA="DecCaUs1 RayCat1 - SQRT(RayCat1^2 - DecTot * (2 * RayCat1 + _BC) - _BC^2 / 4)"
-VA="g1 (Haut_Cat - 2 * RayCat1) / (LPY2 + _BC / 2)"
-VA="h1Usi (2 * (Haut_Cat + 2 * DecTot) * RayCat1 - Haut_Cat^2 + (LPY2 + _BC / 2)^2) / (2 * (LPY2 + _BC / 2))"
-VA="JoXCaUs1 -2 * (RayCat1 - Haut_Cat + g1* h1Usi) / (2 * (g1^2 + 1))"
-VA="JoYCaUs1 SQRT((RayCat1 + DecTot)^2 - (JoXCaUs1 - (Haut_Cat - RayCat1))^2)"
-VA="g2 (Haut_Cat - 2 * RayCat2) / (LPY2 / 2)"
-VA="h2Usi (2 * (Haut_Cat + 2 * DecTot) * RayCat2 - Haut_Cat^2 + (LPY2 / 2)^2) / (2 * (LPY2 / 2))"
-VA="JoXCaUs2 -2 * (RayCat2 - Haut_Cat + g2 * h2Usi) / (2 * (g2^2 + 1))"
-VA="JoYCaUs2 SQRT((RayCat2 + DecTot)^2 - (JoXCaUs2 - (Haut_Cat - RayCat2))^2)"
-VA="HIsRCC2 HauArUs2 = RayArc2"
-VA="AngCCA1 0"
-VA="AngCCA2 90 + ARCTAN((DecTot - (LPY2 + _BC / 2)) / (HauArUs1 - RayArc1))"
-VA="AngCCA ABS(AngCCA2 - AngCCA1)"
-VA="AngCCB1 -90 + ARCTAN(((LPY2 - DecTot) - (LPY2 + _BC / 2)) / (DecArUs1 - RayArc1))"
-VA="AngCCB2 0"
-VA="AngCCB ABS(AngCCB2 - AngCCB1)"
-VA="AngCCC1 0"
-VA="AngCCC2 90+ (HIsRCC2 = 0) * ARCTAN((DecTot - LPY2 / 2) / (HauArUs2 - RayArc2 + (HIsRCC2 = 1) * 0.01))"
-VA="AngCCC ABS(AngCCC2 - AngCCC1)"
-VA="AngCCD1 0"
-VA="AngCCD2 90 + ARCTAN((DecTot - 0) / (HauCaUs1 - (Haut_Cat - RayCat1)))"
-VA="AngCCD ABS(AngCCD2 - AngCCD1)"
-VA="AngCCE1 -90 + ARCTAN(((LPY2 - DecTot) - (LPY2 + _BC / 2)) / (DecCaUs1 - RayCat1))"
-VA="AngCCE2 0"
-VA="AngCCE ABS(AngCCE2 - AngCCE1)"
-VA="AngCCF1 0"
-VA="AngCCF2 90+ ARCTAN((DecTot - 0) / (HauCaUs2 - (Haut_Cat - RayCat2)))"
-VA="AngCCF ABS(AngCCF2 - AngCCF1)"
-VA="AnCCArGa (_PosType = 0) * AngCCC +(_PosType = 1) * AngCCA + (_PosType = 2) * AngCCB"
-VA="AnCCArDr (_PosType = 0) * AngCCC + (_PosType = 1) * AngCCB + (_PosType = 2) * AngCCA"
-KAT="Komponentenmakro"
-MNM="Usinage intérieur propre au thermoplastique 2 premier groupe en X carreau central"
-ORI=""
-KO="00"
-
-<139 \Komponente\
-IN="Int_Centre.mpr"
-XA="_BH"
-YA="_BG3 + (DimCarY3 + _BCY) * (NbcarY - 1)"
-ZA="LPZ - Prf_Th2"
-EM="0"
-VA="LPX2 IF HT3 < MinHT THEN MinHT ELSE HT3"
-VA="LPY2 DimCarY3"
-VA="LPZ2 LPZ"
-VA="_BC _BCY"
-VA="Safety 1"
-VA="Pock_C 0"
-VA="C_Corner 0"
-VA="C_Angle Angle_CC"
-VA="_Type _Type"
-VA="_PosType IF Act_Pan = 1 THEN 0 ELSE 2"
-VA="OFF_INT Dec_Th2"
-VA="T_InShp T_Th2"
-VA="Shp_dep Prf_Th2"
-VA="Comp_P Comp_Th2"
-VA="_OVLAPI _OVLAPI"
-VA="LinXint LinXint"
-VA="LinZint Shp_dep + Safety"
-VA="LoutXint LoutXint"
-VA="LoutZint Shp_dep + Safety"
-VA="DecTot (C_Corner = 1) * Shp_dep / TAN(C_Angle) + OFF_INT"
-VA="DecLT0 DecTot < 0"
-VA="DecGE0 DecTot >= 0"
-VA="DecLTY4 DecTot < LPY2 / 4"
-VA="DecGEY4 DecTot >= LPY2 / 4"
-VA="H40CatOK DecLT0 AND (LPY2^2 / 640 + 10 >= -2 * DecTot) AND ((LPY2 + _BC / 2)^2 / 160 + 10 >= -2 * DecTot) OR DecGE0 AND (((LPY2 + _BC / 2)^2 / 160 + 10 - DecTot)^2 >= (DecTot + _BC / 2)^2)"
-VA="Haut_Arc IF (LPX2 >= 54 AND LPY2 >= 54) THEN 27 ELSE (LPX2 <= LPY2) * LPX2 / 2 + (LPX2 > LPY2) * (LPY2 / 2 - 0.1)"
-VA="Haut_Cat IF (LPX2 >= 80 AND LPY2 >= 80 AND H40CatOK) THEN 40 ELSE (DecLTY4 AND DecGE0) * ((LPX2 < LPY2) * LPX2 + (LPX2 >= LPY2) * LPY2) / 2 + DecGEY4 * LPY2 / 4 - DecLT0 * 8 * DecTot"
-VA="RayArc1 (Haut_Arc^2 + (LPY2 + _BC / 2)^2) / (2 * Haut_Arc)"
-VA="RayArc2 (Haut_Arc^2 + (LPY2 / 2)^2) / (2 * Haut_Arc)"
-VA="RayCat1 ((LPY2 + _BC / 2) / 2)^2 / Haut_Cat + Haut_Cat / 4"
-VA="RayCat2 ((LPY2 / 2) / 2)^2 / Haut_Cat + Haut_Cat / 4"
-VA="HauArUs1 RayArc1 - SQRT((RayArc1 - DecTot)^2 - (DecTot - (LPY2 + _BC / 2))^2)"
-VA="HauArUs2 RayArc2 - SQRT((RayArc2 - DecTot)^2 - (DecTot - LPY2 / 2)^2)"
-VA="DecArUs1 RayArc1 - SQRT((RayArc1 - DecTot)^2 - ((LPY2 - DecTot) - (LPY2 + _BC / 2))^2)"
-VA="HauCaUs1 Haut_Cat - RayCat1 + SQRT(RayCat1^2 + 2 * DecTot * RayCat1)"
-VA="HauCaUs2 Haut_Cat - RayCat2 + SQRT(RayCat2^2 + 2 * DecTot * RayCat2)"
-VA="DecCaUs1 RayCat1 - SQRT(RayCat1^2 - DecTot * (2 * RayCat1 + _BC) - _BC^2 / 4)"
-VA="g1 (Haut_Cat - 2 * RayCat1) / (LPY2 + _BC / 2)"
-VA="h1Usi (2 * (Haut_Cat + 2 * DecTot) * RayCat1 - Haut_Cat^2 + (LPY2 + _BC / 2)^2) / (2 * (LPY2 + _BC / 2))"
-VA="JoXCaUs1 -2 * (RayCat1 - Haut_Cat + g1* h1Usi) / (2 * (g1^2 + 1))"
-VA="JoYCaUs1 SQRT((RayCat1 + DecTot)^2 - (JoXCaUs1 - (Haut_Cat - RayCat1))^2)"
-VA="g2 (Haut_Cat - 2 * RayCat2) / (LPY2 / 2)"
-VA="h2Usi (2 * (Haut_Cat + 2 * DecTot) * RayCat2 - Haut_Cat^2 + (LPY2 / 2)^2) / (2 * (LPY2 / 2))"
-VA="JoXCaUs2 -2 * (RayCat2 - Haut_Cat + g2 * h2Usi) / (2 * (g2^2 + 1))"
-VA="JoYCaUs2 SQRT((RayCat2 + DecTot)^2 - (JoXCaUs2 - (Haut_Cat - RayCat2))^2)"
-VA="HIsRCC2 HauArUs2 = RayArc2"
-VA="AngCCA1 0"
-VA="AngCCA2 90 + ARCTAN((DecTot - (LPY2 + _BC / 2)) / (HauArUs1 - RayArc1))"
-VA="AngCCA ABS(AngCCA2 - AngCCA1)"
-VA="AngCCB1 -90 + ARCTAN(((LPY2 - DecTot) - (LPY2 + _BC / 2)) / (DecArUs1 - RayArc1))"
-VA="AngCCB2 0"
-VA="AngCCB ABS(AngCCB2 - AngCCB1)"
-VA="AngCCC1 0"
-VA="AngCCC2 90+ (HIsRCC2 = 0) * ARCTAN((DecTot - LPY2 / 2) / (HauArUs2 - RayArc2 + (HIsRCC2 = 1) * 0.01))"
-VA="AngCCC ABS(AngCCC2 - AngCCC1)"
-VA="AngCCD1 0"
-VA="AngCCD2 90 + ARCTAN((DecTot - 0) / (HauCaUs1 - (Haut_Cat - RayCat1)))"
-VA="AngCCD ABS(AngCCD2 - AngCCD1)"
-VA="AngCCE1 -90 + ARCTAN(((LPY2 - DecTot) - (LPY2 + _BC / 2)) / (DecCaUs1 - RayCat1))"
-VA="AngCCE2 0"
-VA="AngCCE ABS(AngCCE2 - AngCCE1)"
-VA="AngCCF1 0"
-VA="AngCCF2 90+ ARCTAN((DecTot - 0) / (HauCaUs2 - (Haut_Cat - RayCat2)))"
-VA="AngCCF ABS(AngCCF2 - AngCCF1)"
-VA="AnCCArGa (_PosType = 0) * AngCCC +(_PosType = 1) * AngCCA + (_PosType = 2) * AngCCB"
-VA="AnCCArDr (_PosType = 0) * AngCCC + (_PosType = 1) * AngCCB + (_PosType = 2) * AngCCA"
-KAT="Komponentenmakro"
-MNM="Usinage intérieur propre au thermoplastique 2 premier groupe en X dernier carreau"
-ORI=""
-KO="00"
-??="NpasTh >= 2 AND NbcarX >= 1 AND NbcarY >= 2"
-
-<121 \Block\
-XP="_BH + HT3 + _BCX3"
-YP="_BG2"
-ZP="LPZ - Prf_Th2"
-AX="IF NbcarX - 2 < 0 THEN 0 ELSE NbcarX - 2"
-AY="1"
-RX="HT2 + _BCX2"
-RY="0"
-CS="0"
-KAT="BlockMakro"
-MNM="Usinage intérieur propre au thermoplastique 2 groupes centraux en X premier carreau"
-ORI=""
-NM=""
-DP="1"
-KO="00"
-??="NpasTh >= 2 AND NbcarX >= 3 AND NbcarY >= 1 AND CadrH = 0"
-
-<139 \Komponente\
-IN="Int_Centre.mpr"
-XA="0"
-YA="0"
-ZA="0"
-EM="0"
-VA="LPX2 IF HT2 < MinHT THEN MinHT ELSE HT2"
-VA="LPY2 DimCarY2"
-VA="LPZ2 LPZ"
-VA="_BC _BCY"
-VA="Safety 1"
-VA="Pock_C 0"
-VA="C_Corner 0"
-VA="C_Angle Angle_CC"
-VA="_Type (Act_Pan = 1) * _Type"
-VA="_PosType 0"
-VA="OFF_INT Dec_Th2"
-VA="T_InShp T_Th2"
-VA="Shp_dep Prf_Th2"
-VA="Comp_P Comp_Th2"
-VA="_OVLAPI _OVLAPI"
-VA="LinXint LinXint"
-VA="LinZint Shp_dep + Safety"
-VA="LoutXint LoutXint"
-VA="LoutZint Shp_dep + Safety"
-VA="DecTot (C_Corner = 1) * Shp_dep / TAN(C_Angle) + OFF_INT"
-VA="DecLT0 DecTot < 0"
-VA="DecGE0 DecTot >= 0"
-VA="DecLTY4 DecTot < LPY2 / 4"
-VA="DecGEY4 DecTot >= LPY2 / 4"
-VA="H40CatOK DecLT0 AND (LPY2^2 / 640 + 10 >= -2 * DecTot) AND ((LPY2 + _BC / 2)^2 / 160 + 10 >= -2 * DecTot) OR DecGE0 AND (((LPY2 + _BC / 2)^2 / 160 + 10 - DecTot)^2 >= (DecTot + _BC / 2)^2)"
-VA="Haut_Arc IF (LPX2 >= 54 AND LPY2 >= 54) THEN 27 ELSE (LPX2 <= LPY2) * LPX2 / 2 + (LPX2 > LPY2) * (LPY2 / 2 - 0.1)"
-VA="Haut_Cat IF (LPX2 >= 80 AND LPY2 >= 80 AND H40CatOK) THEN 40 ELSE (DecLTY4 AND DecGE0) * ((LPX2 < LPY2) * LPX2 + (LPX2 >= LPY2) * LPY2) / 2 + DecGEY4 * LPY2 / 4 - DecLT0 * 8 * DecTot"
-VA="RayArc1 (Haut_Arc^2 + (LPY2 + _BC / 2)^2) / (2 * Haut_Arc)"
-VA="RayArc2 (Haut_Arc^2 + (LPY2 / 2)^2) / (2 * Haut_Arc)"
-VA="RayCat1 ((LPY2 + _BC / 2) / 2)^2 / Haut_Cat + Haut_Cat / 4"
-VA="RayCat2 ((LPY2 / 2) / 2)^2 / Haut_Cat + Haut_Cat / 4"
-VA="HauArUs1 RayArc1 - SQRT((RayArc1 - DecTot)^2 - (DecTot - (LPY2 + _BC / 2))^2)"
-VA="HauArUs2 RayArc2 - SQRT((RayArc2 - DecTot)^2 - (DecTot - LPY2 / 2)^2)"
-VA="DecArUs1 RayArc1 - SQRT((RayArc1 - DecTot)^2 - ((LPY2 - DecTot) - (LPY2 + _BC / 2))^2)"
-VA="HauCaUs1 Haut_Cat - RayCat1 + SQRT(RayCat1^2 + 2 * DecTot * RayCat1)"
-VA="HauCaUs2 Haut_Cat - RayCat2 + SQRT(RayCat2^2 + 2 * DecTot * RayCat2)"
-VA="DecCaUs1 RayCat1 - SQRT(RayCat1^2 - DecTot * (2 * RayCat1 + _BC) - _BC^2 / 4)"
-VA="g1 (Haut_Cat - 2 * RayCat1) / (LPY2 + _BC / 2)"
-VA="h1Usi (2 * (Haut_Cat + 2 * DecTot) * RayCat1 - Haut_Cat^2 + (LPY2 + _BC / 2)^2) / (2 * (LPY2 + _BC / 2))"
-VA="JoXCaUs1 -2 * (RayCat1 - Haut_Cat + g1* h1Usi) / (2 * (g1^2 + 1))"
-VA="JoYCaUs1 SQRT((RayCat1 + DecTot)^2 - (JoXCaUs1 - (Haut_Cat - RayCat1))^2)"
-VA="g2 (Haut_Cat - 2 * RayCat2) / (LPY2 / 2)"
-VA="h2Usi (2 * (Haut_Cat + 2 * DecTot) * RayCat2 - Haut_Cat^2 + (LPY2 / 2)^2) / (2 * (LPY2 / 2))"
-VA="JoXCaUs2 -2 * (RayCat2 - Haut_Cat + g2 * h2Usi) / (2 * (g2^2 + 1))"
-VA="JoYCaUs2 SQRT((RayCat2 + DecTot)^2 - (JoXCaUs2 - (Haut_Cat - RayCat2))^2)"
-VA="HIsRCC2 HauArUs2 = RayArc2"
-VA="AngCCA1 0"
-VA="AngCCA2 90 + ARCTAN((DecTot - (LPY2 + _BC / 2)) / (HauArUs1 - RayArc1))"
-VA="AngCCA ABS(AngCCA2 - AngCCA1)"
-VA="AngCCB1 -90 + ARCTAN(((LPY2 - DecTot) - (LPY2 + _BC / 2)) / (DecArUs1 - RayArc1))"
-VA="AngCCB2 0"
-VA="AngCCB ABS(AngCCB2 - AngCCB1)"
-VA="AngCCC1 0"
-VA="AngCCC2 90+ (HIsRCC2 = 0) * ARCTAN((DecTot - LPY2 / 2) / (HauArUs2 - RayArc2 + (HIsRCC2 = 1) * 0.01))"
-VA="AngCCC ABS(AngCCC2 - AngCCC1)"
-VA="AngCCD1 0"
-VA="AngCCD2 90 + ARCTAN((DecTot - 0) / (HauCaUs1 - (Haut_Cat - RayCat1)))"
-VA="AngCCD ABS(AngCCD2 - AngCCD1)"
-VA="AngCCE1 -90 + ARCTAN(((LPY2 - DecTot) - (LPY2 + _BC / 2)) / (DecCaUs1 - RayCat1))"
-VA="AngCCE2 0"
-VA="AngCCE ABS(AngCCE2 - AngCCE1)"
-VA="AngCCF1 0"
-VA="AngCCF2 90+ ARCTAN((DecTot - 0) / (HauCaUs2 - (Haut_Cat - RayCat2)))"
-VA="AngCCF ABS(AngCCF2 - AngCCF1)"
-VA="AnCCArGa (_PosType = 0) * AngCCC +(_PosType = 1) * AngCCA + (_PosType = 2) * AngCCB"
-VA="AnCCArDr (_PosType = 0) * AngCCC + (_PosType = 1) * AngCCB + (_PosType = 2) * AngCCA"
-KAT="Komponentenmakro"
-MNM="Usinage intérieur propre au thermoplastique 2 groupe central en X premier carreau"
-ORI=""
-KO="00"
-
-<121 \Block\
-XP="_BH + HT3 + _BCX3"
-YP="_BG2 + DimCarY2 + _BCY"
-ZP="0.0"
-AX="IF NbcarX - 2 < 0 THEN 0 ELSE NbcarX - 2"
-AY="IF NbcarY - 2 < 0 THEN 0 ELSE NbcarY - 2"
-RX="HT2 + _BCX2"
-RY="DimCarY2 + _BCY"
-CS="0"
-KAT="BlockMakro"
-MNM="Usinage intérieur propre au thermoplastique 2 groupes centraux en X carreaux centraux"
-ORI=""
-NM=""
-DP="1"
-KO="00"
-??="NpasTh >= 2 AND NbcarX >= 3 AND NbcarY >= 3 AND CadrH = 0"
-
-<139 \Komponente\
-IN="Int_Centre.mpr"
-XA="0"
-YA="0"
-ZA="LPZ - Prf_Th2"
-EM="0"
-VA="LPX2 IF HT2 < MinHT THEN MinHT ELSE HT2"
-VA="LPY2 DimCarY2"
-VA="LPZ2 LPZ"
-VA="_BC _BCY"
-VA="Safety 1"
-VA="Pock_C 0"
-VA="C_Corner 0"
-VA="C_Angle Angle_CC"
-VA="_Type (Act_Pan = 1) * _Type"
-VA="_PosType 0"
-VA="OFF_INT Dec_Th2"
-VA="T_InShp T_Th2"
-VA="Shp_dep Prf_Th2"
-VA="Comp_P Comp_Th2"
-VA="_OVLAPI _OVLAPI"
-VA="LinXint LinXint"
-VA="LinZint Shp_dep + Safety"
-VA="LoutXint LoutXint"
-VA="LoutZint Shp_dep + Safety"
-VA="DecTot (C_Corner = 1) * Shp_dep / TAN(C_Angle) + OFF_INT"
-VA="DecLT0 DecTot < 0"
-VA="DecGE0 DecTot >= 0"
-VA="DecLTY4 DecTot < LPY2 / 4"
-VA="DecGEY4 DecTot >= LPY2 / 4"
-VA="H40CatOK DecLT0 AND (LPY2^2 / 640 + 10 >= -2 * DecTot) AND ((LPY2 + _BC / 2)^2 / 160 + 10 >= -2 * DecTot) OR DecGE0 AND (((LPY2 + _BC / 2)^2 / 160 + 10 - DecTot)^2 >= (DecTot + _BC / 2)^2)"
-VA="Haut_Arc IF (LPX2 >= 54 AND LPY2 >= 54) THEN 27 ELSE (LPX2 <= LPY2) * LPX2 / 2 + (LPX2 > LPY2) * (LPY2 / 2 - 0.1)"
-VA="Haut_Cat IF (LPX2 >= 80 AND LPY2 >= 80 AND H40CatOK) THEN 40 ELSE (DecLTY4 AND DecGE0) * ((LPX2 < LPY2) * LPX2 + (LPX2 >= LPY2) * LPY2) / 2 + DecGEY4 * LPY2 / 4 - DecLT0 * 8 * DecTot"
-VA="RayArc1 (Haut_Arc^2 + (LPY2 + _BC / 2)^2) / (2 * Haut_Arc)"
-VA="RayArc2 (Haut_Arc^2 + (LPY2 / 2)^2) / (2 * Haut_Arc)"
-VA="RayCat1 ((LPY2 + _BC / 2) / 2)^2 / Haut_Cat + Haut_Cat / 4"
-VA="RayCat2 ((LPY2 / 2) / 2)^2 / Haut_Cat + Haut_Cat / 4"
-VA="HauArUs1 RayArc1 - SQRT((RayArc1 - DecTot)^2 - (DecTot - (LPY2 + _BC / 2))^2)"
-VA="HauArUs2 RayArc2 - SQRT((RayArc2 - DecTot)^2 - (DecTot - LPY2 / 2)^2)"
-VA="DecArUs1 RayArc1 - SQRT((RayArc1 - DecTot)^2 - ((LPY2 - DecTot) - (LPY2 + _BC / 2))^2)"
-VA="HauCaUs1 Haut_Cat - RayCat1 + SQRT(RayCat1^2 + 2 * DecTot * RayCat1)"
-VA="HauCaUs2 Haut_Cat - RayCat2 + SQRT(RayCat2^2 + 2 * DecTot * RayCat2)"
-VA="DecCaUs1 RayCat1 - SQRT(RayCat1^2 - DecTot * (2 * RayCat1 + _BC) - _BC^2 / 4)"
-VA="g1 (Haut_Cat - 2 * RayCat1) / (LPY2 + _BC / 2)"
-VA="h1Usi (2 * (Haut_Cat + 2 * DecTot) * RayCat1 - Haut_Cat^2 + (LPY2 + _BC / 2)^2) / (2 * (LPY2 + _BC / 2))"
-VA="JoXCaUs1 -2 * (RayCat1 - Haut_Cat + g1* h1Usi) / (2 * (g1^2 + 1))"
-VA="JoYCaUs1 SQRT((RayCat1 + DecTot)^2 - (JoXCaUs1 - (Haut_Cat - RayCat1))^2)"
-VA="g2 (Haut_Cat - 2 * RayCat2) / (LPY2 / 2)"
-VA="h2Usi (2 * (Haut_Cat + 2 * DecTot) * RayCat2 - Haut_Cat^2 + (LPY2 / 2)^2) / (2 * (LPY2 / 2))"
-VA="JoXCaUs2 -2 * (RayCat2 - Haut_Cat + g2 * h2Usi) / (2 * (g2^2 + 1))"
-VA="JoYCaUs2 SQRT((RayCat2 + DecTot)^2 - (JoXCaUs2 - (Haut_Cat - RayCat2))^2)"
-VA="HIsRCC2 HauArUs2 = RayArc2"
-VA="AngCCA1 0"
-VA="AngCCA2 90 + ARCTAN((DecTot - (LPY2 + _BC / 2)) / (HauArUs1 - RayArc1))"
-VA="AngCCA ABS(AngCCA2 - AngCCA1)"
-VA="AngCCB1 -90 + ARCTAN(((LPY2 - DecTot) - (LPY2 + _BC / 2)) / (DecArUs1 - RayArc1))"
-VA="AngCCB2 0"
-VA="AngCCB ABS(AngCCB2 - AngCCB1)"
-VA="AngCCC1 0"
-VA="AngCCC2 90+ (HIsRCC2 = 0) * ARCTAN((DecTot - LPY2 / 2) / (HauArUs2 - RayArc2 + (HIsRCC2 = 1) * 0.01))"
-VA="AngCCC ABS(AngCCC2 - AngCCC1)"
-VA="AngCCD1 0"
-VA="AngCCD2 90 + ARCTAN((DecTot - 0) / (HauCaUs1 - (Haut_Cat - RayCat1)))"
-VA="AngCCD ABS(AngCCD2 - AngCCD1)"
-VA="AngCCE1 -90 + ARCTAN(((LPY2 - DecTot) - (LPY2 + _BC / 2)) / (DecCaUs1 - RayCat1))"
-VA="AngCCE2 0"
-VA="AngCCE ABS(AngCCE2 - AngCCE1)"
-VA="AngCCF1 0"
-VA="AngCCF2 90+ ARCTAN((DecTot - 0) / (HauCaUs2 - (Haut_Cat - RayCat2)))"
-VA="AngCCF ABS(AngCCF2 - AngCCF1)"
-VA="AnCCArGa (_PosType = 0) * AngCCC +(_PosType = 1) * AngCCA + (_PosType = 2) * AngCCB"
-VA="AnCCArDr (_PosType = 0) * AngCCC + (_PosType = 1) * AngCCB + (_PosType = 2) * AngCCA"
-KAT="Komponentenmakro"
-MNM="Usinage intérieur propre au thermoplastique 2 groupe central en X carreau central"
-ORI=""
-KO="00"
-
-<121 \Block\
-XP="_BH + HT3 + _BCX3"
-YP="_BG2 + (DimCarY2 + _BCY) * (NbcarY - 1)"
-ZP="LPZ - Prf_Th2"
-AX="IF NbcarX - 2 < 0 THEN 0 ELSE NbcarX - 2"
-AY="1"
-RX="HT2 + _BCX2"
-RY="0"
-CS="0"
-KAT="BlockMakro"
-MNM="Usinage intérieur propre au thermoplastique 2 groupes centraux en X dernier carreau"
-ORI=""
-NM=""
-DP="1"
-KO="00"
-??="NpasTh >= 2 AND NbcarX >= 3 AND NbcarY >= 2 AND CadrH = 0"
-
-<139 \Komponente\
-IN="Int_Centre.mpr"
-XA="0"
-YA="0"
-ZA="0"
-EM="0"
-VA="LPX2 IF HT2 < MinHT THEN MinHT ELSE HT2"
-VA="LPY2 DimCarY2"
-VA="LPZ2 LPZ"
-VA="_BC _BCY"
-VA="Safety 1"
-VA="Pock_C 0"
-VA="C_Corner 0"
-VA="C_Angle Angle_CC"
-VA="_Type (Act_Pan = 1) * _Type"
-VA="_PosType 0"
-VA="OFF_INT Dec_Th2"
-VA="T_InShp T_Th2"
-VA="Shp_dep Prf_Th2"
-VA="Comp_P Comp_Th2"
-VA="_OVLAPI _OVLAPI"
-VA="LinXint LinXint"
-VA="LinZint Shp_dep + Safety"
-VA="LoutXint LoutXint"
-VA="LoutZint Shp_dep + Safety"
-VA="DecTot (C_Corner = 1) * Shp_dep / TAN(C_Angle) + OFF_INT"
-VA="DecLT0 DecTot < 0"
-VA="DecGE0 DecTot >= 0"
-VA="DecLTY4 DecTot < LPY2 / 4"
-VA="DecGEY4 DecTot >= LPY2 / 4"
-VA="H40CatOK DecLT0 AND (LPY2^2 / 640 + 10 >= -2 * DecTot) AND ((LPY2 + _BC / 2)^2 / 160 + 10 >= -2 * DecTot) OR DecGE0 AND (((LPY2 + _BC / 2)^2 / 160 + 10 - DecTot)^2 >= (DecTot + _BC / 2)^2)"
-VA="Haut_Arc IF (LPX2 >= 54 AND LPY2 >= 54) THEN 27 ELSE (LPX2 <= LPY2) * LPX2 / 2 + (LPX2 > LPY2) * (LPY2 / 2 - 0.1)"
-VA="Haut_Cat IF (LPX2 >= 80 AND LPY2 >= 80 AND H40CatOK) THEN 40 ELSE (DecLTY4 AND DecGE0) * ((LPX2 < LPY2) * LPX2 + (LPX2 >= LPY2) * LPY2) / 2 + DecGEY4 * LPY2 / 4 - DecLT0 * 8 * DecTot"
-VA="RayArc1 (Haut_Arc^2 + (LPY2 + _BC / 2)^2) / (2 * Haut_Arc)"
-VA="RayArc2 (Haut_Arc^2 + (LPY2 / 2)^2) / (2 * Haut_Arc)"
-VA="RayCat1 ((LPY2 + _BC / 2) / 2)^2 / Haut_Cat + Haut_Cat / 4"
-VA="RayCat2 ((LPY2 / 2) / 2)^2 / Haut_Cat + Haut_Cat / 4"
-VA="HauArUs1 RayArc1 - SQRT((RayArc1 - DecTot)^2 - (DecTot - (LPY2 + _BC / 2))^2)"
-VA="HauArUs2 RayArc2 - SQRT((RayArc2 - DecTot)^2 - (DecTot - LPY2 / 2)^2)"
-VA="DecArUs1 RayArc1 - SQRT((RayArc1 - DecTot)^2 - ((LPY2 - DecTot) - (LPY2 + _BC / 2))^2)"
-VA="HauCaUs1 Haut_Cat - RayCat1 + SQRT(RayCat1^2 + 2 * DecTot * RayCat1)"
-VA="HauCaUs2 Haut_Cat - RayCat2 + SQRT(RayCat2^2 + 2 * DecTot * RayCat2)"
-VA="DecCaUs1 RayCat1 - SQRT(RayCat1^2 - DecTot * (2 * RayCat1 + _BC) - _BC^2 / 4)"
-VA="g1 (Haut_Cat - 2 * RayCat1) / (LPY2 + _BC / 2)"
-VA="h1Usi (2 * (Haut_Cat + 2 * DecTot) * RayCat1 - Haut_Cat^2 + (LPY2 + _BC / 2)^2) / (2 * (LPY2 + _BC / 2))"
-VA="JoXCaUs1 -2 * (RayCat1 - Haut_Cat + g1* h1Usi) / (2 * (g1^2 + 1))"
-VA="JoYCaUs1 SQRT((RayCat1 + DecTot)^2 - (JoXCaUs1 - (Haut_Cat - RayCat1))^2)"
-VA="g2 (Haut_Cat - 2 * RayCat2) / (LPY2 / 2)"
-VA="h2Usi (2 * (Haut_Cat + 2 * DecTot) * RayCat2 - Haut_Cat^2 + (LPY2 / 2)^2) / (2 * (LPY2 / 2))"
-VA="JoXCaUs2 -2 * (RayCat2 - Haut_Cat + g2 * h2Usi) / (2 * (g2^2 + 1))"
-VA="JoYCaUs2 SQRT((RayCat2 + DecTot)^2 - (JoXCaUs2 - (Haut_Cat - RayCat2))^2)"
-VA="HIsRCC2 HauArUs2 = RayArc2"
-VA="AngCCA1 0"
-VA="AngCCA2 90 + ARCTAN((DecTot - (LPY2 + _BC / 2)) / (HauArUs1 - RayArc1))"
-VA="AngCCA ABS(AngCCA2 - AngCCA1)"
-VA="AngCCB1 -90 + ARCTAN(((LPY2 - DecTot) - (LPY2 + _BC / 2)) / (DecArUs1 - RayArc1))"
-VA="AngCCB2 0"
-VA="AngCCB ABS(AngCCB2 - AngCCB1)"
-VA="AngCCC1 0"
-VA="AngCCC2 90+ (HIsRCC2 = 0) * ARCTAN((DecTot - LPY2 / 2) / (HauArUs2 - RayArc2 + (HIsRCC2 = 1) * 0.01))"
-VA="AngCCC ABS(AngCCC2 - AngCCC1)"
-VA="AngCCD1 0"
-VA="AngCCD2 90 + ARCTAN((DecTot - 0) / (HauCaUs1 - (Haut_Cat - RayCat1)))"
-VA="AngCCD ABS(AngCCD2 - AngCCD1)"
-VA="AngCCE1 -90 + ARCTAN(((LPY2 - DecTot) - (LPY2 + _BC / 2)) / (DecCaUs1 - RayCat1))"
-VA="AngCCE2 0"
-VA="AngCCE ABS(AngCCE2 - AngCCE1)"
-VA="AngCCF1 0"
-VA="AngCCF2 90+ ARCTAN((DecTot - 0) / (HauCaUs2 - (Haut_Cat - RayCat2)))"
-VA="AngCCF ABS(AngCCF2 - AngCCF1)"
-VA="AnCCArGa (_PosType = 0) * AngCCC +(_PosType = 1) * AngCCA + (_PosType = 2) * AngCCB"
-VA="AnCCArDr (_PosType = 0) * AngCCC + (_PosType = 1) * AngCCB + (_PosType = 2) * AngCCA"
-KAT="Komponentenmakro"
-MNM="Usinage intérieur propre au thermoplastique 2 groupe central en X dernier carreau"
-ORI=""
-KO="00"
-
-<139 \Komponente\
-IN="Int_Centre.mpr"
-XA="LPX - _BB - HT1"
-YA="_BG2"
-ZA="LPZ - Prf_Th2"
-EM="0"
-VA="LPX2 IF HT1 < MinHT THEN MinHT ELSE HT1"
-VA="LPY2 DimCarY2"
-VA="LPZ2 LPZ"
-VA="_BC _BCY"
-VA="Safety 1"
-VA="Pock_C 0"
-VA="C_Corner 0"
-VA="C_Angle Angle_CC"
-VA="_Type (Act_Pan = 1) * _Type"
-VA="_PosType 0"
-VA="OFF_INT Dec_Th2"
-VA="T_InShp T_Th2"
-VA="Shp_dep Prf_Th2"
-VA="Comp_P Comp_Th2"
-VA="_OVLAPI _OVLAPI"
-VA="LinXint LinXint"
-VA="LinZint Shp_dep + Safety"
-VA="LoutXint LoutXint"
-VA="LoutZint Shp_dep + Safety"
-VA="DecTot (C_Corner = 1) * Shp_dep / TAN(C_Angle) + OFF_INT"
-VA="DecLT0 DecTot < 0"
-VA="DecGE0 DecTot >= 0"
-VA="DecLTY4 DecTot < LPY2 / 4"
-VA="DecGEY4 DecTot >= LPY2 / 4"
-VA="H40CatOK DecLT0 AND (LPY2^2 / 640 + 10 >= -2 * DecTot) AND ((LPY2 + _BC / 2)^2 / 160 + 10 >= -2 * DecTot) OR DecGE0 AND (((LPY2 + _BC / 2)^2 / 160 + 10 - DecTot)^2 >= (DecTot + _BC / 2)^2)"
-VA="Haut_Arc IF (LPX2 >= 54 AND LPY2 >= 54) THEN 27 ELSE (LPX2 <= LPY2) * LPX2 / 2 + (LPX2 > LPY2) * (LPY2 / 2 - 0.1)"
-VA="Haut_Cat IF (LPX2 >= 80 AND LPY2 >= 80 AND H40CatOK) THEN 40 ELSE (DecLTY4 AND DecGE0) * ((LPX2 < LPY2) * LPX2 + (LPX2 >= LPY2) * LPY2) / 2 + DecGEY4 * LPY2 / 4 - DecLT0 * 8 * DecTot"
-VA="RayArc1 (Haut_Arc^2 + (LPY2 + _BC / 2)^2) / (2 * Haut_Arc)"
-VA="RayArc2 (Haut_Arc^2 + (LPY2 / 2)^2) / (2 * Haut_Arc)"
-VA="RayCat1 ((LPY2 + _BC / 2) / 2)^2 / Haut_Cat + Haut_Cat / 4"
-VA="RayCat2 ((LPY2 / 2) / 2)^2 / Haut_Cat + Haut_Cat / 4"
-VA="HauArUs1 RayArc1 - SQRT((RayArc1 - DecTot)^2 - (DecTot - (LPY2 + _BC / 2))^2)"
-VA="HauArUs2 RayArc2 - SQRT((RayArc2 - DecTot)^2 - (DecTot - LPY2 / 2)^2)"
-VA="DecArUs1 RayArc1 - SQRT((RayArc1 - DecTot)^2 - ((LPY2 - DecTot) - (LPY2 + _BC / 2))^2)"
-VA="HauCaUs1 Haut_Cat - RayCat1 + SQRT(RayCat1^2 + 2 * DecTot * RayCat1)"
-VA="HauCaUs2 Haut_Cat - RayCat2 + SQRT(RayCat2^2 + 2 * DecTot * RayCat2)"
-VA="DecCaUs1 RayCat1 - SQRT(RayCat1^2 - DecTot * (2 * RayCat1 + _BC) - _BC^2 / 4)"
-VA="g1 (Haut_Cat - 2 * RayCat1) / (LPY2 + _BC / 2)"
-VA="h1Usi (2 * (Haut_Cat + 2 * DecTot) * RayCat1 - Haut_Cat^2 + (LPY2 + _BC / 2)^2) / (2 * (LPY2 + _BC / 2))"
-VA="JoXCaUs1 -2 * (RayCat1 - Haut_Cat + g1* h1Usi) / (2 * (g1^2 + 1))"
-VA="JoYCaUs1 SQRT((RayCat1 + DecTot)^2 - (JoXCaUs1 - (Haut_Cat - RayCat1))^2)"
-VA="g2 (Haut_Cat - 2 * RayCat2) / (LPY2 / 2)"
-VA="h2Usi (2 * (Haut_Cat + 2 * DecTot) * RayCat2 - Haut_Cat^2 + (LPY2 / 2)^2) / (2 * (LPY2 / 2))"
-VA="JoXCaUs2 -2 * (RayCat2 - Haut_Cat + g2 * h2Usi) / (2 * (g2^2 + 1))"
-VA="JoYCaUs2 SQRT((RayCat2 + DecTot)^2 - (JoXCaUs2 - (Haut_Cat - RayCat2))^2)"
-VA="HIsRCC2 HauArUs2 = RayArc2"
-VA="AngCCA1 0"
-VA="AngCCA2 90 + ARCTAN((DecTot - (LPY2 + _BC / 2)) / (HauArUs1 - RayArc1))"
-VA="AngCCA ABS(AngCCA2 - AngCCA1)"
-VA="AngCCB1 -90 + ARCTAN(((LPY2 - DecTot) - (LPY2 + _BC / 2)) / (DecArUs1 - RayArc1))"
-VA="AngCCB2 0"
-VA="AngCCB ABS(AngCCB2 - AngCCB1)"
-VA="AngCCC1 0"
-VA="AngCCC2 90+ (HIsRCC2 = 0) * ARCTAN((DecTot - LPY2 / 2) / (HauArUs2 - RayArc2 + (HIsRCC2 = 1) * 0.01))"
-VA="AngCCC ABS(AngCCC2 - AngCCC1)"
-VA="AngCCD1 0"
-VA="AngCCD2 90 + ARCTAN((DecTot - 0) / (HauCaUs1 - (Haut_Cat - RayCat1)))"
-VA="AngCCD ABS(AngCCD2 - AngCCD1)"
-VA="AngCCE1 -90 + ARCTAN(((LPY2 - DecTot) - (LPY2 + _BC / 2)) / (DecCaUs1 - RayCat1))"
-VA="AngCCE2 0"
-VA="AngCCE ABS(AngCCE2 - AngCCE1)"
-VA="AngCCF1 0"
-VA="AngCCF2 90+ ARCTAN((DecTot - 0) / (HauCaUs2 - (Haut_Cat - RayCat2)))"
-VA="AngCCF ABS(AngCCF2 - AngCCF1)"
-VA="AnCCArGa (_PosType = 0) * AngCCC +(_PosType = 1) * AngCCA + (_PosType = 2) * AngCCB"
-VA="AnCCArDr (_PosType = 0) * AngCCC + (_PosType = 1) * AngCCB + (_PosType = 2) * AngCCA"
-KAT="Komponentenmakro"
-MNM="Usinage intérieur propre au thermoplastique 2 dernier groupe en X premier carreau"
-ORI=""
-KO="00"
-??="NpasTh >= 2 AND NbcarX >= 2 AND NbcarY >= 1 AND CadrH = 0"
-
-<121 \Block\
-XP="LPX - _BB - HT1"
-YP="_BG1 + DimCarY1 + _BCY"
-ZP="0.0"
-AX="1"
-AY="IF NbcarY - 2 < 0 THEN 0 ELSE NbcarY - 2"
-RX="0.0"
-RY="DimCarY1 + _BCY"
-CS="0"
-KAT="BlockMakro"
-MNM="Usinage intérieur propre au thermoplastique 2 dernier groupe en X carreaux centraux"
-ORI=""
-NM=""
-DP="1"
-KO="00"
-??="NpasTh >= 2 AND NbcarX >= 2 AND NbcarY >= 3 AND CadrH = 0"
-
-<139 \Komponente\
-IN="Int_Centre.mpr"
-XA="0"
-YA="0"
-ZA="LPZ - Prf_Th2"
-EM="0"
-VA="LPX2 IF HT1 < MinHT THEN MinHT ELSE HT1"
-VA="LPY2 DimCarY1"
-VA="LPZ2 LPZ"
-VA="_BC _BCY"
-VA="Safety 1"
-VA="Pock_C 0"
-VA="C_Corner 0"
-VA="C_Angle Angle_CC"
-VA="_Type (Act_Pan = 1) * _Type"
-VA="_PosType 0"
-VA="OFF_INT Dec_Th2"
-VA="T_InShp T_Th2"
-VA="Shp_dep Prf_Th2"
-VA="Comp_P Comp_Th2"
-VA="_OVLAPI _OVLAPI"
-VA="LinXint LinXint"
-VA="LinZint Shp_dep + Safety"
-VA="LoutXint LoutXint"
-VA="LoutZint Shp_dep + Safety"
-VA="DecTot (C_Corner = 1) * Shp_dep / TAN(C_Angle) + OFF_INT"
-VA="DecLT0 DecTot < 0"
-VA="DecGE0 DecTot >= 0"
-VA="DecLTY4 DecTot < LPY2 / 4"
-VA="DecGEY4 DecTot >= LPY2 / 4"
-VA="H40CatOK DecLT0 AND (LPY2^2 / 640 + 10 >= -2 * DecTot) AND ((LPY2 + _BC / 2)^2 / 160 + 10 >= -2 * DecTot) OR DecGE0 AND (((LPY2 + _BC / 2)^2 / 160 + 10 - DecTot)^2 >= (DecTot + _BC / 2)^2)"
-VA="Haut_Arc IF (LPX2 >= 54 AND LPY2 >= 54) THEN 27 ELSE (LPX2 <= LPY2) * LPX2 / 2 + (LPX2 > LPY2) * (LPY2 / 2 - 0.1)"
-VA="Haut_Cat IF (LPX2 >= 80 AND LPY2 >= 80 AND H40CatOK) THEN 40 ELSE (DecLTY4 AND DecGE0) * ((LPX2 < LPY2) * LPX2 + (LPX2 >= LPY2) * LPY2) / 2 + DecGEY4 * LPY2 / 4 - DecLT0 * 8 * DecTot"
-VA="RayArc1 (Haut_Arc^2 + (LPY2 + _BC / 2)^2) / (2 * Haut_Arc)"
-VA="RayArc2 (Haut_Arc^2 + (LPY2 / 2)^2) / (2 * Haut_Arc)"
-VA="RayCat1 ((LPY2 + _BC / 2) / 2)^2 / Haut_Cat + Haut_Cat / 4"
-VA="RayCat2 ((LPY2 / 2) / 2)^2 / Haut_Cat + Haut_Cat / 4"
-VA="HauArUs1 RayArc1 - SQRT((RayArc1 - DecTot)^2 - (DecTot - (LPY2 + _BC / 2))^2)"
-VA="HauArUs2 RayArc2 - SQRT((RayArc2 - DecTot)^2 - (DecTot - LPY2 / 2)^2)"
-VA="DecArUs1 RayArc1 - SQRT((RayArc1 - DecTot)^2 - ((LPY2 - DecTot) - (LPY2 + _BC / 2))^2)"
-VA="HauCaUs1 Haut_Cat - RayCat1 + SQRT(RayCat1^2 + 2 * DecTot * RayCat1)"
-VA="HauCaUs2 Haut_Cat - RayCat2 + SQRT(RayCat2^2 + 2 * DecTot * RayCat2)"
-VA="DecCaUs1 RayCat1 - SQRT(RayCat1^2 - DecTot * (2 * RayCat1 + _BC) - _BC^2 / 4)"
-VA="g1 (Haut_Cat - 2 * RayCat1) / (LPY2 + _BC / 2)"
-VA="h1Usi (2 * (Haut_Cat + 2 * DecTot) * RayCat1 - Haut_Cat^2 + (LPY2 + _BC / 2)^2) / (2 * (LPY2 + _BC / 2))"
-VA="JoXCaUs1 -2 * (RayCat1 - Haut_Cat + g1* h1Usi) / (2 * (g1^2 + 1))"
-VA="JoYCaUs1 SQRT((RayCat1 + DecTot)^2 - (JoXCaUs1 - (Haut_Cat - RayCat1))^2)"
-VA="g2 (Haut_Cat - 2 * RayCat2) / (LPY2 / 2)"
-VA="h2Usi (2 * (Haut_Cat + 2 * DecTot) * RayCat2 - Haut_Cat^2 + (LPY2 / 2)^2) / (2 * (LPY2 / 2))"
-VA="JoXCaUs2 -2 * (RayCat2 - Haut_Cat + g2 * h2Usi) / (2 * (g2^2 + 1))"
-VA="JoYCaUs2 SQRT((RayCat2 + DecTot)^2 - (JoXCaUs2 - (Haut_Cat - RayCat2))^2)"
-VA="HIsRCC2 HauArUs2 = RayArc2"
-VA="AngCCA1 0"
-VA="AngCCA2 90 + ARCTAN((DecTot - (LPY2 + _BC / 2)) / (HauArUs1 - RayArc1))"
-VA="AngCCA ABS(AngCCA2 - AngCCA1)"
-VA="AngCCB1 -90 + ARCTAN(((LPY2 - DecTot) - (LPY2 + _BC / 2)) / (DecArUs1 - RayArc1))"
-VA="AngCCB2 0"
-VA="AngCCB ABS(AngCCB2 - AngCCB1)"
-VA="AngCCC1 0"
-VA="AngCCC2 90+ (HIsRCC2 = 0) * ARCTAN((DecTot - LPY2 / 2) / (HauArUs2 - RayArc2 + (HIsRCC2 = 1) * 0.01))"
-VA="AngCCC ABS(AngCCC2 - AngCCC1)"
-VA="AngCCD1 0"
-VA="AngCCD2 90 + ARCTAN((DecTot - 0) / (HauCaUs1 - (Haut_Cat - RayCat1)))"
-VA="AngCCD ABS(AngCCD2 - AngCCD1)"
-VA="AngCCE1 -90 + ARCTAN(((LPY2 - DecTot) - (LPY2 + _BC / 2)) / (DecCaUs1 - RayCat1))"
-VA="AngCCE2 0"
-VA="AngCCE ABS(AngCCE2 - AngCCE1)"
-VA="AngCCF1 0"
-VA="AngCCF2 90+ ARCTAN((DecTot - 0) / (HauCaUs2 - (Haut_Cat - RayCat2)))"
-VA="AngCCF ABS(AngCCF2 - AngCCF1)"
-VA="AnCCArGa (_PosType = 0) * AngCCC +(_PosType = 1) * AngCCA + (_PosType = 2) * AngCCB"
-VA="AnCCArDr (_PosType = 0) * AngCCC + (_PosType = 1) * AngCCB + (_PosType = 2) * AngCCA"
-KAT="Komponentenmakro"
-MNM="Usinage intérieur propre au thermoplastique 2 dernier groupe en X carreau central"
-ORI=""
-KO="00"
-
-<139 \Komponente\
-IN="Int_Centre.mpr"
-XA="LPX - _BB - HT1"
-YA="_BG1 + (DimCarY1 + _BCY) * (NbcarY - 1)"
-ZA="LPZ - Prf_Th2"
-EM="0"
-VA="LPX2 IF HT1 < MinHT THEN MinHT ELSE HT1"
-VA="LPY2 DimCarY1"
-VA="LPZ2 LPZ"
-VA="_BC _BCY"
-VA="Safety 1"
-VA="Pock_C 0"
-VA="C_Corner 0"
-VA="C_Angle Angle_CC"
-VA="_Type (Act_Pan = 1) * _Type"
-VA="_PosType 0"
-VA="OFF_INT Dec_Th2"
-VA="T_InShp T_Th2"
-VA="Shp_dep Prf_Th2"
-VA="Comp_P Comp_Th2"
-VA="_OVLAPI _OVLAPI"
-VA="LinXint LinXint"
-VA="LinZint Shp_dep + Safety"
-VA="LoutXint LoutXint"
-VA="LoutZint Shp_dep + Safety"
-VA="DecTot (C_Corner = 1) * Shp_dep / TAN(C_Angle) + OFF_INT"
-VA="DecLT0 DecTot < 0"
-VA="DecGE0 DecTot >= 0"
-VA="DecLTY4 DecTot < LPY2 / 4"
-VA="DecGEY4 DecTot >= LPY2 / 4"
-VA="H40CatOK DecLT0 AND (LPY2^2 / 640 + 10 >= -2 * DecTot) AND ((LPY2 + _BC / 2)^2 / 160 + 10 >= -2 * DecTot) OR DecGE0 AND (((LPY2 + _BC / 2)^2 / 160 + 10 - DecTot)^2 >= (DecTot + _BC / 2)^2)"
-VA="Haut_Arc IF (LPX2 >= 54 AND LPY2 >= 54) THEN 27 ELSE (LPX2 <= LPY2) * LPX2 / 2 + (LPX2 > LPY2) * (LPY2 / 2 - 0.1)"
-VA="Haut_Cat IF (LPX2 >= 80 AND LPY2 >= 80 AND H40CatOK) THEN 40 ELSE (DecLTY4 AND DecGE0) * ((LPX2 < LPY2) * LPX2 + (LPX2 >= LPY2) * LPY2) / 2 + DecGEY4 * LPY2 / 4 - DecLT0 * 8 * DecTot"
-VA="RayArc1 (Haut_Arc^2 + (LPY2 + _BC / 2)^2) / (2 * Haut_Arc)"
-VA="RayArc2 (Haut_Arc^2 + (LPY2 / 2)^2) / (2 * Haut_Arc)"
-VA="RayCat1 ((LPY2 + _BC / 2) / 2)^2 / Haut_Cat + Haut_Cat / 4"
-VA="RayCat2 ((LPY2 / 2) / 2)^2 / Haut_Cat + Haut_Cat / 4"
-VA="HauArUs1 RayArc1 - SQRT((RayArc1 - DecTot)^2 - (DecTot - (LPY2 + _BC / 2))^2)"
-VA="HauArUs2 RayArc2 - SQRT((RayArc2 - DecTot)^2 - (DecTot - LPY2 / 2)^2)"
-VA="DecArUs1 RayArc1 - SQRT((RayArc1 - DecTot)^2 - ((LPY2 - DecTot) - (LPY2 + _BC / 2))^2)"
-VA="HauCaUs1 Haut_Cat - RayCat1 + SQRT(RayCat1^2 + 2 * DecTot * RayCat1)"
-VA="HauCaUs2 Haut_Cat - RayCat2 + SQRT(RayCat2^2 + 2 * DecTot * RayCat2)"
-VA="DecCaUs1 RayCat1 - SQRT(RayCat1^2 - DecTot * (2 * RayCat1 + _BC) - _BC^2 / 4)"
-VA="g1 (Haut_Cat - 2 * RayCat1) / (LPY2 + _BC / 2)"
-VA="h1Usi (2 * (Haut_Cat + 2 * DecTot) * RayCat1 - Haut_Cat^2 + (LPY2 + _BC / 2)^2) / (2 * (LPY2 + _BC / 2))"
-VA="JoXCaUs1 -2 * (RayCat1 - Haut_Cat + g1* h1Usi) / (2 * (g1^2 + 1))"
-VA="JoYCaUs1 SQRT((RayCat1 + DecTot)^2 - (JoXCaUs1 - (Haut_Cat - RayCat1))^2)"
-VA="g2 (Haut_Cat - 2 * RayCat2) / (LPY2 / 2)"
-VA="h2Usi (2 * (Haut_Cat + 2 * DecTot) * RayCat2 - Haut_Cat^2 + (LPY2 / 2)^2) / (2 * (LPY2 / 2))"
-VA="JoXCaUs2 -2 * (RayCat2 - Haut_Cat + g2 * h2Usi) / (2 * (g2^2 + 1))"
-VA="JoYCaUs2 SQRT((RayCat2 + DecTot)^2 - (JoXCaUs2 - (Haut_Cat - RayCat2))^2)"
-VA="HIsRCC2 HauArUs2 = RayArc2"
-VA="AngCCA1 0"
-VA="AngCCA2 90 + ARCTAN((DecTot - (LPY2 + _BC / 2)) / (HauArUs1 - RayArc1))"
-VA="AngCCA ABS(AngCCA2 - AngCCA1)"
-VA="AngCCB1 -90 + ARCTAN(((LPY2 - DecTot) - (LPY2 + _BC / 2)) / (DecArUs1 - RayArc1))"
-VA="AngCCB2 0"
-VA="AngCCB ABS(AngCCB2 - AngCCB1)"
-VA="AngCCC1 0"
-VA="AngCCC2 90+ (HIsRCC2 = 0) * ARCTAN((DecTot - LPY2 / 2) / (HauArUs2 - RayArc2 + (HIsRCC2 = 1) * 0.01))"
-VA="AngCCC ABS(AngCCC2 - AngCCC1)"
-VA="AngCCD1 0"
-VA="AngCCD2 90 + ARCTAN((DecTot - 0) / (HauCaUs1 - (Haut_Cat - RayCat1)))"
-VA="AngCCD ABS(AngCCD2 - AngCCD1)"
-VA="AngCCE1 -90 + ARCTAN(((LPY2 - DecTot) - (LPY2 + _BC / 2)) / (DecCaUs1 - RayCat1))"
-VA="AngCCE2 0"
-VA="AngCCE ABS(AngCCE2 - AngCCE1)"
-VA="AngCCF1 0"
-VA="AngCCF2 90+ ARCTAN((DecTot - 0) / (HauCaUs2 - (Haut_Cat - RayCat2)))"
-VA="AngCCF ABS(AngCCF2 - AngCCF1)"
-VA="AnCCArGa (_PosType = 0) * AngCCC +(_PosType = 1) * AngCCA + (_PosType = 2) * AngCCB"
-VA="AnCCArDr (_PosType = 0) * AngCCC + (_PosType = 1) * AngCCB + (_PosType = 2) * AngCCA"
-KAT="Komponentenmakro"
-MNM="Usinage intérieur propre au thermoplastique 2 dernier groupe en X dernier carreau"
-ORI=""
-KO="00"
-??="NpasTh >= 2 AND NbcarX >= 2 AND NbcarY >= 2 AND CadrH = 0"
 !
